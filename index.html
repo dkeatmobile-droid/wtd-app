@@ -33,7 +33,7 @@
       background:linear-gradient(180deg,#0f1b38 0%, #0a1429 100%);
     }
 
-    /* Dynamic header colours */
+    /* Dynamic header colours + pulse */
     body.state-ok header{
       background:linear-gradient(180deg,#0f1b38 0%, #0a1429 100%);
       animation:none;
@@ -406,7 +406,7 @@
         </div>
       </div>
 
-      <!-- “Commercial” hero timer -->
+      <!-- Live card with countdown until next break -->
       <div class="card" id="heroCard">
         <h3>Live</h3>
         <div class="row" style="align-items:flex-end">
@@ -415,12 +415,12 @@
             <div class="big2" id="heroContWork">00:00</div>
           </div>
           <div style="flex:1 1 240px;text-align:right">
-            <div class="muted">6h interrupt due at</div>
-            <div class="big" id="heroDueAt">—</div>
+            <div class="muted">Next break in</div>
+            <div class="big2" id="heroNextBreakIn">—</div>
           </div>
         </div>
         <div class="tiny" id="heroHint" style="margin-top:10px">
-          A qualifying break is BREAK mode for ≥15 minutes.
+          Qualifying break = BREAK mode for ≥15 minutes. (6:00 continuous-work rule)
         </div>
       </div>
 
@@ -446,45 +446,7 @@
         <div class="card">
           <h3>Break still needed</h3>
           <div class="big2" id="breakNeeded">00:00</div>
-          <div class="muted" id="breakRule">0 / 30 / 45 based on total working time</div>
-        </div>
-      </div>
-
-      <!-- Times + “must be achieved by” -->
-      <div class="card" id="timeCard">
-        <h3>Break timings</h3>
-
-        <div class="muted">Break soon at (5:45)</div>
-        <div class="big" id="breakSoonAt">—</div>
-
-        <div style="height:10px"></div>
-
-        <div class="muted">Break required by (6:00)</div>
-        <div class="big" id="breakDueAt">—</div>
-
-        <div style="height:10px"></div>
-
-        <div class="muted">Next break must be taken by</div>
-        <div class="big" id="nextBreakBy">—</div>
-
-        <div style="height:10px"></div>
-
-        <div class="muted">Minimum break ends at (15m)</div>
-        <div class="big" id="minBreakEndsAt">—</div>
-
-        <div style="height:10px"></div>
-
-        <div class="muted">30m total (6–9h) must be achieved by</div>
-        <div class="big" id="wtd30By">—</div>
-
-        <div style="height:10px"></div>
-
-        <div class="muted">45m total (over 9h) must be achieved by</div>
-        <div class="big" id="wtd45By">—</div>
-
-        <div class="tiny" style="margin-top:10px">
-          “Must be achieved by” is calculated as the latest time you can still take the remaining qualifying break minutes
-          before you reach <b>9:00 total WORK</b> (conservative planning line). Beta app — double check times.
+          <div class="muted" id="breakRule">—</div>
         </div>
       </div>
 
@@ -599,11 +561,11 @@
 
   <script>
     (() => {
-      const STORAGE_KEY = "wtd_tracker_work_break_full_v4";
+      const STORAGE_KEY = "wtd_tracker_work_break_full_v5";
 
       const QUALIFY_BREAK_MIN = 15;
-      const INTERRUPT_LIMIT_MIN = 360; // 6 hours
-      const SOON_AT_MIN = 345;         // 5h45
+      const INTERRUPT_LIMIT_MIN = 360; // 6 hours continuous work
+      const SOON_AT_MIN = 345;         // 5h45 warning
       const ALERT_COOLDOWN_MS = 10 * 60 * 1000;
 
       const $ = (id) => document.getElementById(id);
@@ -753,27 +715,16 @@
         const segs = getAllSegmentsIncludingOpen();
 
         let workMin = 0;
-        let breakMinAll = 0;
         let breakMinQual = 0;
         let contWorkMin = 0;
 
-        // For “minimum break ends at”
-        let currentBreakStartMs = null;
-        let currentBreakMin = 0;
-
         for (const s of segs) {
           const m = minutesBetween(s.from, s.to);
-
-          if (s.open && s.mode === "BREAK") {
-            currentBreakStartMs = s.from;
-            currentBreakMin = m;
-          }
 
           if (s.mode === "WORK") {
             workMin += m;
             contWorkMin += m;
           } else if (s.mode === "BREAK") {
-            breakMinAll += m;
             if (m >= QUALIFY_BREAK_MIN) {
               breakMinQual += m;
               contWorkMin = 0;
@@ -781,10 +732,12 @@
           }
         }
 
-        // WTD totals requirement
+        // Per your rule:
+        // - After >6 hours total WORK: 30 mins total qualifying breaks required
+        // - After >9 hours total WORK: an additional 15 mins qualifying break required (i.e., +15)
         let requiredMin = 0;
-        if (workMin > 540) requiredMin = 45;
-        else if (workMin > 360) requiredMin = 30;
+        if (workMin > 360) requiredMin = 30;
+        if (workMin > 540) requiredMin = 45; // 30 + extra 15 after 9h
 
         const neededMin = Math.max(0, requiredMin - breakMinQual);
 
@@ -795,48 +748,17 @@
           shiftElapsedMin = minutesBetween(state.shiftStart, end);
         }
 
-        // 6h interrupt countdown + due times
+        // 6h continuous-work rule
         const remainingInterruptMin = state.shiftStart ? Math.max(0, INTERRUPT_LIMIT_MIN - contWorkMin) : null;
-        const dueAtMs = state.shiftStart ? (now() + (Math.max(0, INTERRUPT_LIMIT_MIN - contWorkMin) * 60000)) : null;
-        const soonAtMs = state.shiftStart ? (now() + (Math.max(0, SOON_AT_MIN - contWorkMin) * 60000)) : null;
-
-        // Minimum break ends at (15m) while currently on BREAK
-        let minBreakEndsAtMs = null;
-        if (state.shiftStart && state.currentMode === "BREAK" && currentBreakStartMs) {
-          const remainingTo15 = Math.max(0, QUALIFY_BREAK_MIN - currentBreakMin);
-          minBreakEndsAtMs = now() + (remainingTo15 * 60000);
-        }
-
-        // Conservative planning “must be achieved by” deadlines based on hitting 9:00 total WORK
-        const remainingTo9Work = Math.max(0, 540 - workMin);
-        const work9AtMs = state.shiftStart ? (now() + remainingTo9Work * 60000) : null;
-
-        const need30 = Math.max(0, 30 - breakMinQual);
-        const need45 = Math.max(0, 45 - breakMinQual);
-
-        let wtd30ByMs = null;
-        let wtd45ByMs = null;
-        if (state.shiftStart && work9AtMs) {
-          wtd30ByMs = work9AtMs - need30 * 60000;
-          wtd45ByMs = work9AtMs - need45 * 60000;
-        }
 
         return {
-          segs,
           workMin,
-          breakMinAll,
           breakMinQual,
           contWorkMin,
           requiredMin,
           neededMin,
           shiftElapsedMin,
-          remainingInterruptMin,
-          dueAtMs,
-          soonAtMs,
-          minBreakEndsAtMs,
-          work9AtMs,
-          wtd30ByMs,
-          wtd45ByMs
+          remainingInterruptMin
         };
       };
 
@@ -887,11 +809,6 @@
         document.body.classList.add(klass);
       };
 
-      const fmtByOrNow = (ms) => {
-        if (!ms) return "—";
-        return (ms <= now()) ? "NOW" : fmtTime(ms);
-      };
-
       const render = () => {
         $("dayChip").textContent = todayLabel();
 
@@ -920,26 +837,41 @@
         $("qBreakTotal").textContent = fmtHM(c.breakMinQual);
         $("shiftElapsed").textContent = fmtHM(c.shiftElapsedMin);
 
-        // Live hero
+        // Live values
         $("heroContWork").textContent = fmtHM(c.contWorkMin);
-        $("heroDueAt").textContent = (!state.shiftStart || state.shiftEnd) ? "—" : fmtTime(c.dueAtMs);
-        $("heroHint").textContent = (!state.shiftStart) ? "Start a shift to begin live tracking." : "A qualifying break is BREAK mode for ≥15 minutes.";
 
-        // Interrupt countdown
+        // Next break countdown (6:00 continuous-work rule)
         if (!state.shiftStart || state.shiftEnd) {
+          $("heroNextBreakIn").textContent = "—";
           $("interruptCountdown").textContent = "—";
+          $("heroHint").textContent = "Start a shift to begin live tracking.";
+        } else if (state.currentMode === "BREAK") {
+          $("heroNextBreakIn").textContent = "On break";
+          $("interruptCountdown").textContent = "On break";
+          $("heroHint").textContent = "Qualifying break = ≥15 minutes.";
         } else {
-          $("interruptCountdown").textContent = (c.remainingInterruptMin === 0) ? "DUE NOW" : fmtHM(c.remainingInterruptMin);
+          const rem = c.remainingInterruptMin ?? null;
+          const remText = (rem === 0) ? "DUE NOW" : fmtHM(rem);
+          $("heroNextBreakIn").textContent = remText;
+          $("interruptCountdown").textContent = remText;
+          $("heroHint").textContent = "Qualifying break = BREAK mode for ≥15 minutes. (6:00 continuous-work rule)";
         }
 
-        // Break requirement note
+        // Break totals rule text (your 9h rule wording)
+        if (!state.shiftStart) {
+          $("breakRule").textContent = "—";
+        } else {
+          if (c.workMin > 540) {
+            $("breakRule").textContent = "After 9h total WORK: +15 mins qualifying break required (total 45).";
+          } else if (c.workMin > 360) {
+            $("breakRule").textContent = "After 6h total WORK: 30 mins qualifying break required.";
+          } else {
+            $("breakRule").textContent = "No total-break target yet (but don’t exceed 6h continuous work).";
+          }
+        }
         $("breakNeeded").textContent = fmtHM(c.neededMin);
-        $("breakRule").textContent =
-          (c.workMin > 540) ? "45 mins required once >9h working" :
-          (c.workMin > 360) ? "30 mins required once >6h working" :
-          "No total break requirement yet (but don’t exceed 6h continuous work).";
 
-        // Emergency overlay live value + aria
+        // Emergency overlay live value
         $("emContWork").textContent = fmtHM(c.contWorkMin);
 
         // ===== Status + smarter alerts + UI state =====
@@ -972,7 +904,7 @@
         else if (onBreakNow) {
           status.textContent = "On break";
           status.className = "statusGood";
-          detail.textContent = "Break qualifies at ≥15 minutes.";
+          detail.textContent = "Qualifying break = ≥15 minutes.";
           uiState = "state-ok";
         }
         else if (interruptDue) {
@@ -992,7 +924,7 @@
         else if (totalShort) {
           status.textContent = "More qualifying breaks needed";
           status.className = "statusWarn";
-          detail.textContent = "You are short on total qualifying breaks.";
+          detail.textContent = "You are short on total qualifying breaks for your total WORK time.";
           uiState = "state-warn";
           const band = (c.workMin > 540) ? "45" : "30";
           triggerAlert("total_short_" + band);
@@ -1006,44 +938,9 @@
 
         setBodyState(uiState);
 
+        // Emergency overlay aria-hidden
         const overlay = $("emergencyOverlay");
         overlay.setAttribute("aria-hidden", uiState === "state-alert" ? "false" : "true");
-
-        // ===== Break time fields =====
-        if (!state.shiftStart || state.shiftEnd) {
-          $("breakSoonAt").textContent = "—";
-          $("breakDueAt").textContent = "—";
-          $("nextBreakBy").textContent = "—";
-          $("minBreakEndsAt").textContent = "—";
-          $("wtd30By").textContent = "—";
-          $("wtd45By").textContent = "—";
-        } else if (onBreakNow) {
-          $("breakSoonAt").textContent = "On break";
-          $("breakDueAt").textContent = "On break";
-          $("nextBreakBy").textContent = "On break";
-
-          // Minimum break ends at (15m) while on break
-          if (!c.minBreakEndsAtMs) {
-            $("minBreakEndsAt").textContent = "—";
-          } else {
-            $("minBreakEndsAt").textContent = (now() >= c.minBreakEndsAtMs) ? "Qualified" : fmtTime(c.minBreakEndsAtMs);
-          }
-
-          // Still show planning deadlines while on break (can be useful)
-          $("wtd30By").textContent = (c.breakMinQual >= 30) ? "Done" : fmtByOrNow(c.wtd30ByMs);
-          $("wtd45By").textContent = (c.breakMinQual >= 45) ? "Done" : fmtByOrNow(c.wtd45ByMs);
-        } else {
-          // Break soon / due / next-by times
-          $("breakSoonAt").textContent = (c.contWorkMin >= SOON_AT_MIN) ? "NOW" : fmtTime(c.soonAtMs);
-          $("breakDueAt").textContent  = (c.contWorkMin >= INTERRUPT_LIMIT_MIN) ? "NOW" : fmtTime(c.dueAtMs);
-          $("nextBreakBy").textContent = (c.contWorkMin >= INTERRUPT_LIMIT_MIN) ? "NOW" : fmtTime(c.dueAtMs);
-
-          $("minBreakEndsAt").textContent = "Not on break";
-
-          // WTD totals “must be achieved by” (conservative planning)
-          $("wtd30By").textContent = (c.breakMinQual >= 30) ? "Done" : fmtByOrNow(c.wtd30ByMs);
-          $("wtd45By").textContent = (c.breakMinQual >= 45) ? "Done" : fmtByOrNow(c.wtd45ByMs);
-        }
 
         // Log table (full view only)
         const tbody = $("logBody");
