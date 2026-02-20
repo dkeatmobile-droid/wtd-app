@@ -15,7 +15,6 @@
       --warn:#fbbf24;
       --bad:#fb7185;
       --shadow: 0 10px 30px rgba(0,0,0,.35);
-
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
     }
     *{box-sizing:border-box}
@@ -26,7 +25,7 @@
       background:radial-gradient(1200px 900px at 20% -10%, #12224a 0%, var(--bg) 52%);
     }
 
-    /* ===== Header (premium) ===== */
+    /* ===== Header ===== */
     header{
       position:sticky; top:0; z-index:20;
       border-bottom:1px solid rgba(255,255,255,.08);
@@ -130,7 +129,7 @@
     .dot.BREAK{background:var(--bad)}
 
     /* ===== Layout ===== */
-    .wrap{max-width:960px;margin:0 auto;padding:14px 14px 140px}
+    .wrap{max-width:960px;margin:0 auto;padding:14px 14px 160px}
     .grid{display:grid; gap:12px}
     .cards{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px}
     @media(min-width:900px){ .cards{grid-template-columns:repeat(4,minmax(0,1fr))} }
@@ -211,7 +210,7 @@
     .footer .row{max-width:960px; margin:0 auto}
     .footerNote{max-width:960px;margin:8px auto 0}
 
-    /* Action bar movement */
+    /* Action bar movement + bounce */
     body.state-warn .footer{
       transform: translateY(-6px);
       box-shadow: 0 -10px 28px rgba(0,0,0,.35);
@@ -239,7 +238,6 @@
       50%  { box-shadow: 0 0 26px rgba(251,113,133,0.55); }
       100% { box-shadow: 0 0 0 rgba(251,113,133,0.0); }
     }
-
     @keyframes footerBounceSoft{
       0%   { transform: translateY(0); }
       35%  { transform: translateY(-12px); }
@@ -432,20 +430,61 @@
           <div class="big2" id="workTotal">00:00</div>
           <div class="muted">Total Work minutes</div>
         </div>
+
         <div class="card">
           <h3>Qualifying breaks</h3>
           <div class="big2" id="qBreakTotal">00:00</div>
           <div class="muted">Break segments ≥ 15 min</div>
         </div>
+
         <div class="card">
           <h3>6h interrupt countdown</h3>
           <div class="big2" id="interruptCountdown">—</div>
           <div class="muted">5:45 alert on. 6:00 required.</div>
         </div>
+
         <div class="card">
           <h3>Break still needed</h3>
           <div class="big2" id="breakNeeded">00:00</div>
           <div class="muted" id="breakRule">0 / 30 / 45 based on total working time</div>
+        </div>
+      </div>
+
+      <!-- Times + “must be achieved by” -->
+      <div class="card" id="timeCard">
+        <h3>Break timings</h3>
+
+        <div class="muted">Break soon at (5:45)</div>
+        <div class="big" id="breakSoonAt">—</div>
+
+        <div style="height:10px"></div>
+
+        <div class="muted">Break required by (6:00)</div>
+        <div class="big" id="breakDueAt">—</div>
+
+        <div style="height:10px"></div>
+
+        <div class="muted">Next break must be taken by</div>
+        <div class="big" id="nextBreakBy">—</div>
+
+        <div style="height:10px"></div>
+
+        <div class="muted">Minimum break ends at (15m)</div>
+        <div class="big" id="minBreakEndsAt">—</div>
+
+        <div style="height:10px"></div>
+
+        <div class="muted">30m total (6–9h) must be achieved by</div>
+        <div class="big" id="wtd30By">—</div>
+
+        <div style="height:10px"></div>
+
+        <div class="muted">45m total (over 9h) must be achieved by</div>
+        <div class="big" id="wtd45By">—</div>
+
+        <div class="tiny" style="margin-top:10px">
+          “Must be achieved by” is calculated as the latest time you can still take the remaining qualifying break minutes
+          before you reach <b>9:00 total WORK</b> (conservative planning line). Beta app — double check times.
         </div>
       </div>
 
@@ -560,11 +599,12 @@
 
   <script>
     (() => {
-      const STORAGE_KEY = "wtd_tracker_work_break_full_v3";
+      const STORAGE_KEY = "wtd_tracker_work_break_full_v4";
 
       const QUALIFY_BREAK_MIN = 15;
       const INTERRUPT_LIMIT_MIN = 360; // 6 hours
-      const SOON_AT_MIN = 345; // 5h45
+      const SOON_AT_MIN = 345;         // 5h45
+      const ALERT_COOLDOWN_MS = 10 * 60 * 1000;
 
       const $ = (id) => document.getElementById(id);
       const now = () => Date.now();
@@ -594,9 +634,9 @@
         shiftEnd: null,
         currentMode: null, // "WORK" | "BREAK"
         currentFrom: null,
-        segments: [], // closed segments: {mode, from, to}
+        segments: [],      // closed: {mode, from, to}
         alerts: { audible: false, vibrate: false },
-        view: "basic" // "basic" | "full"
+        view: "basic"      // "basic" | "full"
       };
 
       const save = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -609,7 +649,6 @@
       // ===== Alerts =====
       let lastAlertKey = "";
       let lastAlertAt = 0;
-      const ALERT_COOLDOWN_MS = 10 * 60 * 1000;
 
       const beep = () => {
         try {
@@ -634,7 +673,6 @@
         if (key === lastAlertKey && (t - lastAlertAt) < ALERT_COOLDOWN_MS) return;
         lastAlertKey = key;
         lastAlertAt = t;
-
         if (state.alerts.audible) beep();
         if (state.alerts.vibrate) vibrate([200, 120, 200]);
       };
@@ -719,8 +757,18 @@
         let breakMinQual = 0;
         let contWorkMin = 0;
 
+        // For “minimum break ends at”
+        let currentBreakStartMs = null;
+        let currentBreakMin = 0;
+
         for (const s of segs) {
           const m = minutesBetween(s.from, s.to);
+
+          if (s.open && s.mode === "BREAK") {
+            currentBreakStartMs = s.from;
+            currentBreakMin = m;
+          }
+
           if (s.mode === "WORK") {
             workMin += m;
             contWorkMin += m;
@@ -733,22 +781,63 @@
           }
         }
 
+        // WTD totals requirement
         let requiredMin = 0;
         if (workMin > 540) requiredMin = 45;
         else if (workMin > 360) requiredMin = 30;
 
         const neededMin = Math.max(0, requiredMin - breakMinQual);
 
+        // Shift elapsed
         let shiftElapsedMin = 0;
         if (state.shiftStart) {
           const end = state.shiftEnd ?? now();
           shiftElapsedMin = minutesBetween(state.shiftStart, end);
         }
 
+        // 6h interrupt countdown + due times
         const remainingInterruptMin = state.shiftStart ? Math.max(0, INTERRUPT_LIMIT_MIN - contWorkMin) : null;
         const dueAtMs = state.shiftStart ? (now() + (Math.max(0, INTERRUPT_LIMIT_MIN - contWorkMin) * 60000)) : null;
+        const soonAtMs = state.shiftStart ? (now() + (Math.max(0, SOON_AT_MIN - contWorkMin) * 60000)) : null;
 
-        return { segs, workMin, breakMinAll, breakMinQual, contWorkMin, requiredMin, neededMin, shiftElapsedMin, remainingInterruptMin, dueAtMs };
+        // Minimum break ends at (15m) while currently on BREAK
+        let minBreakEndsAtMs = null;
+        if (state.shiftStart && state.currentMode === "BREAK" && currentBreakStartMs) {
+          const remainingTo15 = Math.max(0, QUALIFY_BREAK_MIN - currentBreakMin);
+          minBreakEndsAtMs = now() + (remainingTo15 * 60000);
+        }
+
+        // Conservative planning “must be achieved by” deadlines based on hitting 9:00 total WORK
+        const remainingTo9Work = Math.max(0, 540 - workMin);
+        const work9AtMs = state.shiftStart ? (now() + remainingTo9Work * 60000) : null;
+
+        const need30 = Math.max(0, 30 - breakMinQual);
+        const need45 = Math.max(0, 45 - breakMinQual);
+
+        let wtd30ByMs = null;
+        let wtd45ByMs = null;
+        if (state.shiftStart && work9AtMs) {
+          wtd30ByMs = work9AtMs - need30 * 60000;
+          wtd45ByMs = work9AtMs - need45 * 60000;
+        }
+
+        return {
+          segs,
+          workMin,
+          breakMinAll,
+          breakMinQual,
+          contWorkMin,
+          requiredMin,
+          neededMin,
+          shiftElapsedMin,
+          remainingInterruptMin,
+          dueAtMs,
+          soonAtMs,
+          minBreakEndsAtMs,
+          work9AtMs,
+          wtd30ByMs,
+          wtd45ByMs
+        };
       };
 
       // Manual tools
@@ -798,6 +887,11 @@
         document.body.classList.add(klass);
       };
 
+      const fmtByOrNow = (ms) => {
+        if (!ms) return "—";
+        return (ms <= now()) ? "NOW" : fmtTime(ms);
+      };
+
       const render = () => {
         $("dayChip").textContent = todayLabel();
 
@@ -817,8 +911,8 @@
         }
 
         // Full-mode toggles (keep in sync even if hidden)
-        if ($("audibleOn")) $("audibleOn").checked = !!state.alerts.audible;
-        if ($("vibrateOn")) $("vibrateOn").checked = !!state.alerts.vibrate;
+        $("audibleOn").checked = !!state.alerts.audible;
+        $("vibrateOn").checked = !!state.alerts.vibrate;
 
         const c = compute();
 
@@ -846,8 +940,7 @@
           "No total break requirement yet (but don’t exceed 6h continuous work).";
 
         // Emergency overlay live value + aria
-        const em = $("emContWork");
-        if (em) em.textContent = fmtHM(c.contWorkMin);
+        $("emContWork").textContent = fmtHM(c.contWorkMin);
 
         // ===== Status + smarter alerts + UI state =====
         const status = $("statusText");
@@ -858,7 +951,6 @@
         const interruptSoon = (c.contWorkMin >= SOON_AT_MIN);
         const totalShort = (c.workMin > 360 && c.neededMin > 0);
 
-        // Default to calm
         let uiState = "state-ok";
 
         if (!state.shiftStart) {
@@ -914,33 +1006,66 @@
 
         setBodyState(uiState);
 
-        // Emergency overlay aria-hidden toggling
         const overlay = $("emergencyOverlay");
-        if (overlay) overlay.setAttribute("aria-hidden", uiState === "state-alert" ? "false" : "true");
+        overlay.setAttribute("aria-hidden", uiState === "state-alert" ? "false" : "true");
+
+        // ===== Break time fields =====
+        if (!state.shiftStart || state.shiftEnd) {
+          $("breakSoonAt").textContent = "—";
+          $("breakDueAt").textContent = "—";
+          $("nextBreakBy").textContent = "—";
+          $("minBreakEndsAt").textContent = "—";
+          $("wtd30By").textContent = "—";
+          $("wtd45By").textContent = "—";
+        } else if (onBreakNow) {
+          $("breakSoonAt").textContent = "On break";
+          $("breakDueAt").textContent = "On break";
+          $("nextBreakBy").textContent = "On break";
+
+          // Minimum break ends at (15m) while on break
+          if (!c.minBreakEndsAtMs) {
+            $("minBreakEndsAt").textContent = "—";
+          } else {
+            $("minBreakEndsAt").textContent = (now() >= c.minBreakEndsAtMs) ? "Qualified" : fmtTime(c.minBreakEndsAtMs);
+          }
+
+          // Still show planning deadlines while on break (can be useful)
+          $("wtd30By").textContent = (c.breakMinQual >= 30) ? "Done" : fmtByOrNow(c.wtd30ByMs);
+          $("wtd45By").textContent = (c.breakMinQual >= 45) ? "Done" : fmtByOrNow(c.wtd45ByMs);
+        } else {
+          // Break soon / due / next-by times
+          $("breakSoonAt").textContent = (c.contWorkMin >= SOON_AT_MIN) ? "NOW" : fmtTime(c.soonAtMs);
+          $("breakDueAt").textContent  = (c.contWorkMin >= INTERRUPT_LIMIT_MIN) ? "NOW" : fmtTime(c.dueAtMs);
+          $("nextBreakBy").textContent = (c.contWorkMin >= INTERRUPT_LIMIT_MIN) ? "NOW" : fmtTime(c.dueAtMs);
+
+          $("minBreakEndsAt").textContent = "Not on break";
+
+          // WTD totals “must be achieved by” (conservative planning)
+          $("wtd30By").textContent = (c.breakMinQual >= 30) ? "Done" : fmtByOrNow(c.wtd30ByMs);
+          $("wtd45By").textContent = (c.breakMinQual >= 45) ? "Done" : fmtByOrNow(c.wtd45ByMs);
+        }
 
         // Log table (full view only)
         const tbody = $("logBody");
-        if (tbody) {
-          tbody.innerHTML = "";
-          if (state.view === "full") {
-            const segs = [...state.segments];
-            if (state.shiftStart && !state.shiftEnd && state.currentMode && state.currentFrom) {
-              segs.push({ mode: state.currentMode, from: state.currentFrom, to: now(), open:true });
-            }
-            for (const s of segs) {
-              const m = minutesBetween(s.from, s.to);
-              const qualifies = (s.mode === "BREAK" && m >= QUALIFY_BREAK_MIN) ? "Yes" :
-                                (s.mode === "BREAK") ? "No" : "—";
-              const tr = document.createElement("tr");
-              tr.innerHTML = `
-                <td>${fmtTime(s.from)}</td>
-                <td>${s.open ? "…" : fmtTime(s.to)}</td>
-                <td>${s.mode}</td>
-                <td class="right">${m}</td>
-                <td class="right">${qualifies}</td>
-              `;
-              tbody.appendChild(tr);
-            }
+        tbody.innerHTML = "";
+        if (state.view === "full") {
+          const segs = [...state.segments];
+          if (state.shiftStart && !state.shiftEnd && state.currentMode && state.currentFrom) {
+            segs.push({ mode: state.currentMode, from: state.currentFrom, to: now(), open:true });
+          }
+          for (const s of segs) {
+            const m = minutesBetween(s.from, s.to);
+            const qualifies = (s.mode === "BREAK" && m >= QUALIFY_BREAK_MIN) ? "Yes" :
+                              (s.mode === "BREAK") ? "No" : "—";
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td>${fmtTime(s.from)}</td>
+              <td>${s.open ? "…" : fmtTime(s.to)}</td>
+              <td>${s.mode}</td>
+              <td class="right">${m}</td>
+              <td class="right">${qualifies}</td>
+            `;
+            tbody.appendChild(tr);
           }
         }
       };
@@ -970,7 +1095,6 @@
       load();
       state.alerts = state.alerts || { audible:false, vibrate:false };
       state.view = state.view || "basic";
-
       applyView(state.view);
       render();
       setInterval(render, 5000);
