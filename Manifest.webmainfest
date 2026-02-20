@@ -1,0 +1,15 @@
+{
+  "name": "WTD Tracker",
+  "short_name": "WTD",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#070b14",
+  "theme_color": "#0b1220",
+  "icons": [
+    {
+      "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABcElEQVR4nO2aMU7DQBCEv3wQhJQKQqkQGQ0oQJQqQqkQGQ0oQJQKQqkQGQ0oQJQKQqkQGQ0oQJQKQqkQGQ0oQJQKQqkQGQ1oU2r3m2yQf9kZb2k9v1w0m3b0qQ5j7m0Q0qgGgFQ4b7oG1g7Qk7g3gGgL0m8Y8hGgKp8o9gqgYl3dQH6bXgW0k7g9gHcW0p0g8g0g4j8yq2m1b2o9o3mQJz8m0z4k9lq2pGQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQk4B6xg0s3t3wJwAAAABJRU5ErkJggg==",
+      "sizes": "64x64",
+      "type": "image/png"
+    }
+  ]
+}
