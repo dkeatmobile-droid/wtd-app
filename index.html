@@ -13,42 +13,65 @@
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
     }
     *{box-sizing:border-box}
-    body{margin:0;background:radial-gradient(1200px 900px at 20% -10%, #12224a 0%, var(--bg) 52%);color:var(--text)}
+    body{
+      margin:0;
+      background:radial-gradient(1200px 900px at 20% -10%, #12224a 0%, var(--bg) 52%);
+      color:var(--text)
+    }
+
+    /* Header (more app-like) */
     header{
-      position:sticky;top:0;z-index:10;
-      background:linear-gradient(180deg, rgba(7,11,20,.98) 0%, rgba(7,11,20,.86) 100%);
-      backdrop-filter: blur(10px);
-      border-bottom:1px solid rgba(255,255,255,.06);
+      position:sticky;
+      top:0;
+      z-index:10;
+      background:linear-gradient(180deg,#0f1b38 0%, #0a1429 100%);
+      border-bottom:1px solid rgba(255,255,255,.08);
+      box-shadow:0 6px 20px rgba(0,0,0,.35);
     }
-    .wrap{max-width:960px;margin:0 auto;padding:14px 14px 110px}
-    .topbar{display:flex;gap:12px;align-items:flex-start;justify-content:space-between}
-    h1{margin:0;font-size:16px;letter-spacing:.2px}
-    .sub{margin-top:4px;font-size:12px;color:var(--muted)}
-    .pill{
-      display:inline-flex;align-items:center;gap:8px;
-      padding:8px 10px;border:1px solid rgba(255,255,255,.08);
-      border-radius:999px;background:rgba(11,18,32,.75);
-      box-shadow: var(--shadow);
-      font-size:12px;color:var(--muted);white-space:nowrap;
+    .headerInner{
+      max-width:960px;
+      margin:0 auto;
+      padding:16px 14px 14px;
+      text-align:center;
     }
-    .dot{width:10px;height:10px;border-radius:50%;background:#64748b}
-    .dot.WORK{background:var(--good)}
-    .dot.BREAK{background:var(--bad)}
+    .headerTitle{
+      font-size:18px;
+      font-weight:950;
+      letter-spacing:.3px;
+      margin:0;
+    }
+    .headerSub{
+      margin-top:6px;
+      font-size:12px;
+      color:#9fb2d9;
+    }
+    .headerWarning{
+      margin-top:6px;
+      font-size:11px;
+      color:var(--warn);
+      font-weight:800;
+    }
+
+    .wrap{max-width:960px;margin:0 auto;padding:14px 14px 120px}
     main{padding-top:14px}
     .grid{display:grid;gap:12px}
     .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
     @media(min-width:900px){.cards{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
     .card{
       background:linear-gradient(180deg, rgba(14,24,48,.95) 0%, rgba(11,18,32,.9) 100%);
       border:1px solid rgba(255,255,255,.08);
-      border-radius:16px;padding:12px;
+      border-radius:16px;
+      padding:12px;
       box-shadow: var(--shadow);
     }
-    .card h3{margin:0 0 8px;font-size:12px;color:var(--muted);font-weight:800}
+    .card h3{margin:0 0 8px;font-size:12px;color:var(--muted);font-weight:900}
     .big{font-size:22px;font-weight:950;letter-spacing:.3px}
     .big2{font-size:28px;font-weight:980;letter-spacing:.4px}
     .muted{font-size:12px;color:var(--muted)}
     .row{display:flex;gap:10px;flex-wrap:wrap}
+    .tiny{font-size:11px;color:var(--muted);line-height:1.35}
+
     .btn{
       flex:1 1 150px;
       padding:14px 12px;border-radius:14px;
@@ -63,6 +86,17 @@
     .btn.secondary{background:linear-gradient(180deg, rgba(15,30,60,.85), rgba(12,22,44,.9))}
     .btn.WORK{outline:2px solid rgba(45,212,191,.35)}
     .btn.BREAK{outline:2px solid rgba(251,113,133,.35)}
+
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 10px;border:1px solid rgba(255,255,255,.10);
+      border-radius:999px;background:rgba(7,11,20,.35);
+      font-size:12px;color:var(--muted);
+    }
+    .dot{width:10px;height:10px;border-radius:50%;background:#64748b}
+    .dot.WORK{background:var(--good)}
+    .dot.BREAK{background:var(--bad)}
+
     .banner{
       display:flex;align-items:center;justify-content:space-between;gap:12px;
       padding:12px;border-radius:16px;
@@ -72,21 +106,58 @@
     .statusGood{color:var(--good)}
     .statusWarn{color:var(--warn)}
     .statusBad{color:var(--bad)}
-    details{border:1px solid rgba(255,255,255,.08); border-radius:16px; background:rgba(11,18,32,.35); padding:10px 12px}
-    summary{cursor:pointer; font-weight:900; color:var(--text); list-style:none}
-    summary::-webkit-details-marker{display:none}
+
+    /* Segmented switch */
+    .segWrap{
+      display:flex;
+      justify-content:center;
+      margin-top:12px;
+    }
+    .seg{
+      display:inline-flex;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(7,11,20,.25);
+      border-radius:999px;
+      overflow:hidden;
+      box-shadow: var(--shadow);
+    }
+    .seg button{
+      appearance:none;
+      border:0;
+      background:transparent;
+      color:var(--muted);
+      padding:10px 14px;
+      font-weight:950;
+      letter-spacing:.2px;
+      font-size:13px;
+      min-width:140px;
+    }
+    .seg button.active{
+      color:var(--text);
+      background:linear-gradient(180deg, rgba(20,37,74,.95), rgba(15,30,60,.95));
+    }
+    .seg button:active{transform: translateY(1px)}
+
+    /* Full-view sections are hidden in Basic mode */
+    .fullOnly{display:none}
+    body.full .fullOnly{display:block}
+
+    /* Form controls */
     .field{display:grid; gap:6px; margin-top:10px}
-    label{font-size:12px;color:var(--muted);font-weight:800}
+    label{font-size:12px;color:var(--muted);font-weight:900}
     input, select{
       background:rgba(11,18,32,.85); color:var(--text);
       border:1px solid rgba(255,255,255,.10); border-radius:12px;
       padding:12px; font-size:14px;
     }
+
     table{width:100%;border-collapse:collapse}
     th,td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.08);font-size:12px}
-    th{color:var(--muted);text-align:left;font-weight:900}
+    th{color:var(--muted);text-align:left;font-weight:950}
     td{color:var(--text)}
     .right{text-align:right}
+
+    /* Bottom bar */
     .footer{
       position:fixed;left:0;right:0;bottom:0;z-index:20;
       background:linear-gradient(180deg, rgba(7,11,20,.00) 0%, rgba(7,11,20,.92) 25%, rgba(7,11,20,.98) 100%);
@@ -94,32 +165,29 @@
       backdrop-filter: blur(10px);
     }
     .footer .row{max-width:960px;margin:0 auto}
-    .tiny{font-size:11px;color:var(--muted);line-height:1.35}
-    .toggleRow{display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between}
-    .switch{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
-    .chip{
-      display:inline-flex;align-items:center;gap:6px;
-      padding:6px 10px;border-radius:999px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(7,11,20,.35);
-      font-size:12px;color:var(--muted);
-    }
+    .footerNote{max-width:960px;margin:8px auto 0}
   </style>
 </head>
+
 <body>
 <header>
-  <div class="wrap" style="padding-bottom:12px">
-    <div class="topbar">
-      <div>
-        <h1>WTD Tracker <span class="muted">(This is not a driving hours tracker)</span></h1>
-        <div class="sub">Modes: Work / Break. Qualifying break = any break segment ≥ 15 minutes.</div>
+  <div class="headerInner">
+    <div class="headerTitle">WTD Tracker</div>
+    <div class="headerSub">Work & Break Working Time Directive Tracker</div>
+    <div class="headerWarning">This is a beta app — times must be double checked.</div>
+
+    <div class="segWrap" aria-label="Mode switch">
+      <div class="seg" role="tablist" aria-label="Basic or Full mode">
+        <button id="btnBasic" type="button" class="active" role="tab" aria-selected="true">Basic</button>
+        <button id="btnFull" type="button" role="tab" aria-selected="false">Full</button>
       </div>
-      <div class="pill" id="modePill"><span class="dot" id="modeDot"></span><span id="modeText">Not started</span></div>
     </div>
-    <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap">
-      <span class="chip" id="dayChip"></span>
-      <span class="chip" id="shiftChip">Shift: —</span>
-      <span class="chip" id="viewChip">View: Basic</span>
+
+    <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+      <span class="pill" id="dayChip"></span>
+      <span class="pill" id="shiftChip">Shift: —</span>
+      <span class="pill" id="viewChip">View: Basic</span>
+      <span class="pill" id="modePill"><span class="dot" id="modeDot"></span><span id="modeText">Not started</span></span>
     </div>
   </div>
 </header>
@@ -135,7 +203,7 @@
         <button class="btn secondary" id="btnReset">Reset day</button>
       </div>
       <div class="tiny" style="margin-top:10px">
-        Start shift then use the big buttons at the bottom. If you forgot to tap, use “Full view” → Manual tools.
+        Basic mode: just track Work/Break. Full mode: alerts + log + manual fixes.
       </div>
     </div>
 
@@ -154,7 +222,7 @@
       <div class="card">
         <h3>Working time</h3>
         <div class="big2" id="workTotal">00:00</div>
-        <div class="muted">Total Work mode minutes</div>
+        <div class="muted">Total Work minutes</div>
       </div>
       <div class="card">
         <h3>Qualifying breaks</h3>
@@ -173,79 +241,76 @@
       </div>
     </div>
 
-    <details id="fullView">
-      <summary>
-        <div class="toggleRow">
-          <span>Full view (log + manual tools + alerts)</span>
-          <span class="muted">tap to expand</span>
-        </div>
-      </summary>
-
-      <div style="margin-top:12px" class="grid">
-
-        <div class="card" style="box-shadow:none;border-radius:14px">
-          <h3>Alerts</h3>
-          <div class="switch">
-            <label class="chip"><input type="checkbox" id="audibleOn" /> Audible</label>
-            <label class="chip"><input type="checkbox" id="vibrateOn" /> Vibration</label>
-          </div>
-          <div class="tiny" style="margin-top:8px">
-            iPhone: vibration and background audio can be limited. For sound, you may need to tap the screen once after opening the app.
-          </div>
-        </div>
-
-        <div class="card" style="box-shadow:none;border-radius:14px">
-          <h3>Log (today)</h3>
-          <div class="row" style="margin-bottom:10px">
-            <button class="btn secondary" id="btnUndo">Undo last</button>
-            <button class="btn secondary" id="btnCloseSegment">Close current segment</button>
-          </div>
-          <div style="overflow:auto;border-radius:12px">
-            <table>
-              <thead>
-                <tr>
-                  <th>From</th><th>To</th><th>Mode</th>
-                  <th class="right">Mins</th><th class="right">Qualifies?</th>
-                </tr>
-              </thead>
-              <tbody id="logBody"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="card" style="box-shadow:none;border-radius:14px">
-          <h3>Manual tools (if you forgot to tap)</h3>
-
-          <div class="field">
-            <label>Add a segment</label>
-            <select id="manualMode">
-              <option value="WORK">Work</option>
-              <option value="BREAK">Break</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label>Start time</label>
-            <input type="time" id="manualFrom" />
-          </div>
-
-          <div class="field">
-            <label>End time</label>
-            <input type="time" id="manualTo" />
-          </div>
-
-          <div class="row" style="margin-top:10px">
-            <button class="btn secondary" id="btnAddSegment">Add segment</button>
-            <button class="btn secondary" id="btnEditLast">Overwrite last segment</button>
-          </div>
-
-          <div class="tiny" style="margin-top:8px">
-            “Add segment” inserts a closed block into today’s log. “Overwrite last” replaces the most recent closed segment (useful if you tapped the wrong mode).
-          </div>
-        </div>
-
+    <!-- FULL MODE ONLY -->
+    <div class="card fullOnly">
+      <h3>Alerts</h3>
+      <div class="row">
+        <label class="pill" style="gap:10px;">
+          <input type="checkbox" id="audibleOn" />
+          Audible
+        </label>
+        <label class="pill" style="gap:10px;">
+          <input type="checkbox" id="vibrateOn" />
+          Vibration
+        </label>
       </div>
-    </details>
+      <div class="tiny" style="margin-top:8px">
+        iPhone: vibration and audio can be limited. For sound, you may need to tap once after opening the page.
+      </div>
+    </div>
+
+    <div class="card fullOnly">
+      <h3>Log (today)</h3>
+      <div class="row" style="margin-bottom:10px">
+        <button class="btn secondary" id="btnUndo">Undo last</button>
+        <button class="btn secondary" id="btnCloseSegment">Close current segment</button>
+      </div>
+      <div style="overflow:auto;border-radius:12px">
+        <table>
+          <thead>
+            <tr>
+              <th>From</th><th>To</th><th>Mode</th>
+              <th class="right">Mins</th><th class="right">Qualifies?</th>
+            </tr>
+          </thead>
+          <tbody id="logBody"></tbody>
+        </table>
+      </div>
+      <div class="tiny" style="margin-top:8px">
+        Qualifying break = a BREAK segment of <b>15 minutes or longer</b>. Anything shorter doesn’t qualify.
+      </div>
+    </div>
+
+    <div class="card fullOnly">
+      <h3>Manual tools (if you forgot to tap)</h3>
+
+      <div class="field">
+        <label>Add a segment</label>
+        <select id="manualMode">
+          <option value="WORK">Work</option>
+          <option value="BREAK">Break</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Start time</label>
+        <input type="time" id="manualFrom" />
+      </div>
+
+      <div class="field">
+        <label>End time</label>
+        <input type="time" id="manualTo" />
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <button class="btn secondary" id="btnAddSegment">Add segment</button>
+        <button class="btn secondary" id="btnEditLast">Overwrite last segment</button>
+      </div>
+
+      <div class="tiny" style="margin-top:8px">
+        “Add segment” inserts a closed block into today’s log. “Overwrite last” replaces the most recent closed segment.
+      </div>
+    </div>
 
   </main>
 </div>
@@ -255,14 +320,14 @@
     <button class="btn WORK" id="btnWork">Work</button>
     <button class="btn BREAK" id="btnBreak">Break</button>
   </div>
-  <div class="tiny" style="max-width:960px;margin:8px auto 0">
-    Basic view: just track your day. Full view: log + manual fixes + alerts.
+  <div class="tiny footerNote">
+    Basic mode is clean on purpose. Switch to Full mode for alerts, log, and manual fixes.
   </div>
 </div>
 
 <script>
 (() => {
-  const STORAGE_KEY = "wtd_tracker_work_break_v1";
+  const STORAGE_KEY = "wtd_tracker_work_break_v2_switch";
 
   const QUALIFY_BREAK_MIN = 15;
   const INTERRUPT_LIMIT_MIN = 360; // 6 hours
@@ -291,15 +356,14 @@
   const minutesBetween = (a,b) => Math.max(0, Math.floor((b - a) / 60000));
 
   // State:
-  // segments: closed segments [{mode:"WORK"|"BREAK", from, to}]
-  // current: open segment mode/from
   let state = {
     shiftStart: null,
     shiftEnd: null,
-    currentMode: null,
+    currentMode: null, // "WORK" | "BREAK"
     currentFrom: null,
-    segments: [],
-    alerts: { audible: false, vibrate: false }
+    segments: [], // closed segments: {mode, from, to}
+    alerts: { audible: false, vibrate: false },
+    view: "basic" // "basic" | "full"
   };
 
   const save = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -309,8 +373,8 @@
     try { state = JSON.parse(raw); } catch {}
   };
 
-  // ---- Alerts (beep + vibration) ----
-  let lastAlertKey = ""; // prevent spamming
+  // Alerts
+  let lastAlertKey = "";
   const beep = () => {
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -325,9 +389,7 @@
     } catch {}
   };
   const vibrate = (pattern) => {
-    try {
-      if (navigator.vibrate) navigator.vibrate(pattern);
-    } catch {}
+    try { if (navigator.vibrate) navigator.vibrate(pattern); } catch {}
   };
   const triggerAlert = (key) => {
     if (key === lastAlertKey) return;
@@ -411,8 +473,7 @@
     let breakMinAll = 0;
     let breakMinQual = 0;
 
-    // continuous working minutes since last qualifying break
-    let contWorkMin = 0;
+    let contWorkMin = 0; // continuous WORK since last qualifying break
 
     for (const s of segs) {
       const m = minutesBetween(s.from, s.to);
@@ -423,12 +484,12 @@
         breakMinAll += m;
         if (m >= QUALIFY_BREAK_MIN) {
           breakMinQual += m;
-          contWorkMin = 0; // qualifying break interrupts work
+          contWorkMin = 0;
         }
       }
     }
 
-    // total break requirement by total working time
+    // Total break requirement based on total WORK minutes
     let requiredMin = 0;
     if (workMin > 540) requiredMin = 45;
     else if (workMin > 360) requiredMin = 30;
@@ -436,14 +497,13 @@
 
     const neededMin = Math.max(0, requiredMin - breakMinQual);
 
-    // shift elapsed
+    // Shift elapsed
     let shiftElapsedMin = 0;
     if (state.shiftStart) {
       const end = state.shiftEnd ?? now();
       shiftElapsedMin = minutesBetween(state.shiftStart, end);
     }
 
-    // interrupt countdown
     const remainingInterruptMin = state.shiftStart ? Math.max(0, INTERRUPT_LIMIT_MIN - contWorkMin) : null;
 
     return { segs, workMin, breakMinAll, breakMinQual, contWorkMin, requiredMin, neededMin, shiftElapsedMin, remainingInterruptMin };
@@ -466,25 +526,34 @@
     const toMs = parseTimeToMsToday($("manualTo").value);
     if (!fromMs || !toMs || toMs <= fromMs) return;
 
-    // close open segment first so we don’t mix live mode with manual inserts
+    // Close open segment first for sanity
     if (!state.shiftEnd) closeCurrent(now());
 
     if (overwriteLast && state.segments.length) state.segments.pop();
     state.segments.push({ mode, from: fromMs, to: toMs });
-
-    // keep segments sorted
     state.segments.sort((a,b) => a.from - b.from);
 
     lastAlertKey = "";
     save(); render();
   };
 
+  const applyView = (view) => {
+    state.view = view;
+    if (view === "full") document.body.classList.add("full");
+    else document.body.classList.remove("full");
+
+    $("btnBasic").classList.toggle("active", view === "basic");
+    $("btnFull").classList.toggle("active", view === "full");
+    $("btnBasic").setAttribute("aria-selected", view === "basic" ? "true" : "false");
+    $("btnFull").setAttribute("aria-selected", view === "full" ? "true" : "false");
+
+    $("viewChip").textContent = "View: " + (view === "full" ? "Full" : "Basic");
+    save();
+    render();
+  };
+
   const render = () => {
     $("dayChip").textContent = todayLabel();
-
-    // Full view chip
-    const expanded = $("fullView").open;
-    $("viewChip").textContent = "View: " + (expanded ? "Full" : "Basic");
 
     // Mode pill
     if (!state.shiftStart) {
@@ -501,31 +570,28 @@
       $("shiftChip").textContent = `Shift: ${fmtTime(state.shiftStart)}–…`;
     }
 
-    // Alerts toggles
-    $("audibleOn").checked = !!state.alerts.audible;
-    $("vibrateOn").checked = !!state.alerts.vibrate;
+    // Alerts toggles (only meaningful in full mode, but keep in sync)
+    if ($("audibleOn")) $("audibleOn").checked = !!state.alerts.audible;
+    if ($("vibrateOn")) $("vibrateOn").checked = !!state.alerts.vibrate;
 
     const c = compute();
-
     $("workTotal").textContent = fmtHM(c.workMin);
     $("qBreakTotal").textContent = fmtHM(c.breakMinQual);
     $("shiftElapsed").textContent = fmtHM(c.shiftElapsedMin);
 
-    // Interrupt countdown
     if (!state.shiftStart || state.shiftEnd) {
       $("interruptCountdown").textContent = "—";
     } else {
       $("interruptCountdown").textContent = (c.remainingInterruptMin === 0) ? "DUE NOW" : fmtHM(c.remainingInterruptMin);
     }
 
-    // Break needed
     $("breakNeeded").textContent = fmtHM(c.neededMin);
     $("breakRule").textContent =
       (c.workMin > 540) ? "45 mins required once >9h working" :
       (c.workMin > 360) ? "30 mins required once >6h working" :
       "No total break requirement yet (but don’t exceed 6h continuous work).";
 
-    // Status + alert triggers
+    // Status + alerts
     const status = $("statusText");
     const detail = $("statusDetail");
 
@@ -542,7 +608,7 @@
     } else {
       const interruptDue = (c.contWorkMin >= INTERRUPT_LIMIT_MIN);
       const interruptSoon = (c.contWorkMin >= 330); // 5h30
-      const totalShort = (c.workMin > 360 && c.neededMin > 0); // only meaningful after >6h total work
+      const totalShort = (c.workMin > 360 && c.neededMin > 0);
 
       if (interruptDue) {
         status.textContent = "Break required now (≥15m)";
@@ -553,7 +619,6 @@
         status.textContent = "Break soon";
         status.className = "statusWarn";
         detail.textContent = "Approaching 6:00 continuous working. Plan a ≥15m break.";
-        // optional heads-up alert once
         triggerAlert("interrupt_soon");
       } else if (totalShort) {
         status.textContent = "More qualifying breaks needed";
@@ -564,31 +629,32 @@
         status.textContent = "Compliant so far";
         status.className = "statusGood";
         detail.textContent = "Keep tracking Work/Break. Qualifying break = ≥15 minutes.";
-        // don’t alert
       }
     }
 
-    // Log table (full view)
+    // Log table
     const tbody = $("logBody");
-    tbody.innerHTML = "";
-    if ($("fullView").open) {
-      const segs = [...state.segments];
-      if (state.shiftStart && !state.shiftEnd && state.currentMode && state.currentFrom) {
-        segs.push({ mode: state.currentMode, from: state.currentFrom, to: now(), open:true });
-      }
-      for (const s of segs) {
-        const m = minutesBetween(s.from, s.to);
-        const qualifies = (s.mode === "BREAK" && m >= QUALIFY_BREAK_MIN) ? "Yes" :
-                          (s.mode === "BREAK") ? "No" : "—";
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${fmtTime(s.from)}</td>
-          <td>${s.open ? "…" : fmtTime(s.to)}</td>
-          <td>${s.mode}</td>
-          <td class="right">${m}</td>
-          <td class="right">${qualifies}</td>
-        `;
-        tbody.appendChild(tr);
+    if (tbody) {
+      tbody.innerHTML = "";
+      if (state.view === "full") {
+        const segs = [...state.segments];
+        if (state.shiftStart && !state.shiftEnd && state.currentMode && state.currentFrom) {
+          segs.push({ mode: state.currentMode, from: state.currentFrom, to: now(), open:true });
+        }
+        for (const s of segs) {
+          const m = minutesBetween(s.from, s.to);
+          const qualifies = (s.mode === "BREAK" && m >= QUALIFY_BREAK_MIN) ? "Yes" :
+                            (s.mode === "BREAK") ? "No" : "—";
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${fmtTime(s.from)}</td>
+            <td>${s.open ? "…" : fmtTime(s.to)}</td>
+            <td>${s.mode}</td>
+            <td class="right">${m}</td>
+            <td class="right">${qualifies}</td>
+          `;
+          tbody.appendChild(tr);
+        }
       }
     }
   };
@@ -601,6 +667,7 @@
   $("btnWork").addEventListener("click", () => setMode("WORK"));
   $("btnBreak").addEventListener("click", () => setMode("BREAK"));
 
+  // Full-only controls (exist in DOM always, but hidden in Basic mode)
   $("btnUndo").addEventListener("click", undoLast);
   $("btnCloseSegment").addEventListener("click", () => { closeCurrent(now()); render(); });
 
@@ -610,12 +677,16 @@
   $("audibleOn").addEventListener("change", (e) => { state.alerts.audible = e.target.checked; save(); });
   $("vibrateOn").addEventListener("change", (e) => { state.alerts.vibrate = e.target.checked; save(); });
 
-  $("fullView").addEventListener("toggle", () => { render(); });
+  // Mode switch
+  $("btnBasic").addEventListener("click", () => applyView("basic"));
+  $("btnFull").addEventListener("click", () => applyView("full"));
 
-  // Load + render loop
+  // Init
   load();
-  // Ensure defaults if older save
   state.alerts = state.alerts || { audible:false, vibrate:false };
+  state.view = state.view || "basic";
+  applyView(state.view);
+
   render();
   setInterval(render, 5000);
 })();
