@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
 
-  <!-- ✅ App icons + PWA (your new image pack) -->
+  <!-- ✅ App icons + PWA -->
   <link rel="icon" href="favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="16x16" href="icon-16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
@@ -12,8 +12,8 @@
   <link rel="icon" type="image/png" sizes="64x64" href="icon-64.png">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="manifest" href="site.webmanifest">
-
   <meta name="theme-color" content="#0b1220" />
+
   <title>WTD Tracker</title>
 
   <style>
@@ -281,8 +281,8 @@
     /* ===== Selected mode = GREEN (hard override) ===== */
     #btnWork.modeSelected,
     #btnBreak.modeSelected{
-      background: linear-gradient(180deg, var(--selG1), var(--selG2)) !important;
-      border-color: var(--selGB) !important;
+      background: linear-gradient(180deg, rgba(34,197,94,.60), rgba(34,197,94,.24)) !important;
+      border-color: rgba(34,197,94,.85) !important;
       color: #eafff2 !important;
       box-shadow: 0 14px 30px rgba(34,197,94,.22) !important;
       filter: none !important;
@@ -292,7 +292,7 @@
     }
     #btnWork.modeSelected:focus,
     #btnBreak.modeSelected:focus{
-      outline: 2px solid var(--selGOutline) !important;
+      outline: 2px solid rgba(34,197,94,.75) !important;
       outline-offset: 2px;
     }
 
@@ -731,11 +731,57 @@
 
       const QUALIFY_BREAK_MIN = 15;
       const INTERRUPT_LIMIT_MIN = 360; // 6 hours continuous work
-      const SOON_AT_MIN = 345;         // 5h45 warning
+      const SOON_AT_MIN = 345;         // 5h45 warning (15 mins before)
+      const FIVE_MIN_AT = 355;         // 5h55 warning (5 mins before)
       const ALERT_COOLDOWN_MS = 10 * 60 * 1000;
 
       const $ = (id) => document.getElementById(id);
       const now = () => Date.now();
+
+      // --- Service worker registration (GitHub Pages project site) ---
+      const registerSW = async () => {
+        if (!("serviceWorker" in navigator)) return;
+        try {
+          // sw.js in same folder as index.html
+          await navigator.serviceWorker.register("./sw.js", { scope: "./" });
+        } catch {}
+      };
+
+      const requestNotificationPermission = async () => {
+        if (!("Notification" in window)) return;
+        if (Notification.permission === "default") {
+          try { await Notification.requestPermission(); } catch {}
+        }
+      };
+
+      // Prefer SW notifications (best for PWAs), fallback to page Notification
+      const notify = async (title, body, tag) => {
+        if (!("Notification" in window)) return;
+
+        if (Notification.permission === "default") {
+          try { await Notification.requestPermission(); } catch {}
+        }
+        if (Notification.permission !== "granted") return;
+
+        try {
+          if ("serviceWorker" in navigator) {
+            const reg = await navigator.serviceWorker.getRegistration("./");
+            if (reg && reg.active) {
+              reg.active.postMessage({
+                type: "SHOW_NOTIFICATION",
+                title,
+                body,
+                tag
+              });
+              return;
+            }
+          }
+        } catch {}
+
+        try {
+          new Notification(title, { body, tag, icon: "icon-192.png" });
+        } catch {}
+      };
 
       const fmtHM = (mins) => {
         mins = Math.max(0, Math.floor(mins));
@@ -744,7 +790,7 @@
         return String(h).padStart(2,"0") + ":" + String(m).padStart(2,"0");
       };
 
-      // ✅ 24-hour time (forces 00:00–23:59, no AM/PM)
+      // ✅ 24-hour clock everywhere
       const fmtTime = (ms) => {
         if (!ms) return "—";
         const d = new Date(ms);
@@ -776,7 +822,7 @@
         try { state = JSON.parse(raw); } catch {}
       };
 
-      // ===== Alerts =====
+      // ===== Alerts (existing) =====
       let lastAlertKey = "";
       let lastAlertAt = 0;
 
@@ -806,6 +852,15 @@
         if (state.alerts.audible) beep();
         if (state.alerts.vibrate) vibrate([200, 120, 200]);
       };
+
+      // ===== Notification once-per-event (NEW) =====
+      let firedNotices = {};
+      const fireOnce = (key, fn) => {
+        if (firedNotices[key]) return;
+        firedNotices[key] = true;
+        fn();
+      };
+      const resetNotices = () => { firedNotices = {}; };
 
       // ===== Segment handling =====
       const closeCurrent = (t = now()) => {
@@ -840,6 +895,7 @@
         state.selectedAction = "start";
         lastAlertKey = "";
         lastAlertAt = 0;
+        resetNotices();
         save(); render();
       };
 
@@ -863,6 +919,7 @@
         state.selectedAction = "reset";
         lastAlertKey = "";
         lastAlertAt = 0;
+        resetNotices();
         save(); render();
       };
 
@@ -871,6 +928,7 @@
         state.segments.pop();
         lastAlertKey = "";
         lastAlertAt = 0;
+        resetNotices();
         save(); render();
       };
 
@@ -953,6 +1011,7 @@
 
         lastAlertKey = "";
         lastAlertAt = 0;
+        resetNotices();
         save(); render();
       };
 
@@ -1040,7 +1099,67 @@
         // Emergency overlay live value
         $("emContWork").textContent = fmtHM(c.contWorkMin);
 
-        // Status
+        // ===== NEW: PUSH-LIKE NOTIFICATIONS (via Service Worker) =====
+        const inShift = !!state.shiftStart && !state.shiftEnd;
+        const workingNow = inShift && state.currentMode === "WORK";
+
+        if (workingNow) {
+          // 15 minutes before break due (5:45)
+          if (c.contWorkMin >= SOON_AT_MIN && c.contWorkMin < INTERRUPT_LIMIT_MIN) {
+            fireOnce("notif_break_15", () => notify(
+              "Break due soon",
+              "15 minutes until your 6-hour break is required.",
+              "break-15"
+            ));
+          }
+
+          // 5 minutes before break due (5:55)
+          if (c.contWorkMin >= FIVE_MIN_AT && c.contWorkMin < INTERRUPT_LIMIT_MIN) {
+            fireOnce("notif_break_5", () => notify(
+              "Break due in 5 minutes",
+              "Prepare to take a 15-minute break.",
+              "break-5"
+            ));
+          }
+
+          // Break overdue (6:00)
+          if (c.contWorkMin >= INTERRUPT_LIMIT_MIN) {
+            fireOnce("notif_break_due", () => notify(
+              "Break required now",
+              "You have reached 6 hours of continuous work. Take a 15-minute break.",
+              "break-now"
+            ));
+          }
+        }
+
+        // “15-minute break has been taken”
+        if (c.breakMinQual >= 15) {
+          fireOnce("notif_15_done", () => notify(
+            "Qualifying break completed",
+            "15-minute break recorded.",
+            "break-done-15"
+          ));
+        }
+
+        // “30-minute break for 6–9 hour”
+        if (c.workMin > 360 && c.workMin <= 540 && c.breakMinQual >= 30) {
+          fireOnce("notif_30_done", () => notify(
+            "Break requirement met",
+            "30-minute break requirement satisfied (6–9 hours).",
+            "break-done-30"
+          ));
+        }
+
+        // “45-minute break for over 9 hour”
+        if (c.workMin > 540 && c.breakMinQual >= 45) {
+          fireOnce("notif_45_done", () => notify(
+            "Break requirement met",
+            "45-minute break requirement satisfied (over 9 hours).",
+            "break-done-45"
+          ));
+        }
+
+        // Status (existing)
         const status = $("statusText");
         const detail = $("statusDetail");
 
@@ -1109,13 +1228,12 @@
         overlay.setAttribute("aria-hidden", uiState === "state-alert" ? "false" : "true");
 
         // Green selection on footer buttons
-        const inShift = !!state.shiftStart && !state.shiftEnd;
         $("btnWork").classList.toggle("modeSelected", inShift && state.currentMode === "WORK");
         $("btnBreak").classList.toggle("modeSelected", inShift && state.currentMode === "BREAK");
         $("btnWork").setAttribute("aria-pressed", (inShift && state.currentMode === "WORK") ? "true" : "false");
         $("btnBreak").setAttribute("aria-pressed", (inShift && state.currentMode === "BREAK") ? "true" : "false");
 
-        // Shift control highlight: ONLY the one the user selected
+        // Shift control highlight
         const sel = state.selectedAction;
         $("btnStart").classList.toggle("actionSelected", sel === "start");
         $("btnEnd").classList.toggle("actionSelected", sel === "end");
@@ -1150,7 +1268,7 @@
       };
 
       // Wire up UI
-      $("btnStart").addEventListener("click", startShift);
+      $("btnStart").addEventListener("click", async () => { await requestNotificationPermission(); startShift(); });
       $("btnEnd").addEventListener("click", endShift);
       $("btnReset").addEventListener("click", resetDay);
 
@@ -1171,10 +1289,15 @@
       $("btnFull").addEventListener("click", () => applyView("full"));
 
       // Init
+      registerSW();
       load();
       state.alerts = state.alerts || { audible:false, vibrate:false };
       state.view = state.view || "basic";
       state.selectedAction = state.selectedAction || null;
+
+      // Ask permission early (will only show prompt after a user gesture in some browsers)
+      requestNotificationPermission();
+
       applyView(state.view);
       render();
       setInterval(render, 5000);
