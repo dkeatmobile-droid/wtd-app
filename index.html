@@ -1,3 +1,4 @@
+```html
 <!doctype html>
 <html lang="en">
 <head>
@@ -29,7 +30,7 @@
 
       --radius: 18px;
 
-      /* NEW: green select */
+      /* NEW: green selection */
       --selG1: rgba(34,197,94,.60);
       --selG2: rgba(34,197,94,.24);
       --selGB: rgba(34,197,94,.85);
@@ -222,6 +223,39 @@
 
     .btn.WORK{ outline:2px solid rgba(45,212,191,.28); }
     .btn.BREAK{ outline:2px solid rgba(251,113,133,.28); }
+
+    /* ===== NEW: Shift control selection highlight (Start / End / Reset) ===== */
+    #btnStart.actionSelected,
+    #btnEnd.actionSelected,
+    #btnReset.actionSelected{
+      outline: 3px solid rgba(255,255,255,.28) !important;
+      outline-offset: 3px;
+      box-shadow:
+        0 0 0 6px rgba(255,255,255,.06),
+        0 16px 34px rgba(0,0,0,.28) !important;
+      transform: translateY(-1px);
+    }
+    #btnStart.actionSelected{
+      outline-color: rgba(34,197,94,.85) !important;
+      box-shadow:
+        0 0 0 6px rgba(34,197,94,.14),
+        0 0 22px rgba(34,197,94,.20),
+        0 16px 34px rgba(0,0,0,.28) !important;
+    }
+    #btnEnd.actionSelected{
+      outline-color: rgba(251,191,36,.90) !important;
+      box-shadow:
+        0 0 0 6px rgba(251,191,36,.14),
+        0 0 22px rgba(251,191,36,.20),
+        0 16px 34px rgba(0,0,0,.28) !important;
+    }
+    #btnReset.actionSelected{
+      outline-color: rgba(251,113,133,.90) !important;
+      box-shadow:
+        0 0 0 6px rgba(251,113,133,.14),
+        0 0 22px rgba(251,113,133,.20),
+        0 16px 34px rgba(0,0,0,.28) !important;
+    }
 
     /* ===== NEW: Footer button “inactive grey glass” polish ===== */
     .footer .btn{
@@ -510,9 +544,9 @@
       <section class="card" aria-label="Shift controls">
         <h3>Shift controls</h3>
         <div class="row">
-          <button class="btn primary" id="btnStart">Start shift</button>
-          <button class="btn secondary" id="btnEnd">End shift</button>
-          <button class="btn danger" id="btnReset">Reset day</button>
+          <button class="btn primary" id="btnStart" type="button">Start shift</button>
+          <button class="btn secondary" id="btnEnd" type="button">End shift</button>
+          <button class="btn danger" id="btnReset" type="button">Reset day</button>
         </div>
         <div class="tiny" style="margin-top:10px">
           Basic mode: clean tracking. Full mode: alerts + log + manual fixes.
@@ -594,8 +628,8 @@
       <section class="card fullOnly" aria-label="Log">
         <h3>Log (today)</h3>
         <div class="row" style="margin-bottom:10px">
-          <button class="btn secondary" id="btnUndo">Undo last</button>
-          <button class="btn secondary" id="btnCloseSegment">Close current segment</button>
+          <button class="btn secondary" id="btnUndo" type="button">Undo last</button>
+          <button class="btn secondary" id="btnCloseSegment" type="button">Close current segment</button>
         </div>
         <div style="overflow:auto;border-radius:14px;border:1px solid rgba(255,255,255,.06)">
           <table aria-label="Segments log">
@@ -636,8 +670,8 @@
         </div>
 
         <div class="row" style="margin-top:10px">
-          <button class="btn secondary" id="btnAddSegment">Add segment</button>
-          <button class="btn secondary" id="btnEditLast">Overwrite last segment</button>
+          <button class="btn secondary" id="btnAddSegment" type="button">Add segment</button>
+          <button class="btn secondary" id="btnEditLast" type="button">Overwrite last segment</button>
         </div>
 
         <div class="tiny" style="margin-top:8px">
@@ -675,7 +709,6 @@
 
   <div class="footer" aria-label="Quick actions">
     <div class="row">
-      <!-- CHANGED: both are “secondary glass”; green selection overrides; red only on overdue -->
       <button class="btn WORK secondary" id="btnWork" type="button">Work</button>
       <button class="btn BREAK secondary" id="btnBreak" type="button">Break</button>
     </div>
@@ -1071,10 +1104,21 @@
         const inShift = !!state.shiftStart && !state.shiftEnd;
         $("btnWork").classList.toggle("modeSelected", inShift && state.currentMode === "WORK");
         $("btnBreak").classList.toggle("modeSelected", inShift && state.currentMode === "BREAK");
-
-        // Optional accessibility: reflect current pressed state
         $("btnWork").setAttribute("aria-pressed", (inShift && state.currentMode === "WORK") ? "true" : "false");
         $("btnBreak").setAttribute("aria-pressed", (inShift && state.currentMode === "BREAK") ? "true" : "false");
+
+        // ===== NEW: Shift controls highlight (Start/End/Reset) =====
+        const notStarted = !state.shiftStart;
+        const running = !!state.shiftStart && !state.shiftEnd;
+        const ended = !!state.shiftStart && !!state.shiftEnd;
+
+        $("btnStart").classList.toggle("actionSelected", notStarted);
+        $("btnEnd").classList.toggle("actionSelected", running);
+        $("btnReset").classList.toggle("actionSelected", ended);
+
+        $("btnStart").setAttribute("aria-pressed", notStarted ? "true" : "false");
+        $("btnEnd").setAttribute("aria-pressed", running ? "true" : "false");
+        $("btnReset").setAttribute("aria-pressed", ended ? "true" : "false");
 
         // Log table (full view only)
         const tbody = $("logBody");
@@ -1133,3 +1177,4 @@
   </script>
 </body>
 </html>
+```
