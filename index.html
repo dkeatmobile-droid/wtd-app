@@ -1,9 +1,18 @@
-```html
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <!-- ✅ App icons + PWA (your new image pack) -->
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="16x16" href="icon-16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="icon-48.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="icon-64.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <link rel="manifest" href="site.webmanifest">
+
   <meta name="theme-color" content="#0b1220" />
   <title>WTD Tracker</title>
 
@@ -735,10 +744,11 @@
         return String(h).padStart(2,"0") + ":" + String(m).padStart(2,"0");
       };
 
+      // ✅ 24-hour time (forces 00:00–23:59, no AM/PM)
       const fmtTime = (ms) => {
         if (!ms) return "—";
         const d = new Date(ms);
-        return d.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+        return d.toLocaleTimeString("en-GB", {hour:"2-digit", minute:"2-digit", hour12:false});
       };
 
       const todayLabel = () => {
@@ -756,8 +766,6 @@
         segments: [],      // closed: {mode, from, to}
         alerts: { audible: false, vibrate: false },
         view: "basic",     // "basic" | "full"
-
-        /* NEW: highlight ONLY the last shift-action you clicked */
         selectedAction: null // "start" | "end" | "reset"
       };
 
@@ -829,7 +837,7 @@
         state.currentMode = "WORK";
         state.currentFrom = t;
         state.segments = [];
-        state.selectedAction = "start"; // NEW
+        state.selectedAction = "start";
         lastAlertKey = "";
         lastAlertAt = 0;
         save(); render();
@@ -842,7 +850,7 @@
         state.shiftEnd = t;
         state.currentMode = null;
         state.currentFrom = null;
-        state.selectedAction = "end"; // NEW
+        state.selectedAction = "end";
         save(); render();
       };
 
@@ -852,7 +860,7 @@
         state.currentMode = null;
         state.currentFrom = null;
         state.segments = [];
-        state.selectedAction = "reset"; // NEW
+        state.selectedAction = "reset";
         lastAlertKey = "";
         lastAlertAt = 0;
         save(); render();
@@ -1108,7 +1116,7 @@
         $("btnBreak").setAttribute("aria-pressed", (inShift && state.currentMode === "BREAK") ? "true" : "false");
 
         // Shift control highlight: ONLY the one the user selected
-        const sel = state.selectedAction; // "start" | "end" | "reset" | null
+        const sel = state.selectedAction;
         $("btnStart").classList.toggle("actionSelected", sel === "start");
         $("btnEnd").classList.toggle("actionSelected", sel === "end");
         $("btnReset").classList.toggle("actionSelected", sel === "reset");
@@ -1166,7 +1174,7 @@
       load();
       state.alerts = state.alerts || { audible:false, vibrate:false };
       state.view = state.view || "basic";
-      state.selectedAction = state.selectedAction || null; // NEW
+      state.selectedAction = state.selectedAction || null;
       applyView(state.view);
       render();
       setInterval(render, 5000);
@@ -1174,4 +1182,3 @@
   </script>
 </body>
 </html>
-```
