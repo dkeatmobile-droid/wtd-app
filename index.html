@@ -80,11 +80,18 @@
       font-size:12px;
       color:#9fb2d9;
     }
+
+    /* Turn beta warning into a pill (cleaner) */
     .headerWarning{
-      margin-top:6px;
-      font-size:11px;
+      display:inline-block;
+      margin-top:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(251,191,36,.25);
+      background:rgba(251,191,36,.08);
       color:var(--warn);
-      font-weight:900;
+      font-size:11px;
+      font-weight:950;
     }
 
     /* Segmented switch */
@@ -107,6 +114,7 @@
       letter-spacing:.2px;
       font-size:13px;
       min-width:140px;
+      cursor:pointer;
     }
     .seg button.active{
       color:var(--text);
@@ -145,7 +153,13 @@
     .muted{font-size:12px; color:var(--muted)}
     .tiny{font-size:11px; color:var(--muted); line-height:1.35}
     .big{font-size:22px; font-weight:950; letter-spacing:.3px}
-    .big2{font-size:28px; font-weight:980; letter-spacing:.4px}
+    .big2{
+      font-size:32px;
+      font-weight:980;
+      letter-spacing:.4px
+    }
+    @media(min-width:900px){ .big2{font-size:36px;} }
+
     .row{display:flex; gap:10px; flex-wrap:wrap}
 
     .btn{
@@ -160,11 +174,42 @@
       letter-spacing:.2px;
       box-shadow: 0 10px 25px rgba(0,0,0,.30);
       user-select:none;
+      cursor:pointer;
+      transition: transform .06s ease, filter .15s ease, opacity .15s ease, background .15s ease, border-color .15s ease;
     }
     .btn.secondary{background:linear-gradient(180deg, rgba(15,30,60,.85), rgba(12,22,44,.9))}
+    .btn:hover{ filter: brightness(1.06); }
     .btn:active{transform: translateY(1px)}
     .btn.WORK{outline:2px solid rgba(45,212,191,.35)}
     .btn.BREAK{outline:2px solid rgba(251,113,133,.35)}
+
+    /* ✅ Selected button = whole button changes colour */
+    .btn.is-selected{
+      background: linear-gradient(180deg, rgba(45,212,191,.95), rgba(20,184,166,.92));
+      border-color: rgba(255,255,255,.0);
+      color: #05221f;
+      box-shadow: 0 14px 34px rgba(45,212,191,.22);
+    }
+    /* If BREAK selected, make it red (clearer) */
+    .btn.BREAK.is-selected{
+      background: linear-gradient(180deg, rgba(251,113,133,.95), rgba(225,29,72,.92));
+      color:#fff;
+      box-shadow: 0 14px 34px rgba(251,113,133,.22);
+    }
+
+    /* Disabled state */
+    .btn:disabled{
+      opacity:.45;
+      cursor:not-allowed;
+      filter:saturate(.7);
+      transform:none;
+    }
+
+    /* Reset as danger (optional) */
+    .btn.danger{
+      background: linear-gradient(180deg, rgba(251,113,133,.25), rgba(225,29,72,.18));
+      border-color: rgba(251,113,133,.25);
+    }
 
     .banner{
       display:flex; align-items:center; justify-content:space-between; gap:12px;
@@ -251,7 +296,7 @@
       100% { transform: translateY(-10px); }
     }
 
-    /* ===== Break button glow + expand ===== */
+    /* ===== Break button glow + expand (only when NOT already selected) ===== */
     @keyframes breakGlowSoft {
       0%   { box-shadow: 0 0 0 rgba(251,191,36,0); }
       50%  { box-shadow: 0 0 18px rgba(251,191,36,.45); }
@@ -265,12 +310,12 @@
 
     #btnBreak{ transition: transform .25s ease, box-shadow .25s ease; }
 
-    body.state-warn #btnBreak{
+    body.state-warn #btnBreak:not(.is-selected){
       animation: breakGlowSoft 2.6s ease-in-out infinite;
       transform: scale(1.06);
       box-shadow: 0 8px 24px rgba(251,191,36,.35);
     }
-    body.state-alert #btnBreak{
+    body.state-alert #btnBreak:not(.is-selected){
       animation: breakGlowStrong 1.6s ease-in-out infinite;
       transform: scale(1.12);
       box-shadow: 0 10px 32px rgba(251,113,133,.45);
@@ -348,6 +393,7 @@
       font-size:18px;
       letter-spacing:.6px;
       box-shadow: 0 14px 40px rgba(225,29,72,.35);
+      cursor:pointer;
     }
     .emBreakBtn:active{transform: translateY(1px)}
     .emHint{margin-top:12px; font-size:11px; color:rgba(255,255,255,.70); line-height:1.35;}
@@ -388,7 +434,7 @@
         <div class="row">
           <button class="btn" id="btnStart">Start shift</button>
           <button class="btn secondary" id="btnEnd">End shift</button>
-          <button class="btn secondary" id="btnReset">Reset day</button>
+          <button class="btn secondary danger" id="btnReset">Reset day</button>
         </div>
         <div class="tiny" style="margin-top:10px">
           Basic mode: clean tracking. Full mode: alerts + log + manual fixes.
@@ -571,6 +617,9 @@
       const $ = (id) => document.getElementById(id);
       const now = () => Date.now();
 
+      // ✅ helper for selected class
+      const setSelected = (id, on) => $(id).classList.toggle("is-selected", !!on);
+
       const fmtHM = (mins) => {
         mins = Math.max(0, Math.floor(mins));
         const h = Math.floor(mins / 60);
@@ -732,23 +781,18 @@
           }
         }
 
-        // Per your rule:
-        // - After >6 hours total WORK: 30 mins total qualifying breaks required
-        // - After >9 hours total WORK: an additional 15 mins qualifying break required (i.e., +15)
         let requiredMin = 0;
         if (workMin > 360) requiredMin = 30;
-        if (workMin > 540) requiredMin = 45; // 30 + extra 15 after 9h
+        if (workMin > 540) requiredMin = 45;
 
         const neededMin = Math.max(0, requiredMin - breakMinQual);
 
-        // Shift elapsed
         let shiftElapsedMin = 0;
         if (state.shiftStart) {
           const end = state.shiftEnd ?? now();
           shiftElapsedMin = minutesBetween(state.shiftStart, end);
         }
 
-        // 6h continuous-work rule
         const remainingInterruptMin = state.shiftStart ? Math.max(0, INTERRUPT_LIMIT_MIN - contWorkMin) : null;
 
         return {
@@ -827,7 +871,7 @@
           $("shiftChip").textContent = `Shift: ${fmtTime(state.shiftStart)}–…`;
         }
 
-        // Full-mode toggles (keep in sync even if hidden)
+        // Full-mode toggles
         $("audibleOn").checked = !!state.alerts.audible;
         $("vibrateOn").checked = !!state.alerts.vibrate;
 
@@ -857,7 +901,7 @@
           $("heroHint").textContent = "Qualifying break = BREAK mode for ≥15 minutes. (6:00 continuous-work rule)";
         }
 
-        // Break totals rule text (your 9h rule wording)
+        // Break totals rule text
         if (!state.shiftStart) {
           $("breakRule").textContent = "—";
         } else {
@@ -874,7 +918,7 @@
         // Emergency overlay live value
         $("emContWork").textContent = fmtHM(c.contWorkMin);
 
-        // ===== Status + smarter alerts + UI state =====
+        // ===== Status + alerts + UI state =====
         const status = $("statusText");
         const detail = $("statusDetail");
 
@@ -941,6 +985,21 @@
         // Emergency overlay aria-hidden
         const overlay = $("emergencyOverlay");
         overlay.setAttribute("aria-hidden", uiState === "state-alert" ? "false" : "true");
+
+        // ===== ✅ Selected button states + disabled states =====
+        const shiftRunning = !!state.shiftStart && !state.shiftEnd;
+        const shiftEnded = !!state.shiftStart && !!state.shiftEnd;
+
+        setSelected("btnWork", shiftRunning && state.currentMode === "WORK");
+        setSelected("btnBreak", shiftRunning && state.currentMode === "BREAK");
+
+        setSelected("btnStart", shiftRunning);
+        setSelected("btnEnd", shiftEnded);
+
+        $("btnStart").disabled = shiftRunning;
+        $("btnEnd").disabled = !shiftRunning;
+        $("btnWork").disabled = !shiftRunning;
+        $("btnBreak").disabled = !shiftRunning;
 
         // Log table (full view only)
         const tbody = $("logBody");
