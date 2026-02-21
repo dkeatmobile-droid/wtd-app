@@ -29,6 +29,12 @@
 
       --radius: 18px;
 
+      /* NEW: green select */
+      --selG1: rgba(34,197,94,.60);
+      --selG2: rgba(34,197,94,.24);
+      --selGB: rgba(34,197,94,.85);
+      --selGOutline: rgba(34,197,94,.75);
+
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
     }
     *{ box-sizing:border-box; }
@@ -217,6 +223,43 @@
     .btn.WORK{ outline:2px solid rgba(45,212,191,.28); }
     .btn.BREAK{ outline:2px solid rgba(251,113,133,.28); }
 
+    /* ===== NEW: Footer button “inactive grey glass” polish ===== */
+    .footer .btn{
+      background: rgba(255,255,255,.035);
+      border-color: rgba(255,255,255,.12);
+      box-shadow: 0 10px 22px rgba(0,0,0,.22);
+      backdrop-filter: blur(6px);
+    }
+    .footer .btn:hover{
+      background: rgba(255,255,255,.055);
+      border-color: rgba(255,255,255,.20);
+    }
+
+    /* ===== NEW: Selected mode = GREEN (hard override) ===== */
+    #btnWork.modeSelected,
+    #btnBreak.modeSelected{
+      background: linear-gradient(180deg, var(--selG1), var(--selG2)) !important;
+      border-color: var(--selGB) !important;
+      color: #eafff2 !important;
+      box-shadow: 0 14px 30px rgba(34,197,94,.22) !important;
+      filter: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+      animation: none !important;
+    }
+    #btnWork.modeSelected:focus,
+    #btnBreak.modeSelected:focus{
+      outline: 2px solid var(--selGOutline) !important;
+      outline-offset: 2px;
+    }
+
+    /* ===== NEW: Break button turns RED only when overdue (state-alert) ===== */
+    body.state-alert #btnBreak:not(.modeSelected){
+      background: linear-gradient(180deg, rgba(251,113,133,.65), rgba(225,29,72,.26)) !important;
+      border-color: rgba(251,113,133,.78) !important;
+      color: #fff !important;
+    }
+
     /* Banner (status row) */
     .banner{
       position:relative;
@@ -350,12 +393,13 @@
 
     #btnBreak{ transition: transform .25s ease, box-shadow .25s ease; }
 
-    body.state-warn #btnBreak{
+    /* IMPORTANT: don’t animate/scale if selected (green wins) */
+    body.state-warn #btnBreak:not(.modeSelected){
       animation: breakGlowSoft 2.6s ease-in-out infinite;
       transform: scale(1.04);
       box-shadow: 0 8px 22px rgba(251,191,36,.24);
     }
-    body.state-alert #btnBreak{
+    body.state-alert #btnBreak:not(.modeSelected){
       animation: breakGlowStrong 1.6s ease-in-out infinite;
       transform: scale(1.08);
       box-shadow: 0 10px 28px rgba(251,113,133,.32);
@@ -631,8 +675,9 @@
 
   <div class="footer" aria-label="Quick actions">
     <div class="row">
-      <button class="btn WORK secondary" id="btnWork">Work</button>
-      <button class="btn BREAK primary" id="btnBreak">Break</button>
+      <!-- CHANGED: both are “secondary glass”; green selection overrides; red only on overdue -->
+      <button class="btn WORK secondary" id="btnWork" type="button">Work</button>
+      <button class="btn BREAK secondary" id="btnBreak" type="button">Break</button>
     </div>
     <div class="tiny footerNote">
       Basic is clean. Full has alerts + log + manual fixes.
@@ -1021,6 +1066,15 @@
         // Emergency overlay aria-hidden
         const overlay = $("emergencyOverlay");
         overlay.setAttribute("aria-hidden", uiState === "state-alert" ? "false" : "true");
+
+        // ===== NEW: Green selection on footer buttons (hard override) =====
+        const inShift = !!state.shiftStart && !state.shiftEnd;
+        $("btnWork").classList.toggle("modeSelected", inShift && state.currentMode === "WORK");
+        $("btnBreak").classList.toggle("modeSelected", inShift && state.currentMode === "BREAK");
+
+        // Optional accessibility: reflect current pressed state
+        $("btnWork").setAttribute("aria-pressed", (inShift && state.currentMode === "WORK") ? "true" : "false");
+        $("btnBreak").setAttribute("aria-pressed", (inShift && state.currentMode === "BREAK") ? "true" : "false");
 
         // Log table (full view only)
         const tbody = $("logBody");
