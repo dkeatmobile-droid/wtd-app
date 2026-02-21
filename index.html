@@ -7,102 +7,157 @@
 <title>WTD Tracker</title>
 
 <style>
-:root{
+:root {
   --bg:#070b14;
   --text:#eaf1ff;
   --muted:#a9b7d6;
+  --accent:#00b0ff;
   --good:#2dd4bf;
   --warn:#fbbf24;
   --bad:#fb7185;
-  --shadow: 0 10px 30px rgba(0,0,0,.35);
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  --shadow:0 6px 20px rgba(0,0,0,.25);
+  font-family:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
 }
-*{box-sizing:border-box}
 
-body{
+* { box-sizing:border-box; }
+
+body {
   margin:0;
   color:var(--text);
-  background:radial-gradient(1200px 900px at 20% -10%, #12224a 0%, var(--bg) 52%);
+  background:radial-gradient(1200px 900px at 20% -10%, #13254f 0%, var(--bg) 55%);
 }
 
-header{
+/* HEADER */
+header {
   position:sticky; top:0; z-index:20;
   border-bottom:1px solid rgba(255,255,255,.08);
-  box-shadow:0 6px 20px rgba(0,0,0,.35);
   background:linear-gradient(180deg,#0f1b38 0%, #0a1429 100%);
+  box-shadow:0 4px 16px rgba(0,0,0,.35);
 }
 
-.headerInner{
+.headerInner {
   max-width:960px;
   margin:0 auto;
   padding:16px 14px 14px;
   text-align:center;
 }
-.headerTitle{font-size:18px;font-weight:950;margin:0;}
-.headerSub{margin-top:6px;font-size:12px;color:#9fb2d9;}
 
-.wrap{max-width:960px;margin:0 auto;padding:14px 14px 160px}
-.grid{display:grid; gap:12px}
-
-.card{
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:16px;
-  padding:12px;
-  box-shadow: var(--shadow);
-  background:linear-gradient(180deg, rgba(18,32,66,.58) 0%, rgba(11,18,32,.88) 100%);
+.headerTitle {
+  font-size:20px;
+  font-weight:900;
+  margin:0;
 }
 
-.row{display:flex; gap:10px; flex-wrap:wrap}
+.headerSub {
+  margin-top:4px;
+  font-size:13px;
+  color:#9fb2d9;
+}
 
-.btn{
+/* LAYOUT */
+.wrap {
+  max-width:960px;
+  margin:0 auto;
+  padding:14px 14px 160px;
+}
+
+.grid {
+  display:grid;
+  gap:16px;
+}
+
+/* CARDS */
+.card {
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:14px;
+  padding:20px;
+  background:linear-gradient(180deg, rgba(18,32,66,.55), rgba(11,18,32,.92));
+  box-shadow:var(--shadow);
+}
+
+.sectionTitle {
+  margin:0 0 14px;
+  font-size:18px;
+  font-weight:800;
+  color:var(--muted);
+}
+
+/* TIMER */
+#heroContWork {
+  font-size:64px;
+  font-weight:900;
+  color:var(--accent);
+  text-shadow:0 0 14px rgba(0,176,255,.55);
+  margin:12px 0 6px;
+}
+
+/* BUTTONS */
+.row {
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.btn {
   flex:1 1 150px;
   padding:14px 12px;
-  border-radius:14px;
-  border:1px solid rgba(255,255,255,.10);
-  background:linear-gradient(180deg, rgba(20,37,74,.95), rgba(15,30,60,.95));
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.08);
+  background:linear-gradient(180deg, rgba(20,37,74,.9), rgba(15,30,60,.9));
   color:var(--text);
-  font-weight:900;
+  font-weight:800;
   font-size:15px;
   letter-spacing:.2px;
-  box-shadow: 0 10px 25px rgba(0,0,0,.30);
-  user-select:none;
+  box-shadow:0 6px 16px rgba(0,0,0,.25);
   cursor:pointer;
   transition:.15s ease;
 }
-.btn:hover{filter:brightness(1.08)}
-.btn.secondary{background:linear-gradient(180deg, rgba(15,30,60,.85), rgba(12,22,44,.9))}
-.btn.WORK{outline:2px solid rgba(45,212,191,.35)}
-.btn.BREAK{outline:2px solid rgba(251,113,133,.35)}
 
-.big2{font-size:32px;font-weight:980;letter-spacing:.4px}
-.muted{font-size:12px;color:var(--muted)}
-.big{font-size:22px;font-weight:950}
-.tiny{font-size:11px;color:var(--muted)}
-
-/* ===== SELECTED BUTTON COLOUR ===== */
-.btn.is-selected{
-  background:linear-gradient(180deg, rgba(45,212,191,.95), rgba(20,184,166,.92)) !important;
-  border-color:transparent !important;
-  color:#05221f !important;
-  box-shadow:0 14px 34px rgba(45,212,191,.25) !important;
+.btn:hover {
+  filter:brightness(1.1);
 }
-.btn.BREAK.is-selected{
-  background:linear-gradient(180deg, rgba(251,113,133,.95), rgba(225,29,72,.92)) !important;
+
+.btn.secondary {
+  background:linear-gradient(180deg, rgba(15,30,60,.85), rgba(12,22,44,.9));
+}
+
+.btn.is-selected {
+  background:linear-gradient(180deg, var(--accent), #008ecc) !important;
+  color:#04131a !important;
+  border-color:transparent !important;
+  box-shadow:0 10px 28px rgba(0,176,255,.35) !important;
+}
+
+.btn.WORK.is-selected {
+  background:linear-gradient(180deg, var(--good), #0d9488) !important;
+  color:#041311 !important;
+}
+
+.btn.BREAK.is-selected {
+  background:linear-gradient(180deg, var(--bad), #be123c) !important;
   color:#fff !important;
 }
 
-.footer{
-  position:fixed; left:0; right:0; bottom:0; z-index:25;
-  background:linear-gradient(180deg, rgba(7,11,20,.00) 0%, rgba(7,11,20,.92) 25%, rgba(7,11,20,.98) 100%);
-  padding:12px;
+/* FOOTER */
+.footer {
+  position:fixed;
+  left:0; right:0; bottom:0;
+  z-index:25;
+  background:linear-gradient(180deg, rgba(7,11,20,0) 0%, rgba(7,11,20,.92) 25%, rgba(7,11,20,.98) 100%);
+  padding:14px;
   border-top:1px solid rgba(255,255,255,.06);
-  backdrop-filter: blur(10px);
+  backdrop-filter:blur(10px);
 }
-.footer .row{max-width:960px;margin:0 auto}
+
+.footer .row {
+  max-width:960px;
+  margin:0 auto;
+}
 </style>
 </head>
 
 <body>
+
 <header>
   <div class="headerInner">
     <div class="headerTitle">WTD Tracker</div>
@@ -113,51 +168,51 @@ header{
 <div class="wrap">
   <main class="grid">
 
-    <div class="card">
-      <h3>Shift controls</h3>
+    <!-- SHIFT CONTROLS -->
+    <section class="card">
+      <h3 class="sectionTitle">Shift controls</h3>
       <div class="row">
         <button class="btn" id="btnStart">Start shift</button>
         <button class="btn secondary" id="btnEnd">End shift</button>
         <button class="btn secondary" id="btnReset">Reset day</button>
       </div>
-    </div>
+    </section>
 
-    <div class="card">
-      <h3>Live</h3>
-      <div class="big2" id="heroContWork">00:00</div>
+    <!-- LIVE TIMER -->
+    <section class="card">
+      <h3 class="sectionTitle">Live</h3>
+      <div id="heroContWork">00:00</div>
       <div class="muted">Continuous work</div>
-    </div>
+    </section>
 
   </main>
 </div>
 
-<div class="footer">
+<!-- FOOTER MODE SWITCH -->
+<footer class="footer">
   <div class="row">
     <button class="btn WORK" id="btnWork">Work</button>
     <button class="btn BREAK" id="btnBreak">Break</button>
   </div>
-</div>
+</footer>
 
 <script>
 (() => {
 
   const $ = (id) => document.getElementById(id);
 
-  /* ===== STATE ===== */
   let state = {
-    shiftStart:null,
-    shiftEnd:null,
-    currentMode:null
+    shiftStart: null,
+    shiftEnd: null,
+    currentMode: null
   };
 
-  /* ===== SELECT HELPER ===== */
   function setSelected(id, on){
     const el = $(id);
     if(!el) return;
     el.classList.toggle("is-selected", !!on);
   }
 
-  /* ===== ACTIONS ===== */
   function startShift(){
     if(state.shiftStart && !state.shiftEnd) return;
     state.shiftStart = Date.now();
@@ -186,20 +241,16 @@ header{
     render();
   }
 
-  /* ===== RENDER ===== */
   function render(){
-
     const shiftRunning = !!state.shiftStart && !state.shiftEnd;
     const shiftEnded = !!state.shiftStart && !!state.shiftEnd;
 
-    /* BUTTON COLOUR LOGIC */
     setSelected("btnStart", shiftRunning);
     setSelected("btnEnd", shiftEnded);
     setSelected("btnWork", shiftRunning && state.currentMode === "WORK");
     setSelected("btnBreak", shiftRunning && state.currentMode === "BREAK");
   }
 
-  /* ===== EVENTS ===== */
   $("btnStart").addEventListener("click", startShift);
   $("btnEnd").addEventListener("click", endShift);
   $("btnReset").addEventListener("click", resetDay);
@@ -210,5 +261,6 @@ header{
 
 })();
 </script>
+
 </body>
 </html>
