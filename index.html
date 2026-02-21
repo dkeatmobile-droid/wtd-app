@@ -30,7 +30,7 @@
 
       --radius: 18px;
 
-      /* NEW: green selection */
+      /* Green selection */
       --selG1: rgba(34,197,94,.60);
       --selG2: rgba(34,197,94,.24);
       --selGB: rgba(34,197,94,.85);
@@ -224,7 +224,7 @@
     .btn.WORK{ outline:2px solid rgba(45,212,191,.28); }
     .btn.BREAK{ outline:2px solid rgba(251,113,133,.28); }
 
-    /* ===== NEW: Shift control selection highlight (Start / End / Reset) ===== */
+    /* ===== Shift control selection highlight (ONLY selected one) ===== */
     #btnStart.actionSelected,
     #btnEnd.actionSelected,
     #btnReset.actionSelected{
@@ -257,7 +257,7 @@
         0 16px 34px rgba(0,0,0,.28) !important;
     }
 
-    /* ===== NEW: Footer button “inactive grey glass” polish ===== */
+    /* ===== Footer button “inactive grey glass” polish ===== */
     .footer .btn{
       background: rgba(255,255,255,.035);
       border-color: rgba(255,255,255,.12);
@@ -269,7 +269,7 @@
       border-color: rgba(255,255,255,.20);
     }
 
-    /* ===== NEW: Selected mode = GREEN (hard override) ===== */
+    /* ===== Selected mode = GREEN (hard override) ===== */
     #btnWork.modeSelected,
     #btnBreak.modeSelected{
       background: linear-gradient(180deg, var(--selG1), var(--selG2)) !important;
@@ -287,7 +287,7 @@
       outline-offset: 2px;
     }
 
-    /* ===== NEW: Break button turns RED only when overdue (state-alert) ===== */
+    /* Break button turns RED only when overdue (state-alert) */
     body.state-alert #btnBreak:not(.modeSelected){
       background: linear-gradient(180deg, rgba(251,113,133,.65), rgba(225,29,72,.26)) !important;
       border-color: rgba(251,113,133,.78) !important;
@@ -372,7 +372,7 @@
     .footer .row{ max-width:960px; margin:0 auto; }
     .footerNote{ max-width:960px; margin:8px auto 0; }
 
-    /* Action bar movement + bounce (keep your “urgent” affordance, but less aggressive) */
+    /* Action bar movement + bounce */
     body.state-warn .footer{
       transform: translateY(-4px);
       box-shadow: 0 -10px 26px rgba(0,0,0,.32);
@@ -413,7 +413,7 @@
       100% { transform: translateY(-8px); }
     }
 
-    /* ===== Break button urgency ===== */
+    /* Break urgency */
     @keyframes breakGlowSoft {
       0%   { box-shadow: 0 0 0 rgba(251,191,36,0); }
       50%  { box-shadow: 0 0 18px rgba(251,191,36,.35); }
@@ -427,7 +427,7 @@
 
     #btnBreak{ transition: transform .25s ease, box-shadow .25s ease; }
 
-    /* IMPORTANT: don’t animate/scale if selected (green wins) */
+    /* Don’t animate/scale if selected (green wins) */
     body.state-warn #btnBreak:not(.modeSelected){
       animation: breakGlowSoft 2.6s ease-in-out infinite;
       transform: scale(1.04);
@@ -449,7 +449,7 @@
     body.state-alert #btnWork{ opacity:.45; filter:saturate(.55); transform:scale(.99); }
     body.state-ok #btnWork{ opacity:1; filter:none; transform:none; }
 
-    /* ===== Emergency overlay (only in RED state) ===== */
+    /* ===== Emergency overlay ===== */
     #emergencyOverlay{
       position:fixed;
       inset:0;
@@ -505,7 +505,6 @@
     .emBreakBtn:focus{ outline: 2px solid rgba(255,255,255,.55); outline-offset: 2px; }
     .emHint{ margin-top:12px; font-size:11px; color:rgba(255,255,255,.70); line-height:1.35; }
 
-    /* Reduce motion if requested */
     @media (prefers-reduced-motion: reduce){
       *{ animation: none !important; transition: none !important; }
     }
@@ -756,7 +755,10 @@
         currentFrom: null,
         segments: [],      // closed: {mode, from, to}
         alerts: { audible: false, vibrate: false },
-        view: "basic"      // "basic" | "full"
+        view: "basic",     // "basic" | "full"
+
+        /* NEW: highlight ONLY the last shift-action you clicked */
+        selectedAction: null // "start" | "end" | "reset"
       };
 
       const save = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -827,6 +829,7 @@
         state.currentMode = "WORK";
         state.currentFrom = t;
         state.segments = [];
+        state.selectedAction = "start"; // NEW
         lastAlertKey = "";
         lastAlertAt = 0;
         save(); render();
@@ -839,6 +842,7 @@
         state.shiftEnd = t;
         state.currentMode = null;
         state.currentFrom = null;
+        state.selectedAction = "end"; // NEW
         save(); render();
       };
 
@@ -848,6 +852,7 @@
         state.currentMode = null;
         state.currentFrom = null;
         state.segments = [];
+        state.selectedAction = "reset"; // NEW
         lastAlertKey = "";
         lastAlertAt = 0;
         save(); render();
@@ -890,23 +895,18 @@
           }
         }
 
-        // Per your rule:
-        // - After >6 hours total WORK: 30 mins total qualifying breaks required
-        // - After >9 hours total WORK: an additional 15 mins qualifying break required (i.e., +15)
         let requiredMin = 0;
         if (workMin > 360) requiredMin = 30;
         if (workMin > 540) requiredMin = 45;
 
         const neededMin = Math.max(0, requiredMin - breakMinQual);
 
-        // Shift elapsed
         let shiftElapsedMin = 0;
         if (state.shiftStart) {
           const end = state.shiftEnd ?? now();
           shiftElapsedMin = minutesBetween(state.shiftStart, end);
         }
 
-        // 6h continuous-work rule
         const remainingInterruptMin = state.shiftStart ? Math.max(0, INTERRUPT_LIMIT_MIN - contWorkMin) : null;
 
         return {
@@ -985,7 +985,7 @@
           $("shiftChip").textContent = `Shift: ${fmtTime(state.shiftStart)}–…`;
         }
 
-        // Full-mode toggles (keep in sync even if hidden)
+        // Full-mode toggles
         $("audibleOn").checked = !!state.alerts.audible;
         $("vibrateOn").checked = !!state.alerts.vibrate;
 
@@ -998,7 +998,7 @@
         // Live values
         $("heroContWork").textContent = fmtHM(c.contWorkMin);
 
-        // Next break countdown (6:00 continuous-work rule)
+        // Next break countdown
         if (!state.shiftStart || state.shiftEnd) {
           $("heroNextBreakIn").textContent = "—";
           $("interruptCountdown").textContent = "—";
@@ -1015,7 +1015,7 @@
           $("heroHint").textContent = "Qualifying break = BREAK mode for ≥15 minutes. (6:00 continuous-work rule)";
         }
 
-        // Break totals rule text (your 9h rule wording)
+        // Break totals rule text
         if (!state.shiftStart) {
           $("breakRule").textContent = "—";
         } else {
@@ -1032,7 +1032,7 @@
         // Emergency overlay live value
         $("emContWork").textContent = fmtHM(c.contWorkMin);
 
-        // ===== Status + smarter alerts + UI state =====
+        // Status
         const status = $("statusText");
         const detail = $("statusDetail");
 
@@ -1100,27 +1100,23 @@
         const overlay = $("emergencyOverlay");
         overlay.setAttribute("aria-hidden", uiState === "state-alert" ? "false" : "true");
 
-        // ===== NEW: Green selection on footer buttons (hard override) =====
+        // Green selection on footer buttons
         const inShift = !!state.shiftStart && !state.shiftEnd;
         $("btnWork").classList.toggle("modeSelected", inShift && state.currentMode === "WORK");
         $("btnBreak").classList.toggle("modeSelected", inShift && state.currentMode === "BREAK");
         $("btnWork").setAttribute("aria-pressed", (inShift && state.currentMode === "WORK") ? "true" : "false");
         $("btnBreak").setAttribute("aria-pressed", (inShift && state.currentMode === "BREAK") ? "true" : "false");
 
-        // ===== NEW: Shift controls highlight (Start/End/Reset) =====
-        const notStarted = !state.shiftStart;
-        const running = !!state.shiftStart && !state.shiftEnd;
-        const ended = !!state.shiftStart && !!state.shiftEnd;
+        // Shift control highlight: ONLY the one the user selected
+        const sel = state.selectedAction; // "start" | "end" | "reset" | null
+        $("btnStart").classList.toggle("actionSelected", sel === "start");
+        $("btnEnd").classList.toggle("actionSelected", sel === "end");
+        $("btnReset").classList.toggle("actionSelected", sel === "reset");
+        $("btnStart").setAttribute("aria-pressed", sel === "start" ? "true" : "false");
+        $("btnEnd").setAttribute("aria-pressed", sel === "end" ? "true" : "false");
+        $("btnReset").setAttribute("aria-pressed", sel === "reset" ? "true" : "false");
 
-        $("btnStart").classList.toggle("actionSelected", notStarted);
-        $("btnEnd").classList.toggle("actionSelected", running);
-        $("btnReset").classList.toggle("actionSelected", ended);
-
-        $("btnStart").setAttribute("aria-pressed", notStarted ? "true" : "false");
-        $("btnEnd").setAttribute("aria-pressed", running ? "true" : "false");
-        $("btnReset").setAttribute("aria-pressed", ended ? "true" : "false");
-
-        // Log table (full view only)
+        // Log table
         const tbody = $("logBody");
         tbody.innerHTML = "";
         if (state.view === "full") {
@@ -1145,7 +1141,7 @@
         }
       };
 
-      // ===== Wire up UI =====
+      // Wire up UI
       $("btnStart").addEventListener("click", startShift);
       $("btnEnd").addEventListener("click", endShift);
       $("btnReset").addEventListener("click", resetDay);
@@ -1166,10 +1162,11 @@
       $("btnBasic").addEventListener("click", () => applyView("basic"));
       $("btnFull").addEventListener("click", () => applyView("full"));
 
-      // ===== Init =====
+      // Init
       load();
       state.alerts = state.alerts || { audible:false, vibrate:false };
       state.view = state.view || "basic";
+      state.selectedAction = state.selectedAction || null; // NEW
       applyView(state.view);
       render();
       setInterval(render, 5000);
