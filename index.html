@@ -1,1060 +1,214 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="theme-color" content="#0b1220" />
-  <title>WTD Tracker</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="theme-color" content="#0b1220" />
+<title>WTD Tracker</title>
 
-  <style>
-    :root{
-      --bg:#070b14;
-      --text:#eaf1ff;
-      --muted:#a9b7d6;
-      --good:#2dd4bf;
-      --warn:#fbbf24;
-      --bad:#fb7185;
-      --shadow: 0 10px 30px rgba(0,0,0,.35);
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-    }
-    *{box-sizing:border-box}
+<style>
+:root{
+  --bg:#070b14;
+  --text:#eaf1ff;
+  --muted:#a9b7d6;
+  --good:#2dd4bf;
+  --warn:#fbbf24;
+  --bad:#fb7185;
+  --shadow: 0 10px 30px rgba(0,0,0,.35);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+}
+*{box-sizing:border-box}
 
-    body{
-      margin:0;
-      color:var(--text);
-      background:radial-gradient(1200px 900px at 20% -10%, #12224a 0%, var(--bg) 52%);
-    }
+body{
+  margin:0;
+  color:var(--text);
+  background:radial-gradient(1200px 900px at 20% -10%, #12224a 0%, var(--bg) 52%);
+}
 
-    /* ===== Header ===== */
-    header{
-      position:sticky; top:0; z-index:20;
-      border-bottom:1px solid rgba(255,255,255,.08);
-      box-shadow:0 6px 20px rgba(0,0,0,.35);
-      background:linear-gradient(180deg,#0f1b38 0%, #0a1429 100%);
-    }
+header{
+  position:sticky; top:0; z-index:20;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  box-shadow:0 6px 20px rgba(0,0,0,.35);
+  background:linear-gradient(180deg,#0f1b38 0%, #0a1429 100%);
+}
 
-    /* Dynamic header colours + pulse */
-    body.state-ok header{
-      background:linear-gradient(180deg,#0f1b38 0%, #0a1429 100%);
-      animation:none;
-    }
-    body.state-warn header{
-      background:linear-gradient(180deg,#3a2a07 0%, #1c1405 100%);
-      animation: headerPulseSoft 2.8s ease-in-out infinite;
-    }
-    body.state-alert header{
-      background:linear-gradient(180deg,#3a0712 0%, #1c050a 100%);
-      animation: headerPulseStrong 1.8s ease-in-out infinite;
-    }
+.headerInner{
+  max-width:960px;
+  margin:0 auto;
+  padding:16px 14px 14px;
+  text-align:center;
+}
+.headerTitle{font-size:18px;font-weight:950;margin:0;}
+.headerSub{margin-top:6px;font-size:12px;color:#9fb2d9;}
 
-    .headerInner{
-      max-width:960px;
-      margin:0 auto;
-      padding:16px 14px 14px;
-      text-align:center;
-      position:relative;
-    }
-    .headerInner:after{
-      content:"";
-      position:absolute;
-      left:14px; right:14px; bottom:-1px;
-      height:2px;
-      background:linear-gradient(90deg,
-        transparent,
-        rgba(45,212,191,.65),
-        rgba(251,191,36,.55),
-        rgba(251,113,133,.55),
-        transparent
-      );
-      opacity:.55;
-      border-radius:999px;
-    }
-    .headerTitle{
-      font-size:18px;
-      font-weight:950;
-      letter-spacing:.3px;
-      margin:0;
-    }
-    .headerSub{
-      margin-top:6px;
-      font-size:12px;
-      color:#9fb2d9;
-    }
+.wrap{max-width:960px;margin:0 auto;padding:14px 14px 160px}
+.grid{display:grid; gap:12px}
 
-    /* Turn beta warning into a pill (cleaner) */
-    .headerWarning{
-      display:inline-block;
-      margin-top:8px;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid rgba(251,191,36,.25);
-      background:rgba(251,191,36,.08);
-      color:var(--warn);
-      font-size:11px;
-      font-weight:950;
-    }
+.card{
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:16px;
+  padding:12px;
+  box-shadow: var(--shadow);
+  background:linear-gradient(180deg, rgba(18,32,66,.58) 0%, rgba(11,18,32,.88) 100%);
+}
 
-    /* Segmented switch */
-    .segWrap{display:flex; justify-content:center; margin-top:12px;}
-    .seg{
-      display:inline-flex;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(7,11,20,.25);
-      border-radius:999px;
-      overflow:hidden;
-      box-shadow: var(--shadow);
-    }
-    .seg button{
-      appearance:none;
-      border:0;
-      background:transparent;
-      color:var(--muted);
-      padding:10px 14px;
-      font-weight:950;
-      letter-spacing:.2px;
-      font-size:13px;
-      min-width:140px;
-      cursor:pointer;
-    }
-    .seg button.active{
-      color:var(--text);
-      background:linear-gradient(180deg, rgba(20,37,74,.95), rgba(15,30,60,.95));
-    }
-    .seg button:active{transform: translateY(1px)}
+.row{display:flex; gap:10px; flex-wrap:wrap}
 
-    .pill{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:8px 10px;
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:999px;
-      background:rgba(7,11,20,.35);
-      font-size:12px;
-      color:var(--muted);
-      white-space:nowrap;
-    }
-    .dot{width:10px;height:10px;border-radius:50%;background:#64748b}
-    .dot.WORK{background:var(--good)}
-    .dot.BREAK{background:var(--bad)}
+.btn{
+  flex:1 1 150px;
+  padding:14px 12px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.10);
+  background:linear-gradient(180deg, rgba(20,37,74,.95), rgba(15,30,60,.95));
+  color:var(--text);
+  font-weight:900;
+  font-size:15px;
+  letter-spacing:.2px;
+  box-shadow: 0 10px 25px rgba(0,0,0,.30);
+  user-select:none;
+  cursor:pointer;
+  transition:.15s ease;
+}
+.btn:hover{filter:brightness(1.08)}
+.btn.secondary{background:linear-gradient(180deg, rgba(15,30,60,.85), rgba(12,22,44,.9))}
+.btn.WORK{outline:2px solid rgba(45,212,191,.35)}
+.btn.BREAK{outline:2px solid rgba(251,113,133,.35)}
 
-    /* ===== Layout ===== */
-    .wrap{max-width:960px;margin:0 auto;padding:14px 14px 160px}
-    .grid{display:grid; gap:12px}
-    .cards{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px}
-    @media(min-width:900px){ .cards{grid-template-columns:repeat(4,minmax(0,1fr))} }
+.big2{font-size:32px;font-weight:980;letter-spacing:.4px}
+.muted{font-size:12px;color:var(--muted)}
+.big{font-size:22px;font-weight:950}
+.tiny{font-size:11px;color:var(--muted)}
 
-    .card{
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:16px;
-      padding:12px;
-      box-shadow: var(--shadow);
-      background:linear-gradient(180deg, rgba(18,32,66,.58) 0%, rgba(11,18,32,.88) 100%);
-    }
-    .card h3{margin:0 0 8px; font-size:12px; color:var(--muted); font-weight:950}
-    .muted{font-size:12px; color:var(--muted)}
-    .tiny{font-size:11px; color:var(--muted); line-height:1.35}
-    .big{font-size:22px; font-weight:950; letter-spacing:.3px}
-    .big2{
-      font-size:32px;
-      font-weight:980;
-      letter-spacing:.4px
-    }
-    @media(min-width:900px){ .big2{font-size:36px;} }
+/* ===== SELECTED BUTTON COLOUR ===== */
+.btn.is-selected{
+  background:linear-gradient(180deg, rgba(45,212,191,.95), rgba(20,184,166,.92)) !important;
+  border-color:transparent !important;
+  color:#05221f !important;
+  box-shadow:0 14px 34px rgba(45,212,191,.25) !important;
+}
+.btn.BREAK.is-selected{
+  background:linear-gradient(180deg, rgba(251,113,133,.95), rgba(225,29,72,.92)) !important;
+  color:#fff !important;
+}
 
-    .row{display:flex; gap:10px; flex-wrap:wrap}
-
-    .btn{
-      flex:1 1 150px;
-      padding:14px 12px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.10);
-      background:linear-gradient(180deg, rgba(20,37,74,.95), rgba(15,30,60,.95));
-      color:var(--text);
-      font-weight:950;
-      font-size:15px;
-      letter-spacing:.2px;
-      box-shadow: 0 10px 25px rgba(0,0,0,.30);
-      user-select:none;
-      cursor:pointer;
-      transition: transform .06s ease, filter .15s ease, opacity .15s ease, background .15s ease, border-color .15s ease;
-    }
-    .btn.secondary{background:linear-gradient(180deg, rgba(15,30,60,.85), rgba(12,22,44,.9))}
-    .btn:hover{ filter: brightness(1.06); }
-    .btn:active{transform: translateY(1px)}
-    .btn.WORK{outline:2px solid rgba(45,212,191,.35)}
-    .btn.BREAK{outline:2px solid rgba(251,113,133,.35)}
-
-    /* ✅ Selected button = whole button changes colour */
-    .btn.is-selected{
-      background: linear-gradient(180deg, rgba(45,212,191,.95), rgba(20,184,166,.92));
-      border-color: rgba(255,255,255,.0);
-      color: #05221f;
-      box-shadow: 0 14px 34px rgba(45,212,191,.22);
-    }
-    /* If BREAK selected, make it red (clearer) */
-    .btn.BREAK.is-selected{
-      background: linear-gradient(180deg, rgba(251,113,133,.95), rgba(225,29,72,.92));
-      color:#fff;
-      box-shadow: 0 14px 34px rgba(251,113,133,.22);
-    }
-
-    /* Disabled state */
-    .btn:disabled{
-      opacity:.45;
-      cursor:not-allowed;
-      filter:saturate(.7);
-      transform:none;
-    }
-
-    /* Reset as danger (optional) */
-    .btn.danger{
-      background: linear-gradient(180deg, rgba(251,113,133,.25), rgba(225,29,72,.18));
-      border-color: rgba(251,113,133,.25);
-    }
-
-    .banner{
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
-      padding:12px; border-radius:16px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(11,18,32,.55);
-    }
-    .statusGood{color:var(--good)}
-    .statusWarn{color:var(--warn)}
-    .statusBad{color:var(--bad)}
-
-    /* Full-only sections */
-    .fullOnly{display:none}
-    body.full .fullOnly{display:block}
-
-    /* Forms */
-    .field{display:grid; gap:6px; margin-top:10px}
-    label{font-size:12px; color:var(--muted); font-weight:950}
-    input, select{
-      background:rgba(11,18,32,.85);
-      color:var(--text);
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:12px;
-      padding:12px;
-      font-size:14px;
-    }
-
-    table{width:100%; border-collapse:collapse}
-    th,td{padding:10px 8px; border-bottom:1px solid rgba(255,255,255,.08); font-size:12px}
-    th{color:var(--muted); text-align:left; font-weight:950}
-    td{color:var(--text)}
-    .right{text-align:right}
-
-    /* ===== Footer bar ===== */
-    .footer{
-      position:fixed; left:0; right:0; bottom:0; z-index:25;
-      background:linear-gradient(180deg, rgba(7,11,20,.00) 0%, rgba(7,11,20,.92) 25%, rgba(7,11,20,.98) 100%);
-      padding:12px 12px 14px;
-      border-top:1px solid rgba(255,255,255,.06);
-      backdrop-filter: blur(10px);
-      transition: transform .28s ease, box-shadow .28s ease;
-    }
-    .footer .row{max-width:960px; margin:0 auto}
-    .footerNote{max-width:960px;margin:8px auto 0}
-
-    /* Action bar movement + bounce */
-    body.state-warn .footer{
-      transform: translateY(-6px);
-      box-shadow: 0 -10px 28px rgba(0,0,0,.35);
-      animation: footerBounceSoft .45s ease;
-    }
-    body.state-alert .footer{
-      transform: translateY(-10px);
-      box-shadow: 0 -14px 34px rgba(0,0,0,.45);
-      animation: footerBounceStrong .45s ease;
-    }
-    body.state-ok .footer{
-      transform:none;
-      box-shadow:none;
-      animation:none;
-    }
-
-    /* ===== Animations ===== */
-    @keyframes headerPulseSoft {
-      0%   { box-shadow: 0 0 0 rgba(251,191,36,0.0); }
-      50%  { box-shadow: 0 0 18px rgba(251,191,36,0.35); }
-      100% { box-shadow: 0 0 0 rgba(251,191,36,0.0); }
-    }
-    @keyframes headerPulseStrong {
-      0%   { box-shadow: 0 0 0 rgba(251,113,133,0.0); }
-      50%  { box-shadow: 0 0 26px rgba(251,113,133,0.55); }
-      100% { box-shadow: 0 0 0 rgba(251,113,133,0.0); }
-    }
-    @keyframes footerBounceSoft{
-      0%   { transform: translateY(0); }
-      35%  { transform: translateY(-12px); }
-      60%  { transform: translateY(-6px); }
-      100% { transform: translateY(-6px); }
-    }
-    @keyframes footerBounceStrong{
-      0%   { transform: translateY(0); }
-      35%  { transform: translateY(-18px); }
-      60%  { transform: translateY(-10px); }
-      100% { transform: translateY(-10px); }
-    }
-
-    /* ===== Break button glow + expand (only when NOT already selected) ===== */
-    @keyframes breakGlowSoft {
-      0%   { box-shadow: 0 0 0 rgba(251,191,36,0); }
-      50%  { box-shadow: 0 0 18px rgba(251,191,36,.45); }
-      100% { box-shadow: 0 0 0 rgba(251,191,36,0); }
-    }
-    @keyframes breakGlowStrong {
-      0%   { box-shadow: 0 0 0 rgba(251,113,133,0); }
-      50%  { box-shadow: 0 0 26px rgba(251,113,133,.7); }
-      100% { box-shadow: 0 0 0 rgba(251,113,133,0); }
-    }
-
-    #btnBreak{ transition: transform .25s ease, box-shadow .25s ease; }
-
-    body.state-warn #btnBreak:not(.is-selected){
-      animation: breakGlowSoft 2.6s ease-in-out infinite;
-      transform: scale(1.06);
-      box-shadow: 0 8px 24px rgba(251,191,36,.35);
-    }
-    body.state-alert #btnBreak:not(.is-selected){
-      animation: breakGlowStrong 1.6s ease-in-out infinite;
-      transform: scale(1.12);
-      box-shadow: 0 10px 32px rgba(251,113,133,.45);
-    }
-    body.state-ok #btnBreak{
-      animation:none;
-      transform: scale(1);
-      box-shadow:none;
-    }
-
-    /* Dim WORK button when break is needed */
-    body.state-warn #btnWork{
-      opacity:.55;
-      filter:saturate(.6);
-      transition:all .25s ease;
-    }
-    body.state-alert #btnWork{
-      opacity:.4;
-      filter:saturate(.5);
-      transform:scale(.98);
-      transition:all .25s ease;
-    }
-    body.state-ok #btnWork{
-      opacity:1;
-      filter:none;
-      transform:none;
-    }
-
-    /* ===== Emergency overlay (only in RED state) ===== */
-    #emergencyOverlay{
-      position:fixed;
-      inset:0;
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:18px;
-      z-index:50;
-      background:rgba(0,0,0,.55);
-      backdrop-filter: blur(8px);
-    }
-    body.state-alert #emergencyOverlay{ display:flex; }
-
-    .emCard{
-      width:min(680px, 100%);
-      border-radius:22px;
-      border:1px solid rgba(255,255,255,.12);
-      background:linear-gradient(180deg, rgba(58,7,18,.94) 0%, rgba(28,5,10,.92) 100%);
-      box-shadow: 0 18px 60px rgba(0,0,0,.55);
-      padding:18px;
-    }
-    .emTitle{font-weight:980; letter-spacing:.6px; font-size:18px;}
-    .emSub{margin-top:6px; color:rgba(255,255,255,.78); font-size:13px;}
-    .emStats{
-      margin-top:14px;
-      display:flex;
-      gap:14px;
-      justify-content:space-between;
-      align-items:flex-end;
-      padding:12px;
-      border-radius:16px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(0,0,0,.18);
-    }
-    .emLabel{font-size:12px; color:rgba(255,255,255,.75); font-weight:900;}
-    .emValue{margin-top:4px; font-size:26px; font-weight:980; letter-spacing:.4px;}
-    .emBreakBtn{
-      margin-top:16px;
-      width:100%;
-      padding:18px 16px;
-      border-radius:18px;
-      border:1px solid rgba(255,255,255,.16);
-      background:linear-gradient(180deg, rgba(251,113,133,.95) 0%, rgba(225,29,72,.92) 100%);
-      color:#fff;
-      font-weight:980;
-      font-size:18px;
-      letter-spacing:.6px;
-      box-shadow: 0 14px 40px rgba(225,29,72,.35);
-      cursor:pointer;
-    }
-    .emBreakBtn:active{transform: translateY(1px)}
-    .emHint{margin-top:12px; font-size:11px; color:rgba(255,255,255,.70); line-height:1.35;}
-  </style>
+.footer{
+  position:fixed; left:0; right:0; bottom:0; z-index:25;
+  background:linear-gradient(180deg, rgba(7,11,20,.00) 0%, rgba(7,11,20,.92) 25%, rgba(7,11,20,.98) 100%);
+  padding:12px;
+  border-top:1px solid rgba(255,255,255,.06);
+  backdrop-filter: blur(10px);
+}
+.footer .row{max-width:960px;margin:0 auto}
+</style>
 </head>
 
-<body class="state-ok">
-  <header>
-    <div class="headerInner">
-      <div class="headerTitle">WTD Tracker</div>
-      <div class="headerSub">Work & Break Working Time Directive Tracker</div>
-      <div class="headerWarning">This is a beta app — times must be double checked.</div>
-
-      <div class="segWrap" aria-label="Mode switch">
-        <div class="seg" role="tablist" aria-label="Basic or Full mode">
-          <button id="btnBasic" type="button" class="active" role="tab" aria-selected="true">Basic</button>
-          <button id="btnFull" type="button" role="tab" aria-selected="false">Full</button>
-        </div>
-      </div>
-
-      <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
-        <span class="pill" id="dayChip"></span>
-        <span class="pill" id="shiftChip">Shift: —</span>
-        <span class="pill" id="viewChip">View: Basic</span>
-        <span class="pill" id="modePill">
-          <span class="dot" id="modeDot"></span>
-          <span id="modeText">Not started</span>
-        </span>
-      </div>
-    </div>
-  </header>
-
-  <div class="wrap">
-    <main class="grid">
-
-      <div class="card">
-        <h3>Shift controls</h3>
-        <div class="row">
-          <button class="btn" id="btnStart">Start shift</button>
-          <button class="btn secondary" id="btnEnd">End shift</button>
-          <button class="btn secondary danger" id="btnReset">Reset day</button>
-        </div>
-        <div class="tiny" style="margin-top:10px">
-          Basic mode: clean tracking. Full mode: alerts + log + manual fixes.
-        </div>
-      </div>
-
-      <div class="banner" id="statusBanner">
-        <div>
-          <div><b>Status:</b> <span id="statusText" class="statusGood">Ready</span></div>
-          <div class="muted" id="statusDetail">Start a shift to begin tracking.</div>
-        </div>
-        <div style="text-align:right">
-          <div class="muted">Shift time</div>
-          <div class="big" id="shiftElapsed">00:00</div>
-        </div>
-      </div>
-
-      <!-- Live card with countdown until next break -->
-      <div class="card" id="heroCard">
-        <h3>Live</h3>
-        <div class="row" style="align-items:flex-end">
-          <div style="flex:1 1 240px">
-            <div class="muted">Continuous work</div>
-            <div class="big2" id="heroContWork">00:00</div>
-          </div>
-          <div style="flex:1 1 240px;text-align:right">
-            <div class="muted">Next break in</div>
-            <div class="big2" id="heroNextBreakIn">—</div>
-          </div>
-        </div>
-        <div class="tiny" id="heroHint" style="margin-top:10px">
-          Qualifying break = BREAK mode for ≥15 minutes. (6:00 continuous-work rule)
-        </div>
-      </div>
-
-      <div class="cards">
-        <div class="card">
-          <h3>Working time</h3>
-          <div class="big2" id="workTotal">00:00</div>
-          <div class="muted">Total Work minutes</div>
-        </div>
-
-        <div class="card">
-          <h3>Qualifying breaks</h3>
-          <div class="big2" id="qBreakTotal">00:00</div>
-          <div class="muted">Break segments ≥ 15 min</div>
-        </div>
-
-        <div class="card">
-          <h3>6h interrupt countdown</h3>
-          <div class="big2" id="interruptCountdown">—</div>
-          <div class="muted">5:45 alert on. 6:00 required.</div>
-        </div>
-
-        <div class="card">
-          <h3>Break still needed</h3>
-          <div class="big2" id="breakNeeded">00:00</div>
-          <div class="muted" id="breakRule">—</div>
-        </div>
-      </div>
-
-      <!-- FULL MODE ONLY -->
-      <div class="card fullOnly">
-        <h3>Alerts</h3>
-        <div class="row">
-          <label class="pill" style="gap:10px;">
-            <input type="checkbox" id="audibleOn" />
-            Audible
-          </label>
-          <label class="pill" style="gap:10px;">
-            <input type="checkbox" id="vibrateOn" />
-            Vibration
-          </label>
-        </div>
-        <div class="tiny" style="margin-top:8px">
-          iPhone: vibration/audio can be limited. For sound, you may need to tap once after opening the page.
-        </div>
-      </div>
-
-      <div class="card fullOnly">
-        <h3>Log (today)</h3>
-        <div class="row" style="margin-bottom:10px">
-          <button class="btn secondary" id="btnUndo">Undo last</button>
-          <button class="btn secondary" id="btnCloseSegment">Close current segment</button>
-        </div>
-        <div style="overflow:auto;border-radius:12px">
-          <table>
-            <thead>
-              <tr>
-                <th>From</th><th>To</th><th>Mode</th>
-                <th class="right">Mins</th><th class="right">Qualifies?</th>
-              </tr>
-            </thead>
-            <tbody id="logBody"></tbody>
-          </table>
-        </div>
-        <div class="tiny" style="margin-top:8px">
-          Qualifying break = a BREAK segment of <b>15 minutes or longer</b>.
-        </div>
-      </div>
-
-      <div class="card fullOnly">
-        <h3>Manual tools (if you forgot to tap)</h3>
-
-        <div class="field">
-          <label>Add a segment</label>
-          <select id="manualMode">
-            <option value="WORK">Work</option>
-            <option value="BREAK">Break</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label>Start time</label>
-          <input type="time" id="manualFrom" />
-        </div>
-
-        <div class="field">
-          <label>End time</label>
-          <input type="time" id="manualTo" />
-        </div>
-
-        <div class="row" style="margin-top:10px">
-          <button class="btn secondary" id="btnAddSegment">Add segment</button>
-          <button class="btn secondary" id="btnEditLast">Overwrite last segment</button>
-        </div>
-
-        <div class="tiny" style="margin-top:8px">
-          “Add segment” inserts a closed block. “Overwrite last” replaces the most recent closed segment.
-        </div>
-      </div>
-
-    </main>
+<body>
+<header>
+  <div class="headerInner">
+    <div class="headerTitle">WTD Tracker</div>
+    <div class="headerSub">Work & Break Working Time Directive Tracker</div>
   </div>
+</header>
 
-  <!-- Emergency break overlay (shows only when break is DUE) -->
-  <div id="emergencyOverlay" aria-hidden="true">
-    <div class="emCard" role="dialog" aria-modal="true" aria-label="Break required">
-      <div class="emTitle">BREAK REQUIRED NOW</div>
-      <div class="emSub">You’ve reached 6:00 continuous work.</div>
+<div class="wrap">
+  <main class="grid">
 
-      <div class="emStats">
-        <div>
-          <div class="emLabel">Continuous work</div>
-          <div class="emValue" id="emContWork">00:00</div>
-        </div>
-        <div style="text-align:right">
-          <div class="emLabel">Minimum break</div>
-          <div class="emValue">15 mins</div>
-        </div>
+    <div class="card">
+      <h3>Shift controls</h3>
+      <div class="row">
+        <button class="btn" id="btnStart">Start shift</button>
+        <button class="btn secondary" id="btnEnd">End shift</button>
+        <button class="btn secondary" id="btnReset">Reset day</button>
       </div>
-
-      <button class="emBreakBtn" id="btnEmergencyBreak" type="button">
-        START BREAK
-      </button>
-
-      <div class="emHint">This is a beta app — times must be double checked.</div>
     </div>
+
+    <div class="card">
+      <h3>Live</h3>
+      <div class="big2" id="heroContWork">00:00</div>
+      <div class="muted">Continuous work</div>
+    </div>
+
+  </main>
+</div>
+
+<div class="footer">
+  <div class="row">
+    <button class="btn WORK" id="btnWork">Work</button>
+    <button class="btn BREAK" id="btnBreak">Break</button>
   </div>
-
-  <div class="footer">
-    <div class="row">
-      <button class="btn WORK" id="btnWork">Work</button>
-      <button class="btn BREAK" id="btnBreak">Break</button>
-    </div>
-    <div class="tiny footerNote">
-      Basic is clean. Full has alerts + log + manual fixes.
-    </div>
-  </div>
-
-  <script>
-    (() => {
-      const STORAGE_KEY = "wtd_tracker_work_break_full_v5";
-
-      const QUALIFY_BREAK_MIN = 15;
-      const INTERRUPT_LIMIT_MIN = 360; // 6 hours continuous work
-      const SOON_AT_MIN = 345;         // 5h45 warning
-      const ALERT_COOLDOWN_MS = 10 * 60 * 1000;
-
-      const $ = (id) => document.getElementById(id);
-      const now = () => Date.now();
-
-      // ✅ helper for selected class
-      const setSelected = (id, on) => $(id).classList.toggle("is-selected", !!on);
-
-      const fmtHM = (mins) => {
-        mins = Math.max(0, Math.floor(mins));
-        const h = Math.floor(mins / 60);
-        const m = mins % 60;
-        return String(h).padStart(2,"0") + ":" + String(m).padStart(2,"0");
-      };
-
-      const fmtTime = (ms) => {
-        if (!ms) return "—";
-        const d = new Date(ms);
-        return d.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
-      };
-
-      const todayLabel = () => {
-        const d = new Date();
-        return d.toLocaleDateString([], {weekday:"short", year:"numeric", month:"short", day:"2-digit"});
-      };
-
-      const minutesBetween = (a,b) => Math.max(0, Math.floor((b - a) / 60000));
-
-      let state = {
-        shiftStart: null,
-        shiftEnd: null,
-        currentMode: null, // "WORK" | "BREAK"
-        currentFrom: null,
-        segments: [],      // closed: {mode, from, to}
-        alerts: { audible: false, vibrate: false },
-        view: "basic"      // "basic" | "full"
-      };
-
-      const save = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      const load = () => {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return;
-        try { state = JSON.parse(raw); } catch {}
-      };
-
-      // ===== Alerts =====
-      let lastAlertKey = "";
-      let lastAlertAt = 0;
-
-      const beep = () => {
-        try {
-          const ctx = new (window.AudioContext || window.webkitAudioContext)();
-          const o = ctx.createOscillator();
-          const g = ctx.createGain();
-          o.type = "sine";
-          o.frequency.value = 880;
-          g.gain.value = 0.05;
-          o.connect(g); g.connect(ctx.destination);
-          o.start();
-          setTimeout(() => { o.stop(); ctx.close(); }, 220);
-        } catch {}
-      };
-
-      const vibrate = (pattern) => {
-        try { if (navigator.vibrate) navigator.vibrate(pattern); } catch {}
-      };
-
-      const triggerAlert = (key) => {
-        const t = now();
-        if (key === lastAlertKey && (t - lastAlertAt) < ALERT_COOLDOWN_MS) return;
-        lastAlertKey = key;
-        lastAlertAt = t;
-        if (state.alerts.audible) beep();
-        if (state.alerts.vibrate) vibrate([200, 120, 200]);
-      };
-
-      // ===== Segment handling =====
-      const closeCurrent = (t = now()) => {
-        if (!state.shiftStart || !state.currentMode || !state.currentFrom) return;
-        if (t <= state.currentFrom) return;
-        state.segments.push({ mode: state.currentMode, from: state.currentFrom, to: t });
-        state.currentFrom = t;
-        save();
-      };
-
-      const setMode = (mode) => {
-        if (!state.shiftStart || state.shiftEnd) return;
-        const t = now();
-        if (!state.currentMode) {
-          state.currentMode = mode;
-          state.currentFrom = t;
-          save(); render();
-          return;
-        }
-        closeCurrent(t);
-        state.currentMode = mode;
-        save(); render();
-      };
-
-      const startShift = () => {
-        const t = now();
-        state.shiftStart = t;
-        state.shiftEnd = null;
-        state.currentMode = "WORK";
-        state.currentFrom = t;
-        state.segments = [];
-        lastAlertKey = "";
-        lastAlertAt = 0;
-        save(); render();
-      };
-
-      const endShift = () => {
-        if (!state.shiftStart || state.shiftEnd) return;
-        const t = now();
-        closeCurrent(t);
-        state.shiftEnd = t;
-        state.currentMode = null;
-        state.currentFrom = null;
-        save(); render();
-      };
-
-      const resetDay = () => {
-        state.shiftStart = null;
-        state.shiftEnd = null;
-        state.currentMode = null;
-        state.currentFrom = null;
-        state.segments = [];
-        lastAlertKey = "";
-        lastAlertAt = 0;
-        save(); render();
-      };
-
-      const undoLast = () => {
-        if (!state.segments.length) return;
-        state.segments.pop();
-        lastAlertKey = "";
-        lastAlertAt = 0;
-        save(); render();
-      };
-
-      const getAllSegmentsIncludingOpen = () => {
-        const out = [...state.segments];
-        if (state.shiftStart && !state.shiftEnd && state.currentMode && state.currentFrom) {
-          out.push({ mode: state.currentMode, from: state.currentFrom, to: now(), open:true });
-        }
-        return out;
-      };
-
-      const compute = () => {
-        const segs = getAllSegmentsIncludingOpen();
-
-        let workMin = 0;
-        let breakMinQual = 0;
-        let contWorkMin = 0;
-
-        for (const s of segs) {
-          const m = minutesBetween(s.from, s.to);
-
-          if (s.mode === "WORK") {
-            workMin += m;
-            contWorkMin += m;
-          } else if (s.mode === "BREAK") {
-            if (m >= QUALIFY_BREAK_MIN) {
-              breakMinQual += m;
-              contWorkMin = 0;
-            }
-          }
-        }
-
-        let requiredMin = 0;
-        if (workMin > 360) requiredMin = 30;
-        if (workMin > 540) requiredMin = 45;
-
-        const neededMin = Math.max(0, requiredMin - breakMinQual);
-
-        let shiftElapsedMin = 0;
-        if (state.shiftStart) {
-          const end = state.shiftEnd ?? now();
-          shiftElapsedMin = minutesBetween(state.shiftStart, end);
-        }
-
-        const remainingInterruptMin = state.shiftStart ? Math.max(0, INTERRUPT_LIMIT_MIN - contWorkMin) : null;
-
-        return {
-          workMin,
-          breakMinQual,
-          contWorkMin,
-          requiredMin,
-          neededMin,
-          shiftElapsedMin,
-          remainingInterruptMin
-        };
-      };
-
-      // Manual tools
-      const parseTimeToMsToday = (hhmm) => {
-        if (!hhmm) return null;
-        const [h, m] = hhmm.split(":").map(Number);
-        if (Number.isNaN(h) || Number.isNaN(m)) return null;
-        const d = new Date();
-        d.setHours(h, m, 0, 0);
-        return d.getTime();
-      };
-
-      const addSegmentManual = (overwriteLast=false) => {
-        if (!state.shiftStart) return;
-        const mode = $("manualMode").value;
-        const fromMs = parseTimeToMsToday($("manualFrom").value);
-        const toMs = parseTimeToMsToday($("manualTo").value);
-        if (!fromMs || !toMs || toMs <= fromMs) return;
-
-        if (!state.shiftEnd) closeCurrent(now());
-
-        if (overwriteLast && state.segments.length) state.segments.pop();
-        state.segments.push({ mode, from: fromMs, to: toMs });
-        state.segments.sort((a,b) => a.from - b.from);
-
-        lastAlertKey = "";
-        lastAlertAt = 0;
-        save(); render();
-      };
-
-      const applyView = (view) => {
-        state.view = view;
-        document.body.classList.toggle("full", view === "full");
-
-        $("btnBasic").classList.toggle("active", view === "basic");
-        $("btnFull").classList.toggle("active", view === "full");
-        $("btnBasic").setAttribute("aria-selected", view === "basic" ? "true" : "false");
-        $("btnFull").setAttribute("aria-selected", view === "full" ? "true" : "false");
-
-        $("viewChip").textContent = "View: " + (view === "full" ? "Full" : "Basic");
-        save();
-        render();
-      };
-
-      const setBodyState = (klass) => {
-        document.body.classList.remove("state-ok","state-warn","state-alert");
-        document.body.classList.add(klass);
-      };
-
-      const render = () => {
-        $("dayChip").textContent = todayLabel();
-
-        // Mode pill + shift chip
-        if (!state.shiftStart) {
-          $("modeText").textContent = "Not started";
-          $("modeDot").className = "dot";
-          $("shiftChip").textContent = "Shift: —";
-        } else if (state.shiftEnd) {
-          $("modeText").textContent = "Ended";
-          $("modeDot").className = "dot";
-          $("shiftChip").textContent = `Shift: ${fmtTime(state.shiftStart)}–${fmtTime(state.shiftEnd)}`;
-        } else {
-          $("modeText").textContent = state.currentMode || "—";
-          $("modeDot").className = "dot " + (state.currentMode || "");
-          $("shiftChip").textContent = `Shift: ${fmtTime(state.shiftStart)}–…`;
-        }
-
-        // Full-mode toggles
-        $("audibleOn").checked = !!state.alerts.audible;
-        $("vibrateOn").checked = !!state.alerts.vibrate;
-
-        const c = compute();
-
-        $("workTotal").textContent = fmtHM(c.workMin);
-        $("qBreakTotal").textContent = fmtHM(c.breakMinQual);
-        $("shiftElapsed").textContent = fmtHM(c.shiftElapsedMin);
-
-        // Live values
-        $("heroContWork").textContent = fmtHM(c.contWorkMin);
-
-        // Next break countdown (6:00 continuous-work rule)
-        if (!state.shiftStart || state.shiftEnd) {
-          $("heroNextBreakIn").textContent = "—";
-          $("interruptCountdown").textContent = "—";
-          $("heroHint").textContent = "Start a shift to begin live tracking.";
-        } else if (state.currentMode === "BREAK") {
-          $("heroNextBreakIn").textContent = "On break";
-          $("interruptCountdown").textContent = "On break";
-          $("heroHint").textContent = "Qualifying break = ≥15 minutes.";
-        } else {
-          const rem = c.remainingInterruptMin ?? null;
-          const remText = (rem === 0) ? "DUE NOW" : fmtHM(rem);
-          $("heroNextBreakIn").textContent = remText;
-          $("interruptCountdown").textContent = remText;
-          $("heroHint").textContent = "Qualifying break = BREAK mode for ≥15 minutes. (6:00 continuous-work rule)";
-        }
-
-        // Break totals rule text
-        if (!state.shiftStart) {
-          $("breakRule").textContent = "—";
-        } else {
-          if (c.workMin > 540) {
-            $("breakRule").textContent = "After 9h total WORK: +15 mins qualifying break required (total 45).";
-          } else if (c.workMin > 360) {
-            $("breakRule").textContent = "After 6h total WORK: 30 mins qualifying break required.";
-          } else {
-            $("breakRule").textContent = "No total-break target yet (but don’t exceed 6h continuous work).";
-          }
-        }
-        $("breakNeeded").textContent = fmtHM(c.neededMin);
-
-        // Emergency overlay live value
-        $("emContWork").textContent = fmtHM(c.contWorkMin);
-
-        // ===== Status + alerts + UI state =====
-        const status = $("statusText");
-        const detail = $("statusDetail");
-
-        const onBreakNow = (state.currentMode === "BREAK");
-        const interruptDue = (c.contWorkMin >= INTERRUPT_LIMIT_MIN);
-        const interruptSoon = (c.contWorkMin >= SOON_AT_MIN);
-        const totalShort = (c.workMin > 360 && c.neededMin > 0);
-
-        let uiState = "state-ok";
-
-        if (!state.shiftStart) {
-          status.textContent = "Ready";
-          status.className = "statusGood";
-          detail.textContent = "Start a shift to begin tracking.";
-          uiState = "state-ok";
-          lastAlertKey = "";
-          lastAlertAt = 0;
-        }
-        else if (state.shiftEnd) {
-          status.textContent = "Shift ended";
-          status.className = "statusGood";
-          detail.textContent = "Done.";
-          uiState = "state-ok";
-          lastAlertKey = "";
-          lastAlertAt = 0;
-        }
-        else if (onBreakNow) {
-          status.textContent = "On break";
-          status.className = "statusGood";
-          detail.textContent = "Qualifying break = ≥15 minutes.";
-          uiState = "state-ok";
-        }
-        else if (interruptDue) {
-          status.textContent = "Break required now (≥15m)";
-          status.className = "statusBad";
-          detail.textContent = "You’ve reached 6:00 continuous working time.";
-          uiState = "state-alert";
-          triggerAlert("interrupt_due");
-        }
-        else if (interruptSoon) {
-          status.textContent = "Break soon";
-          status.className = "statusWarn";
-          detail.textContent = "5:45 continuous work — plan a ≥15m break.";
-          uiState = "state-warn";
-          triggerAlert("interrupt_soon");
-        }
-        else if (totalShort) {
-          status.textContent = "More qualifying breaks needed";
-          status.className = "statusWarn";
-          detail.textContent = "You are short on total qualifying breaks for your total WORK time.";
-          uiState = "state-warn";
-          const band = (c.workMin > 540) ? "45" : "30";
-          triggerAlert("total_short_" + band);
-        }
-        else {
-          status.textContent = "Compliant so far";
-          status.className = "statusGood";
-          detail.textContent = "Tracking OK.";
-          uiState = "state-ok";
-        }
-
-        setBodyState(uiState);
-
-        // Emergency overlay aria-hidden
-        const overlay = $("emergencyOverlay");
-        overlay.setAttribute("aria-hidden", uiState === "state-alert" ? "false" : "true");
-
-        // ===== ✅ Selected button states + disabled states =====
-        const shiftRunning = !!state.shiftStart && !state.shiftEnd;
-        const shiftEnded = !!state.shiftStart && !!state.shiftEnd;
-
-        setSelected("btnWork", shiftRunning && state.currentMode === "WORK");
-        setSelected("btnBreak", shiftRunning && state.currentMode === "BREAK");
-
-        setSelected("btnStart", shiftRunning);
-        setSelected("btnEnd", shiftEnded);
-
-        $("btnStart").disabled = shiftRunning;
-        $("btnEnd").disabled = !shiftRunning;
-        $("btnWork").disabled = !shiftRunning;
-        $("btnBreak").disabled = !shiftRunning;
-
-        // Log table (full view only)
-        const tbody = $("logBody");
-        tbody.innerHTML = "";
-        if (state.view === "full") {
-          const segs = [...state.segments];
-          if (state.shiftStart && !state.shiftEnd && state.currentMode && state.currentFrom) {
-            segs.push({ mode: state.currentMode, from: state.currentFrom, to: now(), open:true });
-          }
-          for (const s of segs) {
-            const m = minutesBetween(s.from, s.to);
-            const qualifies = (s.mode === "BREAK" && m >= QUALIFY_BREAK_MIN) ? "Yes" :
-                              (s.mode === "BREAK") ? "No" : "—";
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-              <td>${fmtTime(s.from)}</td>
-              <td>${s.open ? "…" : fmtTime(s.to)}</td>
-              <td>${s.mode}</td>
-              <td class="right">${m}</td>
-              <td class="right">${qualifies}</td>
-            `;
-            tbody.appendChild(tr);
-          }
-        }
-      };
-
-      // ===== Wire up UI =====
-      $("btnStart").addEventListener("click", startShift);
-      $("btnEnd").addEventListener("click", endShift);
-      $("btnReset").addEventListener("click", resetDay);
-
-      $("btnWork").addEventListener("click", () => setMode("WORK"));
-      $("btnBreak").addEventListener("click", () => setMode("BREAK"));
-      $("btnEmergencyBreak").addEventListener("click", () => setMode("BREAK"));
-
-      $("btnUndo").addEventListener("click", undoLast);
-      $("btnCloseSegment").addEventListener("click", () => { closeCurrent(now()); render(); });
-
-      $("btnAddSegment").addEventListener("click", () => addSegmentManual(false));
-      $("btnEditLast").addEventListener("click", () => addSegmentManual(true));
-
-      $("audibleOn").addEventListener("change", (e) => { state.alerts.audible = e.target.checked; save(); });
-      $("vibrateOn").addEventListener("change", (e) => { state.alerts.vibrate = e.target.checked; save(); });
-
-      $("btnBasic").addEventListener("click", () => applyView("basic"));
-      $("btnFull").addEventListener("click", () => applyView("full"));
-
-      // ===== Init =====
-      load();
-      state.alerts = state.alerts || { audible:false, vibrate:false };
-      state.view = state.view || "basic";
-      applyView(state.view);
-      render();
-      setInterval(render, 5000);
-    })();
-  </script>
+</div>
+
+<script>
+(() => {
+
+  const $ = (id) => document.getElementById(id);
+
+  /* ===== STATE ===== */
+  let state = {
+    shiftStart:null,
+    shiftEnd:null,
+    currentMode:null
+  };
+
+  /* ===== SELECT HELPER ===== */
+  function setSelected(id, on){
+    const el = $(id);
+    if(!el) return;
+    el.classList.toggle("is-selected", !!on);
+  }
+
+  /* ===== ACTIONS ===== */
+  function startShift(){
+    if(state.shiftStart && !state.shiftEnd) return;
+    state.shiftStart = Date.now();
+    state.shiftEnd = null;
+    state.currentMode = "WORK";
+    render();
+  }
+
+  function endShift(){
+    if(!state.shiftStart || state.shiftEnd) return;
+    state.shiftEnd = Date.now();
+    state.currentMode = null;
+    render();
+  }
+
+  function resetDay(){
+    state.shiftStart = null;
+    state.shiftEnd = null;
+    state.currentMode = null;
+    render();
+  }
+
+  function setMode(mode){
+    if(!state.shiftStart || state.shiftEnd) return;
+    state.currentMode = mode;
+    render();
+  }
+
+  /* ===== RENDER ===== */
+  function render(){
+
+    const shiftRunning = !!state.shiftStart && !state.shiftEnd;
+    const shiftEnded = !!state.shiftStart && !!state.shiftEnd;
+
+    /* BUTTON COLOUR LOGIC */
+    setSelected("btnStart", shiftRunning);
+    setSelected("btnEnd", shiftEnded);
+    setSelected("btnWork", shiftRunning && state.currentMode === "WORK");
+    setSelected("btnBreak", shiftRunning && state.currentMode === "BREAK");
+  }
+
+  /* ===== EVENTS ===== */
+  $("btnStart").addEventListener("click", startShift);
+  $("btnEnd").addEventListener("click", endShift);
+  $("btnReset").addEventListener("click", resetDay);
+  $("btnWork").addEventListener("click", ()=>setMode("WORK"));
+  $("btnBreak").addEventListener("click", ()=>setMode("BREAK"));
+
+  render();
+
+})();
+</script>
 </body>
 </html>
