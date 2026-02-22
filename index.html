@@ -8,37 +8,32 @@
 
   <style>
     :root{
-      /* Background (light grey so glass pops) */
       --page:#e5e7eb;
 
-      /* Text */
       --text:#0f172a;
       --muted:#64748b;
 
-      /* Header */
       --header1:#0b1220;
       --header2:#0f172a;
       --header3:#111827;
 
-      /* iOS glass */
-      --glass1: rgba(255,255,255,.72);
+      --glass1: rgba(255,255,255,.74);
       --glass2: rgba(255,255,255,.56);
       --glassBorder: rgba(255,255,255,.62);
+
+      --shadow: 0 18px 44px rgba(2,6,23,.14);
       --shadowSoft: 0 12px 28px rgba(2,6,23,.10);
 
-      /* Segmented control */
       --segBg: rgba(255,255,255,.55);
       --segBorder: rgba(15,23,42,.08);
       --segThumb: rgba(255,255,255,.92);
       --segText: rgba(15,23,42,.70);
       --segTextOn: rgba(15,23,42,.98);
 
-      /* Buttons */
       --primary:#0f172a;
       --running:#0b3b1f;
       --danger:#b00020;
 
-      /* Compliance lamps */
       --ok:#16a34a;
       --warn:#f59e0b;
       --due:#ef4444;
@@ -47,7 +42,7 @@
       --radiusSheet: 28px;
       --radius: 18px;
 
-      --rowH: 42px; /* label rows aligned with lamps */
+      --rowH: 42px;
     }
 
     *{ box-sizing:border-box; }
@@ -66,10 +61,11 @@
       display:flex;
       flex-direction:column;
       overflow:hidden;
+      position:relative;
     }
 
     /* =========================
-       Header (more usable space)
+       Header
        ========================= */
     header{
       padding: calc(12px + env(safe-area-inset-top)) 14px 12px;
@@ -79,16 +75,53 @@
         radial-gradient(700px 240px at 80% 10%, rgba(255,255,255,.08), rgba(255,255,255,0) 55%),
         linear-gradient(180deg, var(--header1), var(--header2) 48%, var(--header3));
       box-shadow: 0 14px 34px rgba(2,6,23,.18);
+      position:relative;
+      z-index:3;
     }
 
-    .headerGrid{
-      display:grid;
-      grid-template-columns: auto 1fr;
+    .headerRow{
+      display:flex;
       gap:12px;
-      align-items:start;
+      align-items:flex-start;
     }
 
-    /* left: traffic light + labels */
+    .brand{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      padding-top:2px;
+      min-width:0;
+      flex:1;
+    }
+    .brand .title{
+      font-weight:950;
+      font-size:15px;
+      line-height:1.1;
+      letter-spacing:.2px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .brand .status{
+      font-size:12px;
+      font-weight:850;
+      opacity:.86;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .betaNote{
+      margin-top:8px;
+      font-size:11px;
+      line-height:1.25;
+      opacity:.86;
+    }
+    .betaNote strong{ font-weight:950; }
+
+    /* =========================
+       Traffic light
+       ========================= */
     .signalWrap{
       display:flex;
       align-items:flex-start;
@@ -142,8 +175,8 @@
       display:grid;
       grid-template-rows: var(--rowH) var(--rowH) var(--rowH);
       gap:8px;
-      min-width: 140px;
-      max-width: 170px;
+      min-width: 120px;
+      max-width: 150px;
     }
     .sigLabel{
       height: var(--rowH);
@@ -156,7 +189,7 @@
       opacity:0;
       transform: translateX(-4px);
       transition: opacity .16s ease, transform .16s ease;
-      white-space:normal;         /* allow wrapping */
+      white-space:normal;
       line-height:1.15;
     }
 
@@ -183,96 +216,84 @@
       box-shadow: inset 0 12px 18px rgba(0,0,0,.45), 0 0 18px rgba(239,68,68,.45);
     }
 
-    /* right: brand + stats */
-    .rightHead{
+    /* =========================
+       Dynamic Island (below header)
+       ========================= */
+    .islandWrap{
+      position:relative;
+      z-index:2;
+      padding: 10px 12px 0;
+      margin-top: -8px; /* tighter to header */
       display:flex;
-      flex-direction:column;
-      gap:10px;
-      min-width: 0;
+      justify-content:center;
     }
 
-    .brandLine{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:10px;
-      min-width:0;
-    }
+    /* iOS Dynamic Island-like pill */
+    .dynamicIsland{
+      width: min(520px, calc(100vw - 24px));
+      border-radius: 999px;
+      padding: 10px 14px;
 
-    .brand{
-      display:flex;
-      flex-direction:column;
-      gap:4px;
-      min-width:0;
-    }
-    .brand .title{
-      font-weight:950;
-      font-size:15px;
-      line-height:1.1;
-      letter-spacing:.2px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      max-width: 100%;
-    }
-    .brand .status{
-      font-size:12px;
-      font-weight:850;
-      opacity:.86;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      max-width: 100%;
-    }
-
-    .betaNote{
-      font-size:11px;
-      line-height:1.25;
-      opacity:.86;
-    }
-    .betaNote strong{ font-weight:950; }
-
-    /* Header stats glass strip */
-    .headStats{
-      display:grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap:8px;
-      padding:10px;
-      border-radius: 18px;
-      background: rgba(255,255,255,.10);
+      /* dark glass pill like Dynamic Island */
+      background:
+        radial-gradient(220px 70px at 25% 15%, rgba(255,255,255,.16), rgba(255,255,255,0) 60%),
+        radial-gradient(260px 90px at 75% 30%, rgba(255,255,255,.10), rgba(255,255,255,0) 70%),
+        linear-gradient(180deg, rgba(30,41,59,.88), rgba(15,23,42,.92));
       border: 1px solid rgba(255,255,255,.14);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      box-shadow: 0 12px 28px rgba(0,0,0,.16);
+
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+
+      box-shadow:
+        0 18px 44px rgba(2,6,23,.26),
+        inset 0 1px 0 rgba(255,255,255,.14),
+        inset 0 -14px 30px rgba(0,0,0,.30);
+
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:12px;
+      align-items:center;
+      position:relative;
+      overflow:hidden;
     }
-    .stat{
-      min-width:0;
+
+    .dynamicIsland::after{
+      content:"";
+      position:absolute;
+      top:-40px; left:-80px;
+      width:220px; height:140px;
+      background: radial-gradient(circle at 40% 40%, rgba(255,255,255,.18), rgba(255,255,255,0) 70%);
+      transform: rotate(-12deg);
+      pointer-events:none;
     }
-    .stat .k{
+
+    .dStat{ min-width:0; }
+    .dStat .k{
       font-size:10px;
-      font-weight:900;
-      opacity:.78;
-      letter-spacing:.2px;
+      font-weight:950;
+      letter-spacing:.25px;
+      color: rgba(255,255,255,.72);
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
     }
-    .stat .v{
+    .dStat .v{
       margin-top:2px;
       font-size:13px;
       font-weight:1000;
+      color: rgba(255,255,255,.96);
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
     }
 
     /* =========================
-       Main + iOS sheet
+       Main sheet
        ========================= */
     main{
       flex:1;
       min-height:0;
-      padding: 12px;
+      padding: 10px 12px 12px;
       padding-bottom: calc(12px + env(safe-area-inset-bottom));
       overflow:hidden;
     }
@@ -338,24 +359,6 @@
       background: rgba(255,255,255,.78);
     }
 
-    .bigActions{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:10px;
-    }
-    .btn.big{
-      padding: 14px 10px;
-      font-size: 16px;
-      border-radius: 18px;
-      box-shadow: 0 18px 40px rgba(2,6,23,.10);
-    }
-    .btn.big.isActive{
-      background: rgba(15,23,42,.92);
-      color:#fff;
-      border-color: rgba(255,255,255,.16);
-      box-shadow: 0 18px 44px rgba(2,6,23,.20);
-    }
-
     /* Segmented */
     .strip{
       padding: 10px;
@@ -413,6 +416,25 @@
       line-height:1.1;
       text-align:right;
       white-space:nowrap;
+    }
+
+    /* Work/Rest */
+    .bigActions{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    .btn.big{
+      padding: 14px 10px;
+      font-size: 16px;
+      border-radius: 18px;
+      box-shadow: 0 18px 40px rgba(2,6,23,.10);
+    }
+    .btn.big.isActive{
+      background: rgba(15,23,42,.92);
+      color:#fff;
+      border-color: rgba(255,255,255,.16);
+      box-shadow: 0 18px 44px rgba(2,6,23,.20);
     }
 
     /* Cards */
@@ -522,13 +544,13 @@
       -webkit-backdrop-filter: blur(12px);
     }
     .pill.work{background: rgba(59,130,246,.12); border-color: rgba(59,130,246,.22);}
-    .pill.break{background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.22);}
+    .pill.rest{background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.22);}
     .pill.qual{background: rgba(16,185,129,.12); border-color: rgba(16,185,129,.22);}
     .subtle{font-size:12px; color: rgba(15,23,42,.55);}
 
-    /* iPhone 14 fit */
+    /* iPhone fit */
     @media (max-height: 720px){
-      main{padding:10px; padding-bottom: calc(10px + env(safe-area-inset-bottom));}
+      main{padding: 8px 10px 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom));}
       .sheet{padding:10px;}
       .controlsRow,.bigActions,.miniGrid{gap:8px;}
       .btn{padding:10px 9px;}
@@ -538,9 +560,10 @@
       .lamp{width:38px; height:38px;}
       .signalBox{width:60px; padding:7px;}
       :root{ --rowH: 38px; }
-      .signalTextGrid{min-width:120px; max-width:140px;}
-      .headStats{padding:8px;}
-      .stat .v{font-size:12px;}
+      .signalTextGrid{min-width:110px; max-width:130px;}
+      .islandWrap{padding: 8px 10px 0; margin-top:-8px;}
+      .dynamicIsland{padding:8px 12px; gap:10px;}
+      .dStat .v{font-size:12px;}
     }
 
     @media (max-height: 690px){
@@ -554,8 +577,7 @@
 <div class="app">
 
   <header>
-    <div class="headerGrid">
-      <!-- Left: Traffic -->
+    <div class="headerRow">
       <div id="signalWrap" class="signalWrap" data-state="off" aria-label="Compliance indicator">
         <div class="signalBox" aria-hidden="true">
           <div class="signal">
@@ -566,43 +588,41 @@
         </div>
 
         <div class="signalTextGrid" aria-hidden="true">
-          <div class="sigLabel red">STOP — break required</div>
-          <div class="sigLabel amber">Break upcoming</div>
+          <div class="sigLabel red">STOP — rest required</div>
+          <div class="sigLabel amber">Rest upcoming</div>
           <div class="sigLabel green">Compliant</div>
         </div>
       </div>
 
-      <!-- Right: Brand + Stats -->
-      <div class="rightHead">
-        <div class="brandLine">
-          <div class="brand">
-            <div class="title">WTD Working Time Tracker</div>
-            <div id="headerStatus" class="status">Ready</div>
-          </div>
-        </div>
-
-        <div class="headStats" aria-label="Shift timing summary">
-          <div class="stat">
-            <div class="k">Shift start</div>
-            <div id="hdrStart" class="v">—</div>
-          </div>
-          <div class="stat">
-            <div class="k">Duration</div>
-            <div id="hdrDuration" class="v">00:00</div>
-          </div>
-          <div class="stat">
-            <div class="k">Finish by</div>
-            <div id="hdrFinishBy" class="v">—</div>
-          </div>
-        </div>
-
-        <div class="betaNote">
-          <strong>Not a driving hours tracker.</strong> Working time only.
-          <strong>Beta:</strong> all times must be double-checked.
-        </div>
+      <div class="brand">
+        <div class="title">WTD Working Time Tracker</div>
+        <div id="headerStatus" class="status">Ready</div>
       </div>
     </div>
+
+    <div class="betaNote">
+      <strong>Not a driving hours tracker.</strong> Working time only.
+      <strong>Beta:</strong> all times must be double-checked.
+    </div>
   </header>
+
+  <!-- iOS Dynamic Island style pill -->
+  <div class="islandWrap" aria-label="Shift timing island">
+    <div class="dynamicIsland">
+      <div class="dStat">
+        <div class="k">Shift start</div>
+        <div id="hdrStart" class="v">—</div>
+      </div>
+      <div class="dStat">
+        <div class="k">Duration</div>
+        <div id="hdrDuration" class="v">00:00</div>
+      </div>
+      <div class="dStat">
+        <div class="k">Finish by</div>
+        <div id="hdrFinishBy" class="v">—</div>
+      </div>
+    </div>
+  </div>
 
   <main>
     <div class="sheet">
@@ -637,7 +657,7 @@
 
             <div class="bigActions">
               <button id="btnWork" class="btn big" type="button">Work</button>
-              <button id="btnBreak" class="btn big" type="button">Break</button>
+              <button id="btnRest" class="btn big" type="button">Rest</button>
             </div>
 
             <div class="miniGrid">
@@ -650,39 +670,38 @@
                 <div id="uiContinuous" class="metric">00:00</div>
               </div>
               <div class="glass card">
-                <div class="label">Next break in</div>
-                <div id="uiNextBreakIn" class="metric">—</div>
+                <div class="label">Next rest in</div>
+                <div id="uiNextRestIn" class="metric">—</div>
               </div>
               <div class="glass card">
-                <div class="label">Break still needed</div>
-                <div id="uiBreakNeeded" class="metric">00:00</div>
+                <div class="label">Rest still needed</div>
+                <div id="uiRestNeeded" class="metric">00:00</div>
               </div>
             </div>
 
-            <div class="hint">Qualifying break (counts toward 30/45) = BREAK for ≥ 15 minutes.</div>
+            <div class="hint">Qualifying rest (counts toward 30/45) = REST for ≥ 15 minutes.</div>
           </div>
         </section>
 
         <!-- FULL -->
         <section class="pane full">
           <div class="fullScroll">
-            <h3>Quick summary</h3>
             <div class="miniGrid">
               <div class="glass card">
                 <div class="label">Total work</div>
                 <div id="uiWorkTotal_full" class="metric">00:00</div>
               </div>
               <div class="glass card">
-                <div class="label">Qualifying breaks</div>
-                <div id="uiQualBreak_full" class="metric">00:00</div>
+                <div class="label">Qualifying rest</div>
+                <div id="uiQualRest_full" class="metric">00:00</div>
               </div>
               <div class="glass card">
-                <div class="label">Break required</div>
-                <div id="uiBreakReq_full" class="metric">00:00</div>
+                <div class="label">Rest required</div>
+                <div id="uiRestReq_full" class="metric">00:00</div>
               </div>
               <div class="glass card">
-                <div class="label">Break still needed</div>
-                <div id="uiBreakNeed_full" class="metric">00:00</div>
+                <div class="label">Rest still needed</div>
+                <div id="uiRestNeed_full" class="metric">00:00</div>
               </div>
             </div>
 
@@ -692,7 +711,7 @@
                 <label for="manType">Type</label>
                 <select id="manType">
                   <option value="WORK">WORK</option>
-                  <option value="BREAK">BREAK</option>
+                  <option value="REST">REST</option>
                 </select>
               </div>
 
@@ -729,7 +748,7 @@
 
 <script>
 (() => {
-  const STORAGE_KEY = "wtd_app_ios_glass_v4";
+  const STORAGE_KEY = "wtd_app_dynamic_island_v1";
   const MIN  = 60000;
   const HOUR = 60 * MIN;
 
@@ -737,12 +756,11 @@
     view: "basic",
     shiftHours: 13,
     shiftStartMs: null,
-    currentType: null,
-    segments: []
+    currentType: null, // "WORK" | "REST" | null
+    segments: []       // {type,startMs,endMs}
   });
 
   let state = load();
-
   function load(){
     try{
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -769,17 +787,17 @@
   const btnResetDay   = document.getElementById("btnResetDay");
 
   const btnWork  = document.getElementById("btnWork");
-  const btnBreak = document.getElementById("btnBreak");
+  const btnRest  = document.getElementById("btnRest");
 
   const uiShiftTime    = document.getElementById("uiShiftTime");
   const uiContinuous   = document.getElementById("uiContinuous");
-  const uiNextBreakIn  = document.getElementById("uiNextBreakIn");
-  const uiBreakNeeded  = document.getElementById("uiBreakNeeded");
+  const uiNextRestIn   = document.getElementById("uiNextRestIn");
+  const uiRestNeeded   = document.getElementById("uiRestNeeded");
 
-  const uiWorkTotal_full  = document.getElementById("uiWorkTotal_full");
-  const uiQualBreak_full  = document.getElementById("uiQualBreak_full");
-  const uiBreakReq_full   = document.getElementById("uiBreakReq_full");
-  const uiBreakNeed_full  = document.getElementById("uiBreakNeed_full");
+  const uiWorkTotal_full = document.getElementById("uiWorkTotal_full");
+  const uiQualRest_full  = document.getElementById("uiQualRest_full");
+  const uiRestReq_full   = document.getElementById("uiRestReq_full");
+  const uiRestNeed_full  = document.getElementById("uiRestNeed_full");
 
   const manType = document.getElementById("manType");
   const manStart = document.getElementById("manStart");
@@ -800,20 +818,18 @@
     const mm = totalMin % 60;
     return `${pad2(hh)}:${pad2(mm)}`;
   }
-
   function fmtTime(ms){
     const d = new Date(ms);
     return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
   }
-
   function haptic(ms=10){
     try{ if(navigator.vibrate) navigator.vibrate(ms); } catch {}
   }
-
   function isRunning(){ return !!state.shiftStartMs; }
 
-  // iPhone-friendly time input
+  // iPhone-friendly time input: 0800 -> 08:00
   function autoColon(el){
+    if(!el) return;
     el.addEventListener("input", () => {
       let v = (el.value || "").replace(/[^\d]/g,"").slice(0,4);
       if(v.length >= 3) v = v.slice(0,2) + ":" + v.slice(2);
@@ -861,40 +877,42 @@
     return { setValue };
   }
 
-  // Working time logic (WTD-only)
+  // WTD-only logic:
+  // - "Rest due" when continuous WORK reaches 6h
+  // - "Rest required" totals: >6h => 30m, >9h => 45m (qualifying REST >= 15m)
   function resolvedSegments(now){
     return state.segments.map(s => ({...s, endMs: (s.endMs == null ? now : s.endMs)}));
   }
   function sumMs(segs, type){
     return segs.filter(s => s.type === type).reduce((a,s)=> a + clamp0(s.endMs - s.startMs), 0);
   }
-  function qualifyingBreakMs(segs){
+  function qualifyingRestMs(segs){
     return segs
-      .filter(s => s.type === "BREAK")
+      .filter(s => s.type === "REST")
       .reduce((acc, s) => {
         const d = clamp0(s.endMs - s.startMs);
         return acc + (d >= 15*MIN ? d : 0);
       }, 0);
   }
-  function requiredBreakMs(workMs){
+  function requiredRestMs(workMs){
     if(workMs > 9*HOUR) return 45*MIN;
     if(workMs > 6*HOUR) return 30*MIN;
     return 0;
   }
   function continuousWorkMs(segs){
-    let lastBreakEnd = null;
+    let lastRestEnd = null;
     for(const s of segs){
-      if(s.type === "BREAK") lastBreakEnd = s.endMs;
+      if(s.type === "REST") lastRestEnd = s.endMs;
     }
-    if(lastBreakEnd == null) return sumMs(segs, "WORK");
+    if(lastRestEnd == null) return sumMs(segs, "WORK");
     return segs
-      .filter(s => s.type === "WORK" && s.endMs > lastBreakEnd)
+      .filter(s => s.type === "WORK" && s.endMs > lastRestEnd)
       .reduce((acc, s) => {
-        const start = Math.max(s.startMs, lastBreakEnd);
+        const start = Math.max(s.startMs, lastRestEnd);
         return acc + clamp0(s.endMs - start);
       }, 0);
   }
-  function nextBreakDueInMs(contWorkMs){ return 6*HOUR - contWorkMs; }
+  function nextRestDueInMs(contWorkMs){ return 6*HOUR - contWorkMs; }
 
   function closeOpenSegment(now){
     const last = state.segments[state.segments.length - 1];
@@ -920,13 +938,11 @@
   function applyView(view){
     panes.classList.toggle("showFull", view === "full");
   }
-
   function setView(view){
     state.view = view;
     save();
     applyView(view);
   }
-
   function setShiftHours(h){
     state.shiftHours = Number(h);
     save();
@@ -977,8 +993,8 @@
     const items = [...segs].sort((a,b)=> b.startMs - a.startMs);
     logList.innerHTML = items.map(s=>{
       const dur = clamp0(s.endMs - s.startMs);
-      const isQual = s.type === "BREAK" && dur >= 15*MIN;
-      const pillClass = s.type === "WORK" ? "work" : "break";
+      const isQual = s.type === "REST" && dur >= 15*MIN;
+      const pillClass = s.type === "WORK" ? "work" : "rest";
       const qualPill = isQual ? `<span class="pill qual">QUAL</span>` : "";
       const t1 = fmtTime(s.startMs);
       const t2 = fmtTime(s.endMs);
@@ -1001,7 +1017,7 @@
     const now = Date.now();
     const running = isRunning();
 
-    // Header stats
+    // Dynamic Island timing
     if(!running){
       hdrStart.textContent = "—";
       hdrDuration.textContent = "00:00";
@@ -1009,45 +1025,44 @@
     } else {
       hdrStart.textContent = fmtTime(state.shiftStartMs);
       hdrDuration.textContent = fmtDur(now - state.shiftStartMs);
-      const finishMs = state.shiftStartMs + (state.shiftHours * HOUR);
-      hdrFinishBy.textContent = fmtTime(finishMs);
+      hdrFinishBy.textContent = fmtTime(state.shiftStartMs + (state.shiftHours * HOUR));
     }
 
-    // Start/End buttons
+    // Start/End
     btnStartShift.classList.toggle("isRunning", running);
     btnStartShift.textContent = running ? "Shift running" : "Start shift";
     btnStartShift.disabled = running;
 
     btnEndShift.disabled = !running;
     btnWork.disabled = !running;
-    btnBreak.disabled = !running;
+    btnRest.disabled = !running;
 
-    // Work/Break highlight
+    // Work/Rest active colours
     btnWork.classList.toggle("isActive", state.currentType === "WORK");
-    btnBreak.classList.toggle("isActive", state.currentType === "BREAK");
+    btnRest.classList.toggle("isActive", state.currentType === "REST");
 
     // Metrics
     const segs = resolvedSegments(now);
     const workMs = sumMs(segs, "WORK");
-    const qualMs = qualifyingBreakMs(segs);
-    const reqMs  = requiredBreakMs(workMs);
+    const qualMs = qualifyingRestMs(segs);
+    const reqMs  = requiredRestMs(workMs);
     const needMs = clamp0(reqMs - qualMs);
 
     const contMs = continuousWorkMs(segs);
-    const dueInMs = nextBreakDueInMs(contMs);
+    const dueInMs = nextRestDueInMs(contMs);
 
     uiShiftTime.textContent   = running ? fmtDur(now - state.shiftStartMs) : "00:00";
     uiContinuous.textContent  = fmtDur(contMs);
-    uiBreakNeeded.textContent = fmtDur(needMs);
+    uiRestNeeded.textContent  = fmtDur(needMs);
 
-    if(!running) uiNextBreakIn.textContent = "—";
-    else if(dueInMs <= 0) uiNextBreakIn.textContent = "DUE";
-    else uiNextBreakIn.textContent = fmtDur(dueInMs);
+    if(!running) uiNextRestIn.textContent = "—";
+    else if(dueInMs <= 0) uiNextRestIn.textContent = "DUE";
+    else uiNextRestIn.textContent = fmtDur(dueInMs);
 
     uiWorkTotal_full.textContent = fmtDur(workMs);
-    uiQualBreak_full.textContent = fmtDur(qualMs);
-    uiBreakReq_full.textContent  = fmtDur(reqMs);
-    uiBreakNeed_full.textContent = fmtDur(needMs);
+    uiQualRest_full.textContent  = fmtDur(qualMs);
+    uiRestReq_full.textContent   = fmtDur(reqMs);
+    uiRestNeed_full.textContent  = fmtDur(needMs);
 
     renderLog(segs);
 
@@ -1058,11 +1073,11 @@
     }
     const warnThreshold = 15*MIN;
     if(dueInMs <= 0){
-      setTraffic("due", "Break due (continuous work)");
+      setTraffic("due", "Rest due (continuous work)");
     } else if(dueInMs <= warnThreshold){
-      setTraffic("warn", `Break soon: ${fmtDur(dueInMs)}`);
+      setTraffic("warn", `Rest soon: ${fmtDur(dueInMs)}`);
     } else {
-      setTraffic("ok", `Compliant: next break ${fmtDur(dueInMs)}`);
+      setTraffic("ok", `Compliant: next rest ${fmtDur(dueInMs)}`);
     }
   }
 
@@ -1099,12 +1114,12 @@
   });
 
   btnWork.addEventListener("click", () => { haptic(8); startSegment("WORK"); });
-  btnBreak.addEventListener("click", () => { haptic(8); startSegment("BREAK"); });
+  btnRest.addEventListener("click", () => { haptic(8); startSegment("REST"); });
 
   btnAddManual.addEventListener("click", () => { haptic(8); addManual(); });
   btnDeleteLast.addEventListener("click", () => { haptic(8); deleteLast(); });
 
-  // Rockers
+  // Segmented controls
   const segViewAPI = makeSegmented(segView, state.view, (v) => {
     setView(v);
     requestAnimationFrame(() => segViewAPI.setValue(state.view, false));
@@ -1115,7 +1130,7 @@
     requestAnimationFrame(() => segShiftAPI.setValue(String(state.shiftHours), false));
   });
 
-  // Init view + render loop
+  // Init
   applyView(state.view);
   setInterval(render, 1000);
   render();
