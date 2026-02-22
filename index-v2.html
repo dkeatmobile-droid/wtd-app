@@ -9,7 +9,6 @@
   <style>
     :root{
       --page:#e5e7eb;
-
       --text:#0f172a;
 
       --header1:#0b1220;
@@ -39,13 +38,6 @@
       --radius: 18px;
 
       --rowH: 42px;
-
-      /* Driver dashboard (dark cards) */
-      --dashBorder: rgba(255,255,255,.10);
-      --dashText: rgba(255,255,255,.94);
-      --dashSub: rgba(255,255,255,.74);
-
-      --progressTrack: rgba(255,255,255,.14);
     }
 
     *{ box-sizing:border-box; }
@@ -220,7 +212,7 @@
     }
 
     /* =========================
-       Timing pill (under header)
+       Timing pill
        ========================= */
     .islandWrap{
       padding: 10px 12px 0;
@@ -270,7 +262,7 @@
     }
 
     /* =========================
-       Main sheet (scrolls)
+       Sheet
        ========================= */
     main{
       flex:1;
@@ -292,7 +284,6 @@
       display:flex;
       flex-direction:column;
       gap:10px;
-
       overflow:auto;
       -webkit-overflow-scrolling: touch;
     }
@@ -345,7 +336,7 @@
       background: rgba(255,255,255,.78);
     }
 
-    /* Shift length segmented */
+    /* Segmented control */
     .strip{
       padding: 10px;
       display:flex;
@@ -423,15 +414,8 @@
       box-shadow: 0 18px 44px rgba(245,158,11,.18);
     }
 
-    /* =========================
-       Driver dashboard blocks
-       ========================= */
-    .dash{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      overflow:visible;
-    }
+    /* Dashboard */
+    .dash{ display:flex; flex-direction:column; gap:10px; }
 
     .dashCard{
       border-radius: 22px;
@@ -454,6 +438,29 @@
       grid-template-columns: 74px 1fr;
       gap:12px;
       align-items:center;
+    }
+
+    /* ✅ extracted from inline styles (left mini panel) */
+    .dashIconPanel{
+      width:64px;
+      height:108px;
+      border-radius:22px;
+      background: rgba(0,0,0,.28);
+      border: 1px solid rgba(255,255,255,.10);
+      display:grid;
+      place-items:center;
+    }
+    .dashIconStack{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      align-items:center;
+    }
+    .miniDot{
+      width:16px;
+      height:16px;
+      border-radius:999px;
+      background: rgba(255,255,255,.18);
     }
 
     .dashMain .bigTitle{
@@ -538,6 +545,7 @@
       gap:12px;
       font-variant-numeric: tabular-nums;
     }
+    .dashSmall .vRow.tight{ margin-top:8px; } /* ✅ extracted */
     .dashSmall .v{
       font-size: 34px;
       font-weight: 1100;
@@ -548,6 +556,17 @@
       font-weight: 1000;
       color: rgba(255,255,255,.84);
       white-space:nowrap;
+    }
+
+    .metaLabel{
+      font-size:13px;
+      font-weight:950;
+      color:rgba(255,255,255,.72);
+    }
+    .metaValue{
+      font-size:18px;
+      font-weight:1100;
+      color:rgba(255,255,255,.92);
     }
 
     .progress{
@@ -589,9 +608,7 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* =========================
-       Manual add + log
-       ========================= */
+    /* Manual add + log */
     h3{
       margin: 12px 2px 10px;
       font-size: 14px;
@@ -600,14 +617,11 @@
 
     .rowGrid2{
       display:grid;
-      grid-template-columns: 1fr 1fr; /* ✅ Start and End same size */
+      grid-template-columns: 1fr 1fr;
       gap:10px;
     }
 
-    .field{
-      padding: 12px;
-      border-radius: var(--radius);
-    }
+    .field{ padding: 12px; border-radius: var(--radius); }
 
     label{
       display:block;
@@ -616,27 +630,26 @@
       margin-bottom:6px;
       font-weight: 950;
     }
+
+    /* ✅ iOS Safari zoom fix: keep font-size >= 16px */
     input,select{
       width:100%;
       padding:10px 12px;
       border-radius: 14px;
       border:1px solid rgba(15,23,42,.10);
-      font-size:14px;
+      font-size:16px;
       background: rgba(255,255,255,.80);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       outline:none;
     }
 
-    .rowBtns{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
+    .rowBtns{ display:flex; gap:10px; flex-wrap:wrap; }
 
     .logList{display:flex; flex-direction:column; gap:10px; margin-top:10px;}
     .logItem{ padding: 12px; border-radius: var(--radius); }
     .logItem .top{display:flex; justify-content:space-between; gap:10px; align-items:center;}
+
     .pill{
       display:inline-block;
       padding:4px 10px;
@@ -651,6 +664,7 @@
     .pill.work{background: rgba(59,130,246,.12); border-color: rgba(59,130,246,.22);}
     .pill.rest{background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.22);}
     .pill.qual{background: rgba(16,185,129,.12); border-color: rgba(16,185,129,.22);}
+
     .subtle{font-size:12px; color: rgba(15,23,42,.55);}
 
     /* iPhone fit */
@@ -668,7 +682,6 @@
       .dynamicIsland{ padding: 8px 12px; }
       .dStat .v{ font-size:12px; }
     }
-
     @media (max-height: 690px){
       .betaNote{display:none;}
     }
@@ -708,7 +721,7 @@
     </div>
   </header>
 
-  <!-- ✅ Timing pill with Start time / End time -->
+  <!-- Timing pill -->
   <div class="islandWrap" aria-label="Shift timing">
     <div class="dynamicIsland">
       <div class="dStat">
@@ -754,11 +767,11 @@
         <div class="dashCard">
           <div class="dashMain">
             <div aria-hidden="true">
-              <div style="width:64px;height:108px;border-radius:22px;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.10);display:grid;place-items:center;">
-                <div style="display:flex;flex-direction:column;gap:8px;align-items:center;">
-                  <div id="miniLampTop" style="width:16px;height:16px;border-radius:999px;background:rgba(255,255,255,.18);"></div>
-                  <div id="miniLampMid" style="width:16px;height:16px;border-radius:999px;background:rgba(255,255,255,.18);"></div>
-                  <div id="miniLampBot" style="width:16px;height:16px;border-radius:999px;background:rgba(255,255,255,.18);"></div>
+              <div class="dashIconPanel">
+                <div class="dashIconStack">
+                  <div id="miniLampTop" class="miniDot"></div>
+                  <div id="miniLampMid" class="miniDot"></div>
+                  <div id="miniLampBot" class="miniDot"></div>
                 </div>
               </div>
             </div>
@@ -794,9 +807,9 @@
               <div class="v" id="uiWtdToday">00:00</div>
               <div class="vSub" id="uiWtdLimit">/ 13:00</div>
             </div>
-            <div class="vRow" style="margin-top:8px;">
-              <div style="font-size:13px;font-weight:950;color:rgba(255,255,255,.72);">Remaining</div>
-              <div style="font-size:18px;font-weight:1100;color:rgba(255,255,255,.92);" id="uiWtdRemaining">—</div>
+            <div class="vRow tight">
+              <div class="metaLabel">Remaining</div>
+              <div class="metaValue" id="uiWtdRemaining">—</div>
             </div>
             <div class="progress" aria-hidden="true">
               <div id="barWtd" class="bar"></div>
@@ -809,9 +822,9 @@
               <div class="v" id="uiBreakBuild">00</div>
               <div class="vSub">/ 15</div>
             </div>
-            <div class="vRow" style="margin-top:8px;">
-              <div style="font-size:13px;font-weight:950;color:rgba(255,255,255,.72);">Last break</div>
-              <div style="font-size:18px;font-weight:1100;color:rgba(255,255,255,.92);" id="uiLastRest">—</div>
+            <div class="vRow tight">
+              <div class="metaLabel">Last break</div>
+              <div class="metaValue" id="uiLastRest">—</div>
             </div>
             <div class="progress" aria-hidden="true">
               <div id="barBreak" class="bar"></div>
@@ -835,7 +848,6 @@
 
       </div>
 
-      <!-- Manual + log (same page) -->
       <h3>Manual add segment</h3>
 
       <div class="glass field">
@@ -846,17 +858,16 @@
         </select>
       </div>
 
-      <!-- ✅ Start and End equal width -->
       <div class="rowGrid2">
         <div class="glass field">
-          <label for="manStart">Start time (type 0800)</label>
-          <input id="manStart" inputmode="tel" placeholder="0800" />
+          <label for="manStart">Start time</label>
+          <input id="manStart" inputmode="tel" placeholder="08:00" />
           <div class="subtle" style="margin-top:6px;">Auto formats to HH:MM on iPhone</div>
         </div>
 
         <div class="glass field">
-          <label for="manEnd">End time (type 0915)</label>
-          <input id="manEnd" inputmode="tel" placeholder="0915" />
+          <label for="manEnd">Finish time</label>
+          <input id="manEnd" inputmode="tel" placeholder="09:15" />
         </div>
       </div>
 
@@ -1107,7 +1118,7 @@
   }
 
   function addManual(){
-    const type = manType.value; // WORK or REST (REST displayed as BREAK)
+    const type = manType.value; // WORK or REST
     const s = parseTimeToMs(manStart.value);
     const e0 = parseTimeToMs(manEnd.value);
     if(s == null || e0 == null){
@@ -1231,10 +1242,8 @@
     const contMs = continuousWorkMs(segs);
     const dueInMs = nextBreakDueInMs(contMs);
 
-    // WORK SAFE FOR
     uiWorkSafeFor.textContent = fmtDur(Math.max(0, dueInMs));
 
-    // Break required at
     if(dueInMs <= 0){
       uiBreakAt.textContent = "Break required";
     } else {
@@ -1245,7 +1254,6 @@
     uiShiftStartSmall.textContent = `Shift start ${fmtTime(state.shiftStartMs)}`;
     uiShiftTime.textContent = fmtDur(now - state.shiftStartMs);
 
-    // WTD today (WORK total in your model)
     uiWtdToday.textContent = fmtDur(workMs);
     uiWtdLimit.textContent = `/ ${pad2(state.shiftHours)}:00`;
 
@@ -1255,7 +1263,6 @@
     const wtdPct = Math.min(100, Math.max(0, (workMs / (state.shiftHours * HOUR)) * 100));
     barWtd.style.width = `${wtdPct}%`;
 
-    // Break building: show progress only while currently on break
     const lastBreak = lastBreakSegment(segs);
     let currentBreakMs = 0;
     if(state.currentType === "REST" && lastBreak){
@@ -1273,7 +1280,6 @@
 
     renderLog(segs);
 
-    // Traffic light
     const warnThreshold = 15*MIN;
     if(dueInMs <= 0){
       setTraffic("due", "Break due (continuous work)");
@@ -1286,7 +1292,6 @@
     updateToggleButton(running);
   }
 
-  // Shift length segmented
   const segShiftAPI = makeSegmented(segShift, String(state.shiftHours), (v) => {
     state.shiftHours = Number(v);
     save();
@@ -1294,12 +1299,10 @@
     requestAnimationFrame(() => segShiftAPI.setValue(String(state.shiftHours)));
   });
 
-  // Events
   btnStartShift.addEventListener("click", () => {
     if(isRunning()) return;
     haptic(12);
     state.shiftStartMs = Date.now();
-    // Default: start WORK immediately so the main button reads "Start break"
     state.currentType = "WORK";
     state.segments = [{ type:"WORK", startMs: state.shiftStartMs, endMs: null }];
     save();
@@ -1327,11 +1330,9 @@
   });
 
   btnToggle.addEventListener("click", toggleWorkBreak);
-
   btnAddManual.addEventListener("click", () => { haptic(8); addManual(); });
   btnDeleteLast.addEventListener("click", () => { haptic(8); deleteLast(); });
 
-  // Init
   setInterval(render, 1000);
   render();
 })();
