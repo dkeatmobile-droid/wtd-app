@@ -2,1306 +2,770 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-
-  <!-- ✅ App icons + PWA -->
-  <link rel="icon" href="favicon.ico" sizes="any">
-  <link rel="icon" type="image/png" sizes="16x16" href="icon-16.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
-  <link rel="icon" type="image/png" sizes="48x48" href="icon-48.png">
-  <link rel="icon" type="image/png" sizes="64x64" href="icon-64.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-  <link rel="manifest" href="site.webmanifest">
-  <meta name="theme-color" content="#0b1220" />
-
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#1f7a3a" />
   <title>WTD Tracker</title>
+
+  <!-- If you have a manifest/service worker in your repo, keep these filenames consistent -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
 
   <style>
     :root{
-      --bg:#070b14;
-      --panel: rgba(255,255,255,.04);
-      --panel2: rgba(255,255,255,.03);
-      --text:#eaf1ff;
-      --muted:#a9b7d6;
-
-      --good:#2dd4bf;
-      --warn:#fbbf24;
-      --bad:#fb7185;
-
-      --primary: rgba(77,163,255,.35);
-      --primaryBorder: rgba(77,163,255,.35);
-
-      --border: rgba(255,255,255,.10);
-      --border2: rgba(255,255,255,.08);
-
-      --shadow: 0 10px 26px rgba(0,0,0,.22);
-      --shadow2: 0 6px 18px rgba(0,0,0,.18);
-
-      --radius: 18px;
-
-      /* Green selection */
-      --selG1: rgba(34,197,94,.60);
-      --selG2: rgba(34,197,94,.24);
-      --selGB: rgba(34,197,94,.85);
-      --selGOutline: rgba(34,197,94,.75);
-
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-    }
-    *{ box-sizing:border-box; }
-
-    body{
-      margin:0;
-      color:var(--text);
-      background:
-        radial-gradient(1200px 900px at 20% -10%, rgba(18,34,74,.85) 0%, rgba(7,11,20,1) 52%),
-        var(--bg);
+      --ok:#1f7a3a;
+      --warn:#b26b00;
+      --due:#a32121;
+      --card:#ffffff;
+      --bg:#f4f5f7;
+      --text:#111;
+      --muted:#666;
+      --border:#e6e6e6;
+      --shadow: 0 8px 20px rgba(0,0,0,.08);
+      --radius: 16px;
     }
 
-    /* ===== Header ===== */
-    header{
-      position:sticky; top:0; z-index:20;
-      border-bottom:1px solid var(--border2);
-      box-shadow: 0 8px 22px rgba(0,0,0,.35);
-      background: rgba(10,20,41,.82);
-      backdrop-filter: blur(10px);
-    }
+    html,body{height:100%; margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:var(--text); background:var(--bg);}
 
-    /* State-based header tone */
-    body.state-ok header{ background: rgba(10,20,41,.82); animation:none; }
-    body.state-warn header{ background: rgba(28,20,5,.85); animation: headerPulseSoft 2.8s ease-in-out infinite; }
-    body.state-alert header{ background: rgba(28,5,10,.88); animation: headerPulseStrong 1.8s ease-in-out infinite; }
-
-    .headerInner{
-      max-width:960px;
-      margin:0 auto;
-      padding:16px 14px 14px;
-      text-align:center;
-      position:relative;
-    }
-
-    /* Subtle state accent line */
-    .headerInner:after{
-      content:"";
-      position:absolute;
-      left:14px; right:14px; bottom:-1px;
-      height:2px;
-      background: rgba(45,212,191,.55);
-      border-radius:999px;
-      opacity:.65;
-    }
-    body.state-warn .headerInner:after{ background: rgba(251,191,36,.60); }
-    body.state-alert .headerInner:after{ background: rgba(251,113,133,.65); }
-
-    .headerTitle{
-      font-size:18px;
-      font-weight:950;
-      letter-spacing:.3px;
-      margin:0;
-    }
-    .headerSub{
-      margin-top:6px;
-      font-size:12px;
-      color:#9fb2d9;
-    }
-    .headerWarning{
-      margin-top:6px;
-      font-size:11px;
-      color:var(--warn);
-      font-weight:900;
-    }
-
-    /* Segmented switch */
-    .segWrap{ display:flex; justify-content:center; margin-top:12px; }
-    .seg{
-      display:inline-flex;
-      border:1px solid var(--border);
-      background: rgba(7,11,20,.18);
-      border-radius:999px;
-      overflow:hidden;
-      box-shadow: var(--shadow2);
-    }
-    .seg button{
-      appearance:none;
-      border:0;
-      background:transparent;
-      color:rgba(169,183,214,.9);
-      padding:10px 14px;
-      font-weight:900;
-      letter-spacing:.2px;
-      font-size:13px;
-      min-width:140px;
-      cursor:pointer;
-    }
-    .seg button.active{
-      color:var(--text);
-      background: rgba(255,255,255,.08);
-    }
-    .seg button:active{ transform: translateY(1px); }
-
-    .pillRow{
-      margin-top:10px;
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      justify-content:center;
-    }
-    .pill{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:8px 10px;
-      border:1px solid var(--border2);
-      border-radius:999px;
-      background: rgba(7,11,20,.22);
-      font-size:12px;
-      color:var(--muted);
-      white-space:nowrap;
-    }
-    .dot{ width:10px; height:10px; border-radius:50%; background:#64748b; }
-    .dot.WORK{ background:var(--good); }
-    .dot.BREAK{ background:var(--bad); }
-
-    /* ===== Layout ===== */
-    .wrap{ max-width:960px; margin:0 auto; padding:16px 14px 190px; }
-    .grid{ display:grid; gap:14px; }
-
-    .cards{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
-    @media(min-width:900px){ .cards{ grid-template-columns:repeat(4,minmax(0,1fr)); } }
-
-    .card{
-      border:1px solid var(--border2);
-      border-radius:var(--radius);
-      padding:14px;
-      background: var(--panel);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(6px);
-    }
-    .card h3{
-      margin:0 0 10px;
-      font-size:12px;
-      text-transform: uppercase;
-      letter-spacing: .9px;
-      color: rgba(169,183,214,.85);
-      font-weight:950;
-    }
-
-    .muted{ font-size:12px; color:var(--muted); }
-    .tiny{ font-size:11px; color:var(--muted); line-height:1.35; }
-    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
-
-    .timer{
-      font-variant-numeric: tabular-nums;
-      letter-spacing: .6px;
-    }
-    .big{ font-size:22px; font-weight:950; letter-spacing:.3px; }
-    .big2{ font-size:30px; font-weight:980; letter-spacing:.4px; }
-    @media(max-width:420px){ .big2{ font-size:26px; } }
-
-    /* Buttons */
-    button{ font-family: inherit; }
-    .btn{
-      flex:1 1 150px;
-      min-height:44px;
-      padding:14px 12px;
-      border-radius:16px;
-      border:1px solid var(--border);
-      background: rgba(255,255,255,.05);
-      color:var(--text);
-      font-weight:950;
-      font-size:15px;
-      letter-spacing:.2px;
-      box-shadow: 0 10px 22px rgba(0,0,0,.20);
-      user-select:none;
-      cursor:pointer;
-      transition: transform .12s ease, background .2s ease, border-color .2s ease, opacity .2s ease, box-shadow .2s ease;
-    }
-    .btn:hover{ border-color: rgba(255,255,255,.18); background: rgba(255,255,255,.065); }
-    .btn:active{ transform: translateY(1px); }
-    .btn:focus{ outline: 2px solid rgba(77,163,255,.55); outline-offset: 2px; }
-
-    .btn.primary{
-      background: linear-gradient(180deg, var(--primary), rgba(77,163,255,.18));
-      border-color: var(--primaryBorder);
-    }
-    .btn.secondary{
-      background: rgba(255,255,255,.03);
-      box-shadow: 0 8px 18px rgba(0,0,0,.16);
-    }
-    .btn.danger{
-      background: rgba(251,113,133,.14);
-      border-color: rgba(251,113,133,.30);
-    }
-
-    .btn.WORK{ outline:2px solid rgba(45,212,191,.28); }
-    .btn.BREAK{ outline:2px solid rgba(251,113,133,.28); }
-
-    /* ===== Shift control selection highlight (ONLY selected one) ===== */
-    #btnStart.actionSelected,
-    #btnEnd.actionSelected,
-    #btnReset.actionSelected{
-      outline: 3px solid rgba(255,255,255,.28) !important;
-      outline-offset: 3px;
-      box-shadow:
-        0 0 0 6px rgba(255,255,255,.06),
-        0 16px 34px rgba(0,0,0,.28) !important;
-      transform: translateY(-1px);
-    }
-    #btnStart.actionSelected{
-      outline-color: rgba(34,197,94,.85) !important;
-      box-shadow:
-        0 0 0 6px rgba(34,197,94,.14),
-        0 0 22px rgba(34,197,94,.20),
-        0 16px 34px rgba(0,0,0,.28) !important;
-    }
-    #btnEnd.actionSelected{
-      outline-color: rgba(251,191,36,.90) !important;
-      box-shadow:
-        0 0 0 6px rgba(251,191,36,.14),
-        0 0 22px rgba(251,191,36,.20),
-        0 16px 34px rgba(0,0,0,.28) !important;
-    }
-    #btnReset.actionSelected{
-      outline-color: rgba(251,113,133,.90) !important;
-      box-shadow:
-        0 0 0 6px rgba(251,113,133,.14),
-        0 0 22px rgba(251,113,133,.20),
-        0 16px 34px rgba(0,0,0,.28) !important;
-    }
-
-    /* ===== Footer button “inactive grey glass” polish ===== */
-    .footer .btn{
-      background: rgba(255,255,255,.035);
-      border-color: rgba(255,255,255,.12);
-      box-shadow: 0 10px 22px rgba(0,0,0,.22);
-      backdrop-filter: blur(6px);
-    }
-    .footer .btn:hover{
-      background: rgba(255,255,255,.055);
-      border-color: rgba(255,255,255,.20);
-    }
-
-    /* ===== Selected mode = GREEN (hard override) ===== */
-    #btnWork.modeSelected,
-    #btnBreak.modeSelected{
-      background: linear-gradient(180deg, rgba(34,197,94,.60), rgba(34,197,94,.24)) !important;
-      border-color: rgba(34,197,94,.85) !important;
-      color: #eafff2 !important;
-      box-shadow: 0 14px 30px rgba(34,197,94,.22) !important;
-      filter: none !important;
-      opacity: 1 !important;
-      transform: none !important;
-      animation: none !important;
-    }
-    #btnWork.modeSelected:focus,
-    #btnBreak.modeSelected:focus{
-      outline: 2px solid rgba(34,197,94,.75) !important;
-      outline-offset: 2px;
-    }
-
-    /* Break button turns RED only when overdue (state-alert) */
-    body.state-alert #btnBreak:not(.modeSelected){
-      background: linear-gradient(180deg, rgba(251,113,133,.65), rgba(225,29,72,.26)) !important;
-      border-color: rgba(251,113,133,.78) !important;
-      color: #fff !important;
-    }
-
-    /* Banner (status row) */
-    .banner{
-      position:relative;
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
-      padding:14px;
-      border-radius:var(--radius);
-      border:1px solid var(--border2);
-      background: var(--panel2);
-      box-shadow: var(--shadow2);
-      backdrop-filter: blur(6px);
-    }
-    .banner:before{
-      content:"";
-      position:absolute;
-      left:10px; top:12px; bottom:12px;
-      width:4px;
-      border-radius:999px;
-      background: rgba(45,212,191,.8);
-      opacity:.85;
-    }
-    body.state-warn .banner:before{ background: rgba(251,191,36,.9); }
-    body.state-alert .banner:before{ background: rgba(251,113,133,.9); }
-
-    .statusGood{ color:var(--good); font-weight:900; }
-    .statusWarn{ color:var(--warn); font-weight:900; }
-    .statusBad{ color:var(--bad); font-weight:900; }
-
-    /* Full-only sections */
-    .fullOnly{ display:none; }
-    body.full .fullOnly{ display:block; }
-
-    /* Forms */
-    .field{ display:grid; gap:6px; margin-top:10px; }
-    label{ font-size:12px; color:var(--muted); font-weight:950; }
-    input, select{
-      background: rgba(11,18,32,.78);
-      color:var(--text);
-      border:1px solid var(--border2);
-      border-radius:14px;
-      padding:12px;
-      font-size:14px;
-      transition: border-color .2s ease, background .2s ease;
-    }
-    input:focus, select:focus{
-      outline: none;
-      border-color: rgba(77,163,255,.55);
-      background: rgba(11,18,32,.88);
-      box-shadow: 0 0 0 3px rgba(77,163,255,.16);
-    }
-
-    /* Table */
-    table{ width:100%; border-collapse:collapse; }
-    th,td{ padding:10px 8px; border-bottom:1px solid rgba(255,255,255,.08); font-size:12px; }
-    th{ color:var(--muted); text-align:left; font-weight:950; }
-    td{ color:var(--text); }
-    .right{ text-align:right; }
-
-    table thead th{
-      position: sticky;
-      top: 0;
-      background: rgba(11,18,32,.95);
-      backdrop-filter: blur(6px);
-      z-index: 1;
-    }
-    tbody tr:nth-child(even) td{ background: rgba(255,255,255,.02); }
-
-    /* ===== Footer bar ===== */
-    .footer{
-      position:fixed; left:0; right:0; bottom:0; z-index:25;
-      background: linear-gradient(180deg, rgba(7,11,20,.00) 0%, rgba(7,11,20,.92) 25%, rgba(7,11,20,.98) 100%);
-      padding:12px 12px 14px;
-      border-top:1px solid rgba(255,255,255,.06);
-      backdrop-filter: blur(10px);
-      transition: transform .28s ease, box-shadow .28s ease;
-    }
-    .footer .row{ max-width:960px; margin:0 auto; }
-    .footerNote{ max-width:960px; margin:8px auto 0; }
-
-    /* Action bar movement + bounce */
-    body.state-warn .footer{
-      transform: translateY(-4px);
-      box-shadow: 0 -10px 26px rgba(0,0,0,.32);
-      animation: footerBounceSoft .45s ease;
-    }
-    body.state-alert .footer{
-      transform: translateY(-8px);
-      box-shadow: 0 -14px 32px rgba(0,0,0,.42);
-      animation: footerBounceStrong .45s ease;
-    }
-    body.state-ok .footer{
-      transform:none;
-      box-shadow:none;
-      animation:none;
-    }
-
-    /* ===== Animations ===== */
-    @keyframes headerPulseSoft {
-      0%   { box-shadow: 0 0 0 rgba(251,191,36,0.0); }
-      50%  { box-shadow: 0 0 16px rgba(251,191,36,0.28); }
-      100% { box-shadow: 0 0 0 rgba(251,191,36,0.0); }
-    }
-    @keyframes headerPulseStrong {
-      0%   { box-shadow: 0 0 0 rgba(251,113,133,0.0); }
-      50%  { box-shadow: 0 0 22px rgba(251,113,133,0.45); }
-      100% { box-shadow: 0 0 0 rgba(251,113,133,0.0); }
-    }
-    @keyframes footerBounceSoft{
-      0%   { transform: translateY(0); }
-      35%  { transform: translateY(-10px); }
-      60%  { transform: translateY(-4px); }
-      100% { transform: translateY(-4px); }
-    }
-    @keyframes footerBounceStrong{
-      0%   { transform: translateY(0); }
-      35%  { transform: translateY(-16px); }
-      60%  { transform: translateY(-8px); }
-      100% { transform: translateY(-8px); }
-    }
-
-    /* Break urgency */
-    @keyframes breakGlowSoft {
-      0%   { box-shadow: 0 0 0 rgba(251,191,36,0); }
-      50%  { box-shadow: 0 0 18px rgba(251,191,36,.35); }
-      100% { box-shadow: 0 0 0 rgba(251,191,36,0); }
-    }
-    @keyframes breakGlowStrong {
-      0%   { box-shadow: 0 0 0 rgba(251,113,133,0); }
-      50%  { box-shadow: 0 0 24px rgba(251,113,133,.55); }
-      100% { box-shadow: 0 0 0 rgba(251,113,133,0); }
-    }
-
-    #btnBreak{ transition: transform .25s ease, box-shadow .25s ease; }
-
-    /* Don’t animate/scale if selected (green wins) */
-    body.state-warn #btnBreak:not(.modeSelected){
-      animation: breakGlowSoft 2.6s ease-in-out infinite;
-      transform: scale(1.04);
-      box-shadow: 0 8px 22px rgba(251,191,36,.24);
-    }
-    body.state-alert #btnBreak:not(.modeSelected){
-      animation: breakGlowStrong 1.6s ease-in-out infinite;
-      transform: scale(1.08);
-      box-shadow: 0 10px 28px rgba(251,113,133,.32);
-    }
-    body.state-ok #btnBreak{
-      animation:none;
-      transform: scale(1);
-      box-shadow: none;
-    }
-
-    /* Dim WORK button when break is needed */
-    body.state-warn #btnWork{ opacity:.62; filter:saturate(.7); }
-    body.state-alert #btnWork{ opacity:.45; filter:saturate(.55); transform:scale(.99); }
-    body.state-ok #btnWork{ opacity:1; filter:none; transform:none; }
-
-    /* ===== Emergency overlay ===== */
-    #emergencyOverlay{
-      position:fixed;
-      inset:0;
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:18px;
-      z-index:50;
-      background:rgba(0,0,0,.55);
-      backdrop-filter: blur(8px);
-    }
-    body.state-alert #emergencyOverlay{ display:flex; }
-
-    .emCard{
-      width:min(680px, 100%);
-      border-radius:22px;
-      border:1px solid rgba(255,255,255,.12);
-      background: linear-gradient(180deg, rgba(58,7,18,.92) 0%, rgba(28,5,10,.90) 100%);
-      box-shadow: 0 18px 60px rgba(0,0,0,.55);
-      padding:18px;
-    }
-    .emTitle{ font-weight:980; letter-spacing:.6px; font-size:18px; }
-    .emSub{ margin-top:6px; color:rgba(255,255,255,.78); font-size:13px; }
-    .emStats{
-      margin-top:14px;
-      display:flex;
-      gap:14px;
-      justify-content:space-between;
-      align-items:flex-end;
-      padding:12px;
-      border-radius:16px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(0,0,0,.18);
-    }
-    .emLabel{ font-size:12px; color:rgba(255,255,255,.75); font-weight:900; }
-    .emValue{ margin-top:4px; font-size:26px; font-weight:980; letter-spacing:.4px; font-variant-numeric: tabular-nums; }
-    .emBreakBtn{
-      margin-top:16px;
-      width:100%;
-      min-height:52px;
-      padding:18px 16px;
-      border-radius:18px;
-      border:1px solid rgba(255,255,255,.16);
-      background:linear-gradient(180deg, rgba(251,113,133,.95) 0%, rgba(225,29,72,.92) 100%);
+    /* APP LAYOUT */
+    .app{height:100vh; display:flex; flex-direction:column;}
+    header.topHeader{
       color:#fff;
-      font-weight:980;
-      font-size:18px;
-      letter-spacing:.6px;
-      box-shadow: 0 14px 40px rgba(225,29,72,.30);
-      cursor:pointer;
+      padding: 10px 12px 12px;
+      transition: background .2s ease;
     }
-    .emBreakBtn:active{ transform: translateY(1px); }
-    .emBreakBtn:focus{ outline: 2px solid rgba(255,255,255,.55); outline-offset: 2px; }
-    .emHint{ margin-top:12px; font-size:11px; color:rgba(255,255,255,.70); line-height:1.35; }
+    header.compliance-ok{background:var(--ok);}
+    header.compliance-warn{background:var(--warn);}
+    header.compliance-due{background:var(--due);}
 
-    @media (prefers-reduced-motion: reduce){
-      *{ animation: none !important; transition: none !important; }
+    .headerRow{display:flex; align-items:flex-start; justify-content:space-between; gap:10px;}
+    .brand .title{font-weight:900; font-size:16px; line-height:1.1;}
+    .brand .subtitle{font-size:12px; margin-top:2px; opacity:.95;}
+
+    .rockers{display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;}
+    .rocker{display:inline-flex; border-radius:999px; overflow:hidden; border:1px solid rgba(255,255,255,.35); background: rgba(0,0,0,.15);}
+    .rockerBtn{
+      padding:8px 10px; font-size:12px; border:0; background:transparent; color:#fff;
+      cursor:pointer; user-select:none; font-weight:700; opacity:.9;
+    }
+    .rockerBtn.isOn{background: rgba(255,255,255,.25); opacity:1;}
+
+    .headerStats{margin-top:10px; display:grid; grid-template-columns:repeat(3,1fr); gap:8px;}
+    .stat{background: rgba(0,0,0,.16); border-radius: 12px; padding: 8px 10px;}
+    .stat .label{font-size:11px; opacity:.95;}
+    .stat .value{font-size:14px; font-weight:900; margin-top:2px;}
+
+    main.main{flex:1; min-height:0;}
+    section.panel{height:100%; box-sizing:border-box; padding:10px 12px;}
+    section.panelFull{overflow:auto;}
+    section.panelBasic{
+      overflow:hidden; /* BASIC: no scrolling */
+      display:grid;
+      grid-template-rows: auto auto 1fr auto;
+      gap:10px;
+    }
+    .isHidden{display:none !important;}
+
+    /* UI ELEMENTS */
+    .controlsRow{display:grid; grid-template-columns: repeat(3, 1fr); gap:8px;}
+    .btn{
+      padding:12px 10px; border-radius: 14px; border:1px solid var(--border);
+      background:#fff; font-weight:900; cursor:pointer; box-shadow: 0 1px 0 rgba(0,0,0,.02);
+    }
+    .btn:active{transform: translateY(1px);}
+    .btn.primary{border-color:#111;}
+    .btn.danger{border-color:#b00020; color:#b00020;}
+    .btn.ghost{background: transparent;}
+
+    .bigActions{display:grid; grid-template-columns: 1fr 1fr; gap:10px;}
+    .btn.big{padding: 18px 10px; font-size:18px; border-radius: 18px; box-shadow: var(--shadow);}
+    .btn.big.isActive{outline: 3px solid rgba(0,0,0,.12);}
+
+    .miniGrid{display:grid; grid-template-columns: 1fr 1fr; gap:10px; align-content:start;}
+    .card{
+      background: var(--card);
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px;
+      box-shadow: 0 1px 0 rgba(0,0,0,.02);
+    }
+    .card .label{font-size:12px; color:var(--muted);}
+    .card .metric{font-size:20px; font-weight:1000; margin-top:6px;}
+
+    .hint{font-size:12px; color:rgba(0,0,0,.6);}
+    .subtle{font-size:12px; color: var(--muted);}
+
+    /* FULL MODE */
+    h3{margin: 14px 0 8px; font-size: 14px;}
+    .row{display:flex; gap:10px; flex-wrap:wrap;}
+    .field{
+      flex:1;
+      background:#fff; border:1px solid var(--border); border-radius: 14px; padding:10px;
+    }
+    label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px; font-weight:700;}
+    input, select{
+      width:100%; box-sizing:border-box;
+      padding:10px; border-radius: 12px; border:1px solid var(--border);
+      font-size:14px; background:#fff;
+    }
+    .logList{display:flex; flex-direction:column; gap:8px; margin-top:8px;}
+    .logItem{background:#fff; border:1px solid var(--border); border-radius: 14px; padding:10px;}
+    .logItem .top{display:flex; justify-content:space-between; gap:10px; align-items:baseline;}
+    .pill{
+      display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px; font-weight:900;
+      border:1px solid var(--border); background:#fafafa;
+    }
+    .pill.work{background:#eef6ff; border-color:#cfe6ff;}
+    .pill.break{background:#fff5e8; border-color:#ffe1b7;}
+    .pill.qual{background:#e9fff0; border-color:#bff0cd;}
+
+    /* OVERLAY ALERT */
+    .overlay{
+      position:fixed; inset:0; display:none; align-items:flex-end; justify-content:center;
+      background: rgba(0,0,0,.35); padding: 16px;
+    }
+    .overlay.show{display:flex;}
+    .sheet{
+      width:min(520px, 100%);
+      background:#fff; border-radius: 22px; padding: 14px; box-shadow: var(--shadow);
+    }
+    .sheet h2{margin:0; font-size:16px;}
+    .sheet p{margin:8px 0 12px; color:#333; font-size:14px;}
+    .sheet .actions{display:flex; gap:10px;}
+    .sheet .actions .btn{flex:1;}
+
+    @media (max-height: 700px){
+      .btn.big{padding:14px 10px; font-size:16px;}
+      .card .metric{font-size:18px;}
+      .headerStats{gap:6px;}
+      .stat{padding:6px 8px;}
     }
   </style>
 </head>
 
-<body class="state-ok">
-  <header>
-    <div class="headerInner">
-      <div class="headerTitle">WTD Tracker</div>
-      <div class="headerSub">Work &amp; Break Working Time Directive Tracker</div>
-      <div class="headerWarning">This is a beta app — times must be double checked.</div>
+<body>
+<div class="app">
 
-      <div class="segWrap" aria-label="Mode switch">
-        <div class="seg" role="tablist" aria-label="Basic or Full mode">
-          <button id="btnBasic" type="button" class="active" role="tab" aria-selected="true">Basic</button>
-          <button id="btnFull" type="button" role="tab" aria-selected="false">Full</button>
-        </div>
+  <!-- HEADER -->
+  <header id="topHeader" class="topHeader compliance-ok">
+    <div class="headerRow">
+      <div class="brand">
+        <div class="title">WTD Tracker</div>
+        <div id="headerStatus" class="subtitle">Ready</div>
       </div>
 
-      <div class="pillRow">
-        <span class="pill" id="dayChip"></span>
-        <span class="pill" id="shiftChip">Shift: —</span>
-        <span class="pill" id="viewChip">View: Basic</span>
-        <span class="pill" id="modePill">
-          <span class="dot" id="modeDot"></span>
-          <span id="modeText">Not started</span>
-        </span>
+      <div class="rockers">
+        <!-- Basic / Full -->
+        <div class="rocker" role="group" aria-label="View mode">
+          <button id="btnViewBasic" class="rockerBtn isOn" type="button">Basic</button>
+          <button id="btnViewFull" class="rockerBtn" type="button">Full</button>
+        </div>
+
+        <!-- 13h / 15h -->
+        <div class="rocker" role="group" aria-label="Shift length">
+          <button id="btnShift13" class="rockerBtn isOn" type="button">13h</button>
+          <button id="btnShift15" class="rockerBtn" type="button">15h</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="headerStats">
+      <div class="stat">
+        <div class="label">Start</div>
+        <div id="hdrStart" class="value">—</div>
+      </div>
+      <div class="stat">
+        <div class="label">Duration</div>
+        <div id="hdrDuration" class="value">00:00</div>
+      </div>
+      <div class="stat">
+        <div class="label">Finish by</div>
+        <div id="hdrFinishBy" class="value">—</div>
       </div>
     </div>
   </header>
 
-  <div class="wrap">
-    <main class="grid">
+  <!-- MAIN -->
+  <main class="main">
 
-      <section class="card" aria-label="Shift controls">
-        <h3>Shift controls</h3>
-        <div class="row">
-          <button class="btn primary" id="btnStart" type="button">Start shift</button>
-          <button class="btn secondary" id="btnEnd" type="button">End shift</button>
-          <button class="btn danger" id="btnReset" type="button">Reset day</button>
-        </div>
-        <div class="tiny" style="margin-top:10px">
-          Basic mode: clean tracking. Full mode: alerts + log + manual fixes.
-        </div>
-      </section>
+    <!-- BASIC (no scrolling) -->
+    <section id="panelBasic" class="panel panelBasic">
+      <div class="controlsRow">
+        <button id="btnStartShift" class="btn primary" type="button">Start shift</button>
+        <button id="btnEndShift" class="btn" type="button">End shift</button>
+        <button id="btnResetDay" class="btn danger" type="button">Reset day</button>
+      </div>
 
-      <section class="banner" id="statusBanner" aria-live="polite" aria-label="Status">
-        <div style="padding-left:10px">
-          <div><b>Status:</b> <span id="statusText" class="statusGood">Ready</span></div>
-          <div class="muted" id="statusDetail">Start a shift to begin tracking.</div>
-        </div>
-        <div style="text-align:right">
-          <div class="muted">Shift time</div>
-          <div class="big timer" id="shiftElapsed">00:00</div>
-        </div>
-      </section>
+      <div class="bigActions">
+        <button id="btnWork" class="btn big" type="button">Work</button>
+        <button id="btnBreak" class="btn big" type="button">Break</button>
+      </div>
 
-      <section class="card" id="heroCard" aria-label="Live tracking">
-        <h3>Live</h3>
-        <div class="row" style="align-items:flex-end">
-          <div style="flex:1 1 240px">
-            <div class="muted">Continuous work</div>
-            <div class="big2 timer" id="heroContWork">00:00</div>
-          </div>
-          <div style="flex:1 1 240px;text-align:right">
-            <div class="muted">Next break in</div>
-            <div class="big2 timer" id="heroNextBreakIn">—</div>
-          </div>
-        </div>
-        <div class="tiny" id="heroHint" style="margin-top:10px">
-          Qualifying break = BREAK mode for ≥15 minutes. (6:00 continuous-work rule)
-        </div>
-      </section>
-
-      <section class="cards" aria-label="Totals">
+      <div class="miniGrid">
         <div class="card">
-          <h3>Working time</h3>
-          <div class="big2 timer" id="workTotal">00:00</div>
-          <div class="muted">Total WORK time</div>
+          <div class="label">Shift time</div>
+          <div id="uiShiftTime" class="metric">00:00</div>
         </div>
-
         <div class="card">
-          <h3>Qualifying breaks</h3>
-          <div class="big2 timer" id="qBreakTotal">00:00</div>
-          <div class="muted">BREAK segments ≥ 15 min</div>
+          <div class="label">Continuous work</div>
+          <div id="uiContinuous" class="metric">00:00</div>
         </div>
-
         <div class="card">
-          <h3>6h interrupt countdown</h3>
-          <div class="big2 timer" id="interruptCountdown">—</div>
-          <div class="muted">5:45 alert on. 6:00 required.</div>
+          <div class="label">Next break in</div>
+          <div id="uiNextBreakIn" class="metric">—</div>
         </div>
-
         <div class="card">
-          <h3>Break still needed</h3>
-          <div class="big2 timer" id="breakNeeded">00:00</div>
-          <div class="muted" id="breakRule">—</div>
-        </div>
-      </section>
-
-      <!-- FULL MODE ONLY -->
-      <section class="card fullOnly" aria-label="Alerts">
-        <h3>Alerts</h3>
-        <div class="row">
-          <label class="pill" style="gap:10px;">
-            <input type="checkbox" id="audibleOn" />
-            Audible
-          </label>
-          <label class="pill" style="gap:10px;">
-            <input type="checkbox" id="vibrateOn" />
-            Vibration
-          </label>
-        </div>
-        <div class="tiny" style="margin-top:8px">
-          iPhone: vibration/audio can be limited. For sound, you may need to tap once after opening the page.
-        </div>
-      </section>
-
-      <section class="card fullOnly" aria-label="Log">
-        <h3>Log (today)</h3>
-        <div class="row" style="margin-bottom:10px">
-          <button class="btn secondary" id="btnUndo" type="button">Undo last</button>
-          <button class="btn secondary" id="btnCloseSegment" type="button">Close current segment</button>
-        </div>
-        <div style="overflow:auto;border-radius:14px;border:1px solid rgba(255,255,255,.06)">
-          <table aria-label="Segments log">
-            <thead>
-              <tr>
-                <th>From</th><th>To</th><th>Mode</th>
-                <th class="right">Mins</th><th class="right">Qualifies?</th>
-              </tr>
-            </thead>
-            <tbody id="logBody"></tbody>
-          </table>
-        </div>
-        <div class="tiny" style="margin-top:8px">
-          Qualifying break = a BREAK segment of <b>15 minutes or longer</b>.
-        </div>
-      </section>
-
-      <section class="card fullOnly" aria-label="Manual tools">
-        <h3>Manual tools</h3>
-        <div class="tiny">If you forgot to tap, add/overwrite segments below.</div>
-
-        <div class="field">
-          <label for="manualMode">Add a segment</label>
-          <select id="manualMode">
-            <option value="WORK">Work</option>
-            <option value="BREAK">Break</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label for="manualFrom">Start time</label>
-          <input type="time" id="manualFrom" />
-        </div>
-
-        <div class="field">
-          <label for="manualTo">End time</label>
-          <input type="time" id="manualTo" />
-        </div>
-
-        <div class="row" style="margin-top:10px">
-          <button class="btn secondary" id="btnAddSegment" type="button">Add segment</button>
-          <button class="btn secondary" id="btnEditLast" type="button">Overwrite last segment</button>
-        </div>
-
-        <div class="tiny" style="margin-top:8px">
-          “Add segment” inserts a closed block. “Overwrite last” replaces the most recent closed segment.
-        </div>
-      </section>
-
-    </main>
-  </div>
-
-  <!-- Emergency break overlay (shows only when break is DUE) -->
-  <div id="emergencyOverlay" aria-hidden="true">
-    <div class="emCard" role="dialog" aria-modal="true" aria-label="Break required">
-      <div class="emTitle">BREAK REQUIRED NOW</div>
-      <div class="emSub">You’ve reached 6:00 continuous work.</div>
-
-      <div class="emStats">
-        <div>
-          <div class="emLabel">Continuous work</div>
-          <div class="emValue timer" id="emContWork">00:00</div>
-        </div>
-        <div style="text-align:right">
-          <div class="emLabel">Minimum break</div>
-          <div class="emValue timer">15 mins</div>
+          <div class="label">Break still needed</div>
+          <div id="uiBreakNeeded" class="metric">00:00</div>
         </div>
       </div>
 
-      <button class="emBreakBtn" id="btnEmergencyBreak" type="button">
-        START BREAK
-      </button>
+      <div class="hint">Qualifying break = BREAK for ≥ 15 minutes.</div>
+    </section>
 
-      <div class="emHint">This is a beta app — times must be double checked.</div>
+    <!-- FULL (scrollable) -->
+    <section id="panelFull" class="panel panelFull isHidden">
+
+      <h3>Quick summary</h3>
+      <div class="miniGrid">
+        <div class="card">
+          <div class="label">Total work</div>
+          <div id="uiWorkTotal_full" class="metric">00:00</div>
+        </div>
+        <div class="card">
+          <div class="label">Qualifying breaks</div>
+          <div id="uiQualBreak_full" class="metric">00:00</div>
+        </div>
+        <div class="card">
+          <div class="label">Break required</div>
+          <div id="uiBreakReq_full" class="metric">00:00</div>
+        </div>
+        <div class="card">
+          <div class="label">Break still needed</div>
+          <div id="uiBreakNeed_full" class="metric">00:00</div>
+        </div>
+      </div>
+
+      <h3>Manual add segment</h3>
+      <div class="row">
+        <div class="field" style="min-width:140px;">
+          <label for="manType">Type</label>
+          <select id="manType">
+            <option value="WORK">WORK</option>
+            <option value="BREAK">BREAK</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="manStart">Start (HH:MM)</label>
+          <input id="manStart" inputmode="numeric" placeholder="08:00" />
+        </div>
+        <div class="field">
+          <label for="manEnd">End (HH:MM)</label>
+          <input id="manEnd" inputmode="numeric" placeholder="09:15" />
+        </div>
+      </div>
+      <div class="row" style="margin-top:10px;">
+        <button id="btnAddManual" class="btn primary" type="button">Add segment</button>
+        <button id="btnDeleteLast" class="btn" type="button">Delete last</button>
+      </div>
+      <div class="subtle" style="margin-top:6px;">
+        Times are added on today’s date. If end is earlier than start, it will be treated as next day.
+      </div>
+
+      <h3>Segment log</h3>
+      <div id="logList" class="logList"></div>
+
+      <div style="height:10px;"></div>
+    </section>
+
+  </main>
+</div>
+
+<!-- OVERLAY -->
+<div id="overlay" class="overlay" aria-hidden="true">
+  <div class="sheet">
+    <h2 id="ovTitle">Break due</h2>
+    <p id="ovText">You have reached 6 hours continuous work. Start a break now.</p>
+    <div class="actions">
+      <button id="ovBreak" class="btn primary" type="button">Start break</button>
+      <button id="ovDismiss" class="btn" type="button">Dismiss</button>
     </div>
   </div>
+</div>
 
-  <div class="footer" aria-label="Quick actions">
-    <div class="row">
-      <button class="btn WORK secondary" id="btnWork" type="button">Work</button>
-      <button class="btn BREAK secondary" id="btnBreak" type="button">Break</button>
-    </div>
-    <div class="tiny footerNote">
-      Basic is clean. Full has alerts + log + manual fixes.
-    </div>
-  </div>
+<script>
+(() => {
+  // -------------------------
+  // STORAGE
+  // -------------------------
+  const STORAGE_KEY = "wtd_app_v2_state";
 
-  <script>
-    (() => {
-      const STORAGE_KEY = "wtd_tracker_work_break_full_v5";
+  const defaultState = () => ({
+    view: "basic",            // "basic" | "full"
+    shiftHours: 13,           // 13 or 15
+    shiftStartMs: null,       // number | null
+    currentType: null,        // "WORK" | "BREAK" | null
+    currentStartMs: null,     // number | null
+    segments: [],             // [{type, startMs, endMs|null}]
+    overlayDismissedAtMs: null
+  });
 
-      const QUALIFY_BREAK_MIN = 15;
-      const INTERRUPT_LIMIT_MIN = 360; // 6 hours continuous work
-      const SOON_AT_MIN = 345;         // 5h45 warning (15 mins before)
-      const FIVE_MIN_AT = 355;         // 5h55 warning (5 mins before)
-      const ALERT_COOLDOWN_MS = 10 * 60 * 1000;
+  let state = loadState();
 
-      const $ = (id) => document.getElementById(id);
-      const now = () => Date.now();
+  function loadState(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return defaultState();
+      const s = JSON.parse(raw);
+      return { ...defaultState(), ...s };
+    } catch {
+      return defaultState();
+    }
+  }
+  function saveState(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
 
-      // --- Service worker registration (GitHub Pages project site) ---
-      const registerSW = async () => {
-        if (!("serviceWorker" in navigator)) return;
-        try {
-          // sw.js in same folder as index.html
-          await navigator.serviceWorker.register("./sw.js", { scope: "./" });
-        } catch {}
-      };
+  // -------------------------
+  // DOM
+  // -------------------------
+  const topHeader = document.getElementById("topHeader");
+  const headerStatus = document.getElementById("headerStatus");
+  const hdrStart = document.getElementById("hdrStart");
+  const hdrDuration = document.getElementById("hdrDuration");
+  const hdrFinishBy = document.getElementById("hdrFinishBy");
 
-      const requestNotificationPermission = async () => {
-        if (!("Notification" in window)) return;
-        if (Notification.permission === "default") {
-          try { await Notification.requestPermission(); } catch {}
+  const panelBasic = document.getElementById("panelBasic");
+  const panelFull  = document.getElementById("panelFull");
+
+  const btnViewBasic = document.getElementById("btnViewBasic");
+  const btnViewFull  = document.getElementById("btnViewFull");
+
+  const btnShift13 = document.getElementById("btnShift13");
+  const btnShift15 = document.getElementById("btnShift15");
+
+  const btnStartShift = document.getElementById("btnStartShift");
+  const btnEndShift = document.getElementById("btnEndShift");
+  const btnResetDay = document.getElementById("btnResetDay");
+  const btnWork = document.getElementById("btnWork");
+  const btnBreak = document.getElementById("btnBreak");
+
+  const uiShiftTime = document.getElementById("uiShiftTime");
+  const uiContinuous = document.getElementById("uiContinuous");
+  const uiNextBreakIn = document.getElementById("uiNextBreakIn");
+  const uiBreakNeeded = document.getElementById("uiBreakNeeded");
+
+  const uiWorkTotal_full = document.getElementById("uiWorkTotal_full");
+  const uiQualBreak_full = document.getElementById("uiQualBreak_full");
+  const uiBreakReq_full  = document.getElementById("uiBreakReq_full");
+  const uiBreakNeed_full = document.getElementById("uiBreakNeed_full");
+
+  const manType = document.getElementById("manType");
+  const manStart = document.getElementById("manStart");
+  const manEnd = document.getElementById("manEnd");
+  const btnAddManual = document.getElementById("btnAddManual");
+  const btnDeleteLast = document.getElementById("btnDeleteLast");
+
+  const logList = document.getElementById("logList");
+
+  const overlay = document.getElementById("overlay");
+  const ovTitle = document.getElementById("ovTitle");
+  const ovText = document.getElementById("ovText");
+  const ovBreak = document.getElementById("ovBreak");
+  const ovDismiss = document.getElementById("ovDismiss");
+
+  // -------------------------
+  // HELPERS
+  // -------------------------
+  const MIN = 60000;
+  const HOUR = 60 * MIN;
+
+  function pad2(n){ return String(n).padStart(2,"0"); }
+
+  function fmtHHMM(ms){
+    const d = new Date(ms);
+    return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+  }
+
+  function fmtDur(ms){
+    const totalMin = Math.max(0, Math.floor(ms / MIN));
+    const hh = Math.floor(totalMin / 60);
+    const mm = totalMin % 60;
+    return `${pad2(hh)}:${pad2(mm)}`;
+  }
+
+  function clamp0(ms){ return Math.max(0, ms); }
+
+  function setView(view){
+    state.view = view;
+    panelBasic.classList.toggle("isHidden", view !== "basic");
+    panelFull.classList.toggle("isHidden", view !== "full");
+    btnViewBasic.classList.toggle("isOn", view === "basic");
+    btnViewFull.classList.toggle("isOn", view === "full");
+    saveState();
+  }
+
+  function setShiftHours(h){
+    state.shiftHours = h;
+    btnShift13.classList.toggle("isOn", h === 13);
+    btnShift15.classList.toggle("isOn", h === 15);
+    saveState();
+    render(); // finish-by recalculates instantly
+  }
+
+  function setCompliance(level, text){
+    topHeader.classList.remove("compliance-ok","compliance-warn","compliance-due");
+    topHeader.classList.add(level === "due" ? "compliance-due" : level === "warn" ? "compliance-warn" : "compliance-ok");
+    headerStatus.textContent = text;
+
+    // theme-color update to match header
+    const theme = document.querySelector('meta[name="theme-color"]');
+    if(theme){
+      theme.setAttribute("content", level === "due" ? "#a32121" : level === "warn" ? "#b26b00" : "#1f7a3a");
+    }
+  }
+
+  function isShiftRunning(){
+    return !!state.shiftStartMs;
+  }
+
+  function closeCurrentSegment(nowMs){
+    if(state.currentType && state.currentStartMs){
+      const last = state.segments[state.segments.length - 1];
+      if(last && last.endMs == null){
+        last.endMs = nowMs;
+      }
+    }
+    state.currentType = null;
+    state.currentStartMs = null;
+  }
+
+  function startSegment(type){
+    if(!isShiftRunning()) return;
+    const now = Date.now();
+    // close previous if open
+    const last = state.segments[state.segments.length - 1];
+    if(last && last.endMs == null){
+      if(last.type === type) return; // already in that mode
+      last.endMs = now;
+    }
+
+    // start new
+    state.currentType = type;
+    state.currentStartMs = now;
+    state.segments.push({ type, startMs: now, endMs: null });
+    saveState();
+    render();
+  }
+
+  function startShift(){
+    if(isShiftRunning()) return;
+    const now = Date.now();
+    state.shiftStartMs = now;
+    state.currentType = null;
+    state.currentStartMs = null;
+    state.segments = [];
+    state.overlayDismissedAtMs = null;
+    saveState();
+    render();
+  }
+
+  function endShift(){
+    if(!isShiftRunning()) return;
+    closeCurrentSegment(Date.now());
+    // keep shiftStartMs so user can still view totals until Reset day
+    // If you prefer, uncomment next line to fully end and freeze:
+    // state.shiftStartMs = null;
+    saveState();
+    render();
+  }
+
+  function resetDay(){
+    state = defaultState();
+    saveState();
+    render();
+  }
+
+  function parseTimeToMs(hhmm){
+    // Returns ms for "today" at hh:mm, local time.
+    const m = /^(\d{1,2}):(\d{2})$/.exec((hhmm||"").trim());
+    if(!m) return null;
+    const hh = Number(m[1]), mm = Number(m[2]);
+    if(hh < 0 || hh > 23 || mm < 0 || mm > 59) return null;
+    const d = new Date();
+    d.setHours(hh, mm, 0, 0);
+    return d.getTime();
+  }
+
+  function addManualSegment(){
+    const type = manType.value;
+    const s = parseTimeToMs(manStart.value);
+    const e0 = parseTimeToMs(manEnd.value);
+    if(s == null || e0 == null){
+      alert("Please enter valid times like 08:00");
+      return;
+    }
+    let e = e0;
+    if(e <= s) e = e + 24 * HOUR; // treat as next day
+    state.segments.push({ type, startMs: s, endMs: e });
+    saveState();
+    render();
+  }
+
+  function deleteLast(){
+    if(state.segments.length === 0) return;
+    // if last is open, just close it and remove
+    const last = state.segments[state.segments.length - 1];
+    state.segments.pop();
+    if(last && last.endMs == null){
+      state.currentType = null;
+      state.currentStartMs = null;
+    }
+    saveState();
+    render();
+  }
+
+  // -------------------------
+  // METRICS
+  // -------------------------
+  function getSegmentsResolved(now){
+    return state.segments.map(seg => ({
+      ...seg,
+      endMs: seg.endMs == null ? now : seg.endMs
+    }));
+  }
+
+  function sumDurationMs(segments, type){
+    return segments
+      .filter(s => s.type === type)
+      .reduce((acc, s) => acc + clamp0(s.endMs - s.startMs), 0);
+  }
+
+  function qualifyingBreakMs(segments){
+    return segments
+      .filter(s => s.type === "BREAK")
+      .reduce((acc, s) => {
+        const dur = clamp0(s.endMs - s.startMs);
+        return acc + (dur >= 15 * MIN ? dur : 0);
+      }, 0);
+  }
+
+  function requiredBreakMs(workMs){
+    // Simple rule set: >6h => 30m, >9h => 45m
+    if(workMs > 9 * HOUR) return 45 * MIN;
+    if(workMs > 6 * HOUR) return 30 * MIN;
+    return 0;
+  }
+
+  function continuousWorkSinceLastQualBreakMs(segments){
+    // counts WORK time after the most recent qualifying BREAK ended.
+    // If currently in BREAK (even not-qual), continuous work stops increasing after work ended.
+    // We find last qualifying break end, then sum WORK segments after that end.
+    let lastQualEnd = null;
+    for(const s of segments){
+      if(s.type === "BREAK"){
+        const dur = clamp0(s.endMs - s.startMs);
+        if(dur >= 15 * MIN){
+          lastQualEnd = s.endMs;
         }
-      };
-
-      // Prefer SW notifications (best for PWAs), fallback to page Notification
-      const notify = async (title, body, tag) => {
-        if (!("Notification" in window)) return;
-
-        if (Notification.permission === "default") {
-          try { await Notification.requestPermission(); } catch {}
-        }
-        if (Notification.permission !== "granted") return;
-
-        try {
-          if ("serviceWorker" in navigator) {
-            const reg = await navigator.serviceWorker.getRegistration("./");
-            if (reg && reg.active) {
-              reg.active.postMessage({
-                type: "SHOW_NOTIFICATION",
-                title,
-                body,
-                tag
-              });
-              return;
-            }
-          }
-        } catch {}
-
-        try {
-          new Notification(title, { body, tag, icon: "icon-192.png" });
-        } catch {}
-      };
-
-      const fmtHM = (mins) => {
-        mins = Math.max(0, Math.floor(mins));
-        const h = Math.floor(mins / 60);
-        const m = mins % 60;
-        return String(h).padStart(2,"0") + ":" + String(m).padStart(2,"0");
-      };
-
-      // ✅ 24-hour clock everywhere
-      const fmtTime = (ms) => {
-        if (!ms) return "—";
-        const d = new Date(ms);
-        return d.toLocaleTimeString("en-GB", {hour:"2-digit", minute:"2-digit", hour12:false});
-      };
-
-      const todayLabel = () => {
-        const d = new Date();
-        return d.toLocaleDateString([], {weekday:"short", year:"numeric", month:"short", day:"2-digit"});
-      };
-
-      const minutesBetween = (a,b) => Math.max(0, Math.floor((b - a) / 60000));
-
-      let state = {
-        shiftStart: null,
-        shiftEnd: null,
-        currentMode: null, // "WORK" | "BREAK"
-        currentFrom: null,
-        segments: [],      // closed: {mode, from, to}
-        alerts: { audible: false, vibrate: false },
-        view: "basic",     // "basic" | "full"
-        selectedAction: null // "start" | "end" | "reset"
-      };
-
-      const save = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      const load = () => {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return;
-        try { state = JSON.parse(raw); } catch {}
-      };
-
-      // ===== Alerts (existing) =====
-      let lastAlertKey = "";
-      let lastAlertAt = 0;
-
-      const beep = () => {
-        try {
-          const ctx = new (window.AudioContext || window.webkitAudioContext)();
-          const o = ctx.createOscillator();
-          const g = ctx.createGain();
-          o.type = "sine";
-          o.frequency.value = 880;
-          g.gain.value = 0.05;
-          o.connect(g); g.connect(ctx.destination);
-          o.start();
-          setTimeout(() => { o.stop(); ctx.close(); }, 220);
-        } catch {}
-      };
-
-      const vibrate = (pattern) => {
-        try { if (navigator.vibrate) navigator.vibrate(pattern); } catch {}
-      };
-
-      const triggerAlert = (key) => {
-        const t = now();
-        if (key === lastAlertKey && (t - lastAlertAt) < ALERT_COOLDOWN_MS) return;
-        lastAlertKey = key;
-        lastAlertAt = t;
-        if (state.alerts.audible) beep();
-        if (state.alerts.vibrate) vibrate([200, 120, 200]);
-      };
-
-      // ===== Notification once-per-event (NEW) =====
-      let firedNotices = {};
-      const fireOnce = (key, fn) => {
-        if (firedNotices[key]) return;
-        firedNotices[key] = true;
-        fn();
-      };
-      const resetNotices = () => { firedNotices = {}; };
-
-      // ===== Segment handling =====
-      const closeCurrent = (t = now()) => {
-        if (!state.shiftStart || !state.currentMode || !state.currentFrom) return;
-        if (t <= state.currentFrom) return;
-        state.segments.push({ mode: state.currentMode, from: state.currentFrom, to: t });
-        state.currentFrom = t;
-        save();
-      };
-
-      const setMode = (mode) => {
-        if (!state.shiftStart || state.shiftEnd) return;
-        const t = now();
-        if (!state.currentMode) {
-          state.currentMode = mode;
-          state.currentFrom = t;
-          save(); render();
-          return;
-        }
-        closeCurrent(t);
-        state.currentMode = mode;
-        save(); render();
-      };
-
-      const startShift = () => {
-        const t = now();
-        state.shiftStart = t;
-        state.shiftEnd = null;
-        state.currentMode = "WORK";
-        state.currentFrom = t;
-        state.segments = [];
-        state.selectedAction = "start";
-        lastAlertKey = "";
-        lastAlertAt = 0;
-        resetNotices();
-        save(); render();
-      };
-
-      const endShift = () => {
-        if (!state.shiftStart || state.shiftEnd) return;
-        const t = now();
-        closeCurrent(t);
-        state.shiftEnd = t;
-        state.currentMode = null;
-        state.currentFrom = null;
-        state.selectedAction = "end";
-        save(); render();
-      };
-
-      const resetDay = () => {
-        state.shiftStart = null;
-        state.shiftEnd = null;
-        state.currentMode = null;
-        state.currentFrom = null;
-        state.segments = [];
-        state.selectedAction = "reset";
-        lastAlertKey = "";
-        lastAlertAt = 0;
-        resetNotices();
-        save(); render();
-      };
-
-      const undoLast = () => {
-        if (!state.segments.length) return;
-        state.segments.pop();
-        lastAlertKey = "";
-        lastAlertAt = 0;
-        resetNotices();
-        save(); render();
-      };
-
-      const getAllSegmentsIncludingOpen = () => {
-        const out = [...state.segments];
-        if (state.shiftStart && !state.shiftEnd && state.currentMode && state.currentFrom) {
-          out.push({ mode: state.currentMode, from: state.currentFrom, to: now(), open:true });
-        }
-        return out;
-      };
-
-      const compute = () => {
-        const segs = getAllSegmentsIncludingOpen();
-
-        let workMin = 0;
-        let breakMinQual = 0;
-        let contWorkMin = 0;
-
-        for (const s of segs) {
-          const m = minutesBetween(s.from, s.to);
-
-          if (s.mode === "WORK") {
-            workMin += m;
-            contWorkMin += m;
-          } else if (s.mode === "BREAK") {
-            if (m >= QUALIFY_BREAK_MIN) {
-              breakMinQual += m;
-              contWorkMin = 0;
-            }
-          }
-        }
-
-        let requiredMin = 0;
-        if (workMin > 360) requiredMin = 30;
-        if (workMin > 540) requiredMin = 45;
-
-        const neededMin = Math.max(0, requiredMin - breakMinQual);
-
-        let shiftElapsedMin = 0;
-        if (state.shiftStart) {
-          const end = state.shiftEnd ?? now();
-          shiftElapsedMin = minutesBetween(state.shiftStart, end);
-        }
-
-        const remainingInterruptMin = state.shiftStart ? Math.max(0, INTERRUPT_LIMIT_MIN - contWorkMin) : null;
-
-        return {
-          workMin,
-          breakMinQual,
-          contWorkMin,
-          requiredMin,
-          neededMin,
-          shiftElapsedMin,
-          remainingInterruptMin
-        };
-      };
-
-      // Manual tools
-      const parseTimeToMsToday = (hhmm) => {
-        if (!hhmm) return null;
-        const [h, m] = hhmm.split(":").map(Number);
-        if (Number.isNaN(h) || Number.isNaN(m)) return null;
-        const d = new Date();
-        d.setHours(h, m, 0, 0);
-        return d.getTime();
-      };
-
-      const addSegmentManual = (overwriteLast=false) => {
-        if (!state.shiftStart) return;
-        const mode = $("manualMode").value;
-        const fromMs = parseTimeToMsToday($("manualFrom").value);
-        const toMs = parseTimeToMsToday($("manualTo").value);
-        if (!fromMs || !toMs || toMs <= fromMs) return;
-
-        if (!state.shiftEnd) closeCurrent(now());
-
-        if (overwriteLast && state.segments.length) state.segments.pop();
-        state.segments.push({ mode, from: fromMs, to: toMs });
-        state.segments.sort((a,b) => a.from - b.from);
-
-        lastAlertKey = "";
-        lastAlertAt = 0;
-        resetNotices();
-        save(); render();
-      };
-
-      const applyView = (view) => {
-        state.view = view;
-        document.body.classList.toggle("full", view === "full");
-
-        $("btnBasic").classList.toggle("active", view === "basic");
-        $("btnFull").classList.toggle("active", view === "full");
-        $("btnBasic").setAttribute("aria-selected", view === "basic" ? "true" : "false");
-        $("btnFull").setAttribute("aria-selected", view === "full" ? "true" : "false");
-
-        $("viewChip").textContent = "View: " + (view === "full" ? "Full" : "Basic");
-        save();
-        render();
-      };
-
-      const setBodyState = (klass) => {
-        document.body.classList.remove("state-ok","state-warn","state-alert");
-        document.body.classList.add(klass);
-      };
-
-      const render = () => {
-        $("dayChip").textContent = todayLabel();
-
-        // Mode pill + shift chip
-        if (!state.shiftStart) {
-          $("modeText").textContent = "Not started";
-          $("modeDot").className = "dot";
-          $("shiftChip").textContent = "Shift: —";
-        } else if (state.shiftEnd) {
-          $("modeText").textContent = "Ended";
-          $("modeDot").className = "dot";
-          $("shiftChip").textContent = `Shift: ${fmtTime(state.shiftStart)}–${fmtTime(state.shiftEnd)}`;
-        } else {
-          $("modeText").textContent = state.currentMode || "—";
-          $("modeDot").className = "dot " + (state.currentMode || "");
-          $("shiftChip").textContent = `Shift: ${fmtTime(state.shiftStart)}–…`;
-        }
-
-        // Full-mode toggles
-        $("audibleOn").checked = !!state.alerts.audible;
-        $("vibrateOn").checked = !!state.alerts.vibrate;
-
-        const c = compute();
-
-        $("workTotal").textContent = fmtHM(c.workMin);
-        $("qBreakTotal").textContent = fmtHM(c.breakMinQual);
-        $("shiftElapsed").textContent = fmtHM(c.shiftElapsedMin);
-
-        // Live values
-        $("heroContWork").textContent = fmtHM(c.contWorkMin);
-
-        // Next break countdown
-        if (!state.shiftStart || state.shiftEnd) {
-          $("heroNextBreakIn").textContent = "—";
-          $("interruptCountdown").textContent = "—";
-          $("heroHint").textContent = "Start a shift to begin live tracking.";
-        } else if (state.currentMode === "BREAK") {
-          $("heroNextBreakIn").textContent = "On break";
-          $("interruptCountdown").textContent = "On break";
-          $("heroHint").textContent = "Qualifying break = ≥15 minutes.";
-        } else {
-          const rem = c.remainingInterruptMin ?? null;
-          const remText = (rem === 0) ? "DUE NOW" : fmtHM(rem);
-          $("heroNextBreakIn").textContent = remText;
-          $("interruptCountdown").textContent = remText;
-          $("heroHint").textContent = "Qualifying break = BREAK mode for ≥15 minutes. (6:00 continuous-work rule)";
-        }
-
-        // Break totals rule text
-        if (!state.shiftStart) {
-          $("breakRule").textContent = "—";
-        } else {
-          if (c.workMin > 540) {
-            $("breakRule").textContent = "After 9h total WORK: +15 mins qualifying break required (total 45).";
-          } else if (c.workMin > 360) {
-            $("breakRule").textContent = "After 6h total WORK: 30 mins qualifying break required.";
-          } else {
-            $("breakRule").textContent = "No total-break target yet (but don’t exceed 6h continuous work).";
-          }
-        }
-        $("breakNeeded").textContent = fmtHM(c.neededMin);
-
-        // Emergency overlay live value
-        $("emContWork").textContent = fmtHM(c.contWorkMin);
-
-        // ===== NEW: PUSH-LIKE NOTIFICATIONS (via Service Worker) =====
-        const inShift = !!state.shiftStart && !state.shiftEnd;
-        const workingNow = inShift && state.currentMode === "WORK";
-
-        if (workingNow) {
-          // 15 minutes before break due (5:45)
-          if (c.contWorkMin >= SOON_AT_MIN && c.contWorkMin < INTERRUPT_LIMIT_MIN) {
-            fireOnce("notif_break_15", () => notify(
-              "Break due soon",
-              "15 minutes until your 6-hour break is required.",
-              "break-15"
-            ));
-          }
-
-          // 5 minutes before break due (5:55)
-          if (c.contWorkMin >= FIVE_MIN_AT && c.contWorkMin < INTERRUPT_LIMIT_MIN) {
-            fireOnce("notif_break_5", () => notify(
-              "Break due in 5 minutes",
-              "Prepare to take a 15-minute break.",
-              "break-5"
-            ));
-          }
-
-          // Break overdue (6:00)
-          if (c.contWorkMin >= INTERRUPT_LIMIT_MIN) {
-            fireOnce("notif_break_due", () => notify(
-              "Break required now",
-              "You have reached 6 hours of continuous work. Take a 15-minute break.",
-              "break-now"
-            ));
-          }
-        }
-
-        // “15-minute break has been taken”
-        if (c.breakMinQual >= 15) {
-          fireOnce("notif_15_done", () => notify(
-            "Qualifying break completed",
-            "15-minute break recorded.",
-            "break-done-15"
-          ));
-        }
-
-        // “30-minute break for 6–9 hour”
-        if (c.workMin > 360 && c.workMin <= 540 && c.breakMinQual >= 30) {
-          fireOnce("notif_30_done", () => notify(
-            "Break requirement met",
-            "30-minute break requirement satisfied (6–9 hours).",
-            "break-done-30"
-          ));
-        }
-
-        // “45-minute break for over 9 hour”
-        if (c.workMin > 540 && c.breakMinQual >= 45) {
-          fireOnce("notif_45_done", () => notify(
-            "Break requirement met",
-            "45-minute break requirement satisfied (over 9 hours).",
-            "break-done-45"
-          ));
-        }
-
-        // Status (existing)
-        const status = $("statusText");
-        const detail = $("statusDetail");
-
-        const onBreakNow = (state.currentMode === "BREAK");
-        const interruptDue = (c.contWorkMin >= INTERRUPT_LIMIT_MIN);
-        const interruptSoon = (c.contWorkMin >= SOON_AT_MIN);
-        const totalShort = (c.workMin > 360 && c.neededMin > 0);
-
-        let uiState = "state-ok";
-
-        if (!state.shiftStart) {
-          status.textContent = "Ready";
-          status.className = "statusGood";
-          detail.textContent = "Start a shift to begin tracking.";
-          uiState = "state-ok";
-          lastAlertKey = "";
-          lastAlertAt = 0;
-        }
-        else if (state.shiftEnd) {
-          status.textContent = "Shift ended";
-          status.className = "statusGood";
-          detail.textContent = "Done.";
-          uiState = "state-ok";
-          lastAlertKey = "";
-          lastAlertAt = 0;
-        }
-        else if (onBreakNow) {
-          status.textContent = "On break";
-          status.className = "statusGood";
-          detail.textContent = "Qualifying break = ≥15 minutes.";
-          uiState = "state-ok";
-        }
-        else if (interruptDue) {
-          status.textContent = "Break required now (≥15m)";
-          status.className = "statusBad";
-          detail.textContent = "You’ve reached 6:00 continuous working time.";
-          uiState = "state-alert";
-          triggerAlert("interrupt_due");
-        }
-        else if (interruptSoon) {
-          status.textContent = "Break soon";
-          status.className = "statusWarn";
-          detail.textContent = "5:45 continuous work — plan a ≥15m break.";
-          uiState = "state-warn";
-          triggerAlert("interrupt_soon");
-        }
-        else if (totalShort) {
-          status.textContent = "More qualifying breaks needed";
-          status.className = "statusWarn";
-          detail.textContent = "You are short on total qualifying breaks for your total WORK time.";
-          uiState = "state-warn";
-          const band = (c.workMin > 540) ? "45" : "30";
-          triggerAlert("total_short_" + band);
-        }
-        else {
-          status.textContent = "Compliant so far";
-          status.className = "statusGood";
-          detail.textContent = "Tracking OK.";
-          uiState = "state-ok";
-        }
-
-        setBodyState(uiState);
-
-        // Emergency overlay aria-hidden
-        const overlay = $("emergencyOverlay");
-        overlay.setAttribute("aria-hidden", uiState === "state-alert" ? "false" : "true");
-
-        // Green selection on footer buttons
-        $("btnWork").classList.toggle("modeSelected", inShift && state.currentMode === "WORK");
-        $("btnBreak").classList.toggle("modeSelected", inShift && state.currentMode === "BREAK");
-        $("btnWork").setAttribute("aria-pressed", (inShift && state.currentMode === "WORK") ? "true" : "false");
-        $("btnBreak").setAttribute("aria-pressed", (inShift && state.currentMode === "BREAK") ? "true" : "false");
-
-        // Shift control highlight
-        const sel = state.selectedAction;
-        $("btnStart").classList.toggle("actionSelected", sel === "start");
-        $("btnEnd").classList.toggle("actionSelected", sel === "end");
-        $("btnReset").classList.toggle("actionSelected", sel === "reset");
-        $("btnStart").setAttribute("aria-pressed", sel === "start" ? "true" : "false");
-        $("btnEnd").setAttribute("aria-pressed", sel === "end" ? "true" : "false");
-        $("btnReset").setAttribute("aria-pressed", sel === "reset" ? "true" : "false");
-
-        // Log table
-        const tbody = $("logBody");
-        tbody.innerHTML = "";
-        if (state.view === "full") {
-          const segs = [...state.segments];
-          if (state.shiftStart && !state.shiftEnd && state.currentMode && state.currentFrom) {
-            segs.push({ mode: state.currentMode, from: state.currentFrom, to: now(), open:true });
-          }
-          for (const s of segs) {
-            const m = minutesBetween(s.from, s.to);
-            const qualifies = (s.mode === "BREAK" && m >= QUALIFY_BREAK_MIN) ? "Yes" :
-                              (s.mode === "BREAK") ? "No" : "—";
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-              <td>${fmtTime(s.from)}</td>
-              <td>${s.open ? "…" : fmtTime(s.to)}</td>
-              <td>${s.mode}</td>
-              <td class="right">${m}</td>
-              <td class="right">${qualifies}</td>
-            `;
-            tbody.appendChild(tr);
-          }
-        }
-      };
-
-      // Wire up UI
-      $("btnStart").addEventListener("click", async () => { await requestNotificationPermission(); startShift(); });
-      $("btnEnd").addEventListener("click", endShift);
-      $("btnReset").addEventListener("click", resetDay);
-
-      $("btnWork").addEventListener("click", () => setMode("WORK"));
-      $("btnBreak").addEventListener("click", () => setMode("BREAK"));
-      $("btnEmergencyBreak").addEventListener("click", () => setMode("BREAK"));
-
-      $("btnUndo").addEventListener("click", undoLast);
-      $("btnCloseSegment").addEventListener("click", () => { closeCurrent(now()); render(); });
-
-      $("btnAddSegment").addEventListener("click", () => addSegmentManual(false));
-      $("btnEditLast").addEventListener("click", () => addSegmentManual(true));
-
-      $("audibleOn").addEventListener("change", (e) => { state.alerts.audible = e.target.checked; save(); });
-      $("vibrateOn").addEventListener("change", (e) => { state.alerts.vibrate = e.target.checked; save(); });
-
-      $("btnBasic").addEventListener("click", () => applyView("basic"));
-      $("btnFull").addEventListener("click", () => applyView("full"));
-
-      // Init
-      registerSW();
-      load();
-      state.alerts = state.alerts || { audible:false, vibrate:false };
-      state.view = state.view || "basic";
-      state.selectedAction = state.selectedAction || null;
-
-      // Ask permission early (will only show prompt after a user gesture in some browsers)
-      requestNotificationPermission();
-
-      applyView(state.view);
-      render();
-      setInterval(render, 5000);
-    })();
-  </script>
+      }
+    }
+    if(lastQualEnd == null){
+      // no qualifying breaks yet: sum all work
+      return sumDurationMs(segments, "WORK");
+    }
+    return segments
+      .filter(s => s.type === "WORK" && s.endMs > lastQualEnd)
+      .reduce((acc, s) => {
+        const start = Math.max(s.startMs, lastQualEnd);
+        return acc + clamp0(s.endMs - start);
+      }, 0);
+  }
+
+  function nextBreakDueInMs(continuousWorkMs){
+    // WTD: break required after 6h continuous work
+    return 6 * HOUR - continuousWorkMs;
+  }
+
+  // -------------------------
+  // OVERLAY
+  // -------------------------
+  function showOverlay(title, text){
+    ovTitle.textContent = title;
+    ovText.textContent = text;
+    overlay.classList.add("show");
+    overlay.setAttribute("aria-hidden", "false");
+  }
+
+  function hideOverlay(){
+    overlay.classList.remove("show");
+    overlay.setAttribute("aria-hidden", "true");
+  }
+
+  ovBreak.addEventListener("click", () => {
+    hideOverlay();
+    startSegment("BREAK");
+  });
+
+  ovDismiss.addEventListener("click", () => {
+    state.overlayDismissedAtMs = Date.now();
+    saveState();
+    hideOverlay();
+  });
+
+  // -------------------------
+  // RENDER
+  // -------------------------
+  function render(){
+    const now = Date.now();
+
+    // view + shift hours toggles
+    setView(state.view);
+    setShiftHours(state.shiftHours);
+
+    // header times
+    if(!state.shiftStartMs){
+      hdrStart.textContent = "—";
+      hdrDuration.textContent = "00:00";
+      hdrFinishBy.textContent = "—";
+    } else {
+      hdrStart.textContent = fmtHHMM(state.shiftStartMs);
+      hdrDuration.textContent = fmtDur(now - state.shiftStartMs);
+      hdrFinishBy.textContent = fmtHHMM(state.shiftStartMs + state.shiftHours * HOUR);
+    }
+
+    // button active state
+    btnWork.classList.toggle("isActive", state.currentType === "WORK");
+    btnBreak.classList.toggle("isActive", state.currentType === "BREAK");
+
+    // metrics
+    const segs = getSegmentsResolved(now);
+    const workMs = sumDurationMs(segs, "WORK");
+    const qualMs = qualifyingBreakMs(segs);
+    const reqMs = requiredBreakMs(workMs);
+    const needMs = clamp0(reqMs - qualMs);
+
+    const continuousMs = continuousWorkSinceLastQualBreakMs(segs);
+    const dueInMs = nextBreakDueInMs(continuousMs);
+
+    // basic UI
+    uiShiftTime.textContent = state.shiftStartMs ? fmtDur(now - state.shiftStartMs) : "00:00";
+    uiContinuous.textContent = fmtDur(continuousMs);
+    uiBreakNeeded.textContent = fmtDur(needMs);
+
+    if(!state.shiftStartMs){
+      uiNextBreakIn.textContent = "—";
+    } else if(dueInMs <= 0){
+      uiNextBreakIn.textContent = "DUE";
+    } else {
+      uiNextBreakIn.textContent = fmtDur(dueInMs);
+    }
+
+    // full UI
+    uiWorkTotal_full.textContent = fmtDur(workMs);
+    uiQualBreak_full.textContent = fmtDur(qualMs);
+    uiBreakReq_full.textContent = fmtDur(reqMs);
+    uiBreakNeed_full.textContent = fmtDur(needMs);
+
+    // log
+    renderLog(segs);
+
+    // compliance + header color + overlay
+    if(!state.shiftStartMs){
+      setCompliance("ok", "Ready");
+      hideOverlay();
+      return;
+    }
+
+    const warnThreshold = 15 * MIN;
+    if(dueInMs <= 0){
+      setCompliance("due", "Break due now");
+      // show overlay unless dismissed recently (10 mins)
+      const dismissedRecently = state.overlayDismissedAtMs && (now - state.overlayDismissedAtMs) < 10 * MIN;
+      if(!dismissedRecently && !overlay.classList.contains("show")){
+        showOverlay("Break due", "You have reached 6 hours continuous work. Start a break now.");
+      }
+    } else if(dueInMs <= warnThreshold){
+      setCompliance("warn", `Break due in ${fmtDur(dueInMs)}`);
+      hideOverlay();
+    } else {
+      setCompliance("ok", `Next break in ${fmtDur(dueInMs)}`);
+      hideOverlay();
+    }
+  }
+
+  function renderLog(segs){
+    if(!logList) return;
+    if(segs.length === 0){
+      logList.innerHTML = `<div class="subtle">No segments yet.</div>`;
+      return;
+    }
+
+    // newest first
+    const items = [...segs].sort((a,b) => b.startMs - a.startMs);
+
+    logList.innerHTML = items.map(s => {
+      const dur = clamp0(s.endMs - s.startMs);
+      const isQual = s.type === "BREAK" && dur >= 15 * MIN;
+      const pillClass = s.type === "WORK" ? "work" : "break";
+      const qualPill = isQual ? `<span class="pill qual">QUAL</span>` : "";
+      return `
+        <div class="logItem">
+          <div class="top">
+            <div>
+              <span class="pill ${pillClass}">${s.type}</span>
+              ${qualPill}
+            </div>
+            <div class="subtle">${fmtDur(dur)}</div>
+          </div>
+          <div class="subtle" style="margin-top:6px;">
+            ${fmtHHMM(s.startMs)} → ${fmtHHMM(s.endMs)}
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  // -------------------------
+  // EVENTS
+  // -------------------------
+  btnViewBasic.addEventListener("click", () => setView("basic"));
+  btnViewFull.addEventListener("click", () => setView("full"));
+
+  btnShift13.addEventListener("click", () => setShiftHours(13));
+  btnShift15.addEventListener("click", () => setShiftHours(15));
+
+  btnStartShift.addEventListener("click", () => startShift());
+  btnEndShift.addEventListener("click", () => endShift());
+  btnResetDay.addEventListener("click", () => {
+    const ok = confirm("Reset day? This clears the shift and all segments.");
+    if(ok) resetDay();
+  });
+
+  btnWork.addEventListener("click", () => startSegment("WORK"));
+  btnBreak.addEventListener("click", () => startSegment("BREAK"));
+
+  btnAddManual.addEventListener("click", addManualSegment);
+  btnDeleteLast.addEventListener("click", deleteLast);
+
+  // -------------------------
+  // TICKER
+  // -------------------------
+  setInterval(render, 1000);
+
+  // -------------------------
+  // PWA: service worker (optional)
+  // -------------------------
+  // Make sure you have a file named "sw.js" at the site root if you want this.
+  if("serviceWorker" in navigator){
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  }
+
+  // initial render
+  // restore toggles without recursion (setView/setShiftHours save+render)
+  // We call render once; UI setters will align state.
+  render();
+
+})();
+</script>
 </body>
 </html>
