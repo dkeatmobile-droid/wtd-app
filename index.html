@@ -3,10 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#bfc5cc" />
+  <meta name="theme-color" content="#0f172a" />
   <title>WTD Working Time Tracker (Beta)</title>
-
-  <link rel="manifest" href="manifest.webmanifest" />
 
   <style>
     :root{
@@ -15,30 +13,31 @@
       --text:#0f172a;
       --muted:#6b7280;
       --border:#e5e7eb;
-      --shadow: 0 10px 28px rgba(2,6,23,.10);
-      --radius: 16px;
 
-      /* Brushed aluminium header */
-      --al1:#d7dbe0;
-      --al2:#b7bdc5;
-      --al3:#eef1f4;
+      /* Professional header */
+      --header1:#0b1220;
+      --header2:#0f172a;
+      --header3:#111827;
 
-      /* compliance lamps */
+      /* Glass */
+      --glass: rgba(255,255,255,.12);
+      --glass2: rgba(255,255,255,.18);
+
+      /* Compliance lamps */
       --ok:#16a34a;
       --warn:#f59e0b;
       --due:#ef4444;
       --lampOff:#4b5563;
 
-      /* button palette */
+      /* Buttons */
       --btnPrimaryBg:#0f172a;
       --btnPrimaryText:#ffffff;
       --btnRunningBg:#0b3b1f;
       --btnRunningText:#ffffff;
 
-      --workTint:#dbeafe;    /* blue */
-      --workTintBorder:#93c5fd;
-      --breakTint:#fff4db;   /* amber */
-      --breakTintBorder:#fcd34d;
+      --radius: 16px;
+      --shadow: 0 10px 28px rgba(2,6,23,.10);
+      --shadowStrong: 0 18px 44px rgba(2,6,23,.18);
     }
 
     *{box-sizing:border-box;}
@@ -51,169 +50,150 @@
     }
 
     .app{
-      height: 100vh;
-      height: 100svh;
+      height:100vh;
+      height:100svh;
       display:flex;
       flex-direction:column;
-    }
-
-    /* =========================
-       Brushed aluminium header
-       ========================= */
-    header.topHeader{
-      padding: calc(10px + env(safe-area-inset-top)) 10px 10px;
-      color:#111827;
-      position:relative;
       overflow:hidden;
-      border-bottom: 1px solid rgba(15,23,42,.08);
-
-      /* “brushed” grain + depth */
-      background:
-        /* subtle vignette */
-        radial-gradient(120% 160% at 50% 0%, rgba(255,255,255,.70), rgba(255,255,255,0) 55%),
-        /* grain lines */
-        repeating-linear-gradient(
-          90deg,
-          rgba(255,255,255,.05) 0px,
-          rgba(255,255,255,.05) 1px,
-          rgba(0,0,0,.03) 2px,
-          rgba(255,255,255,.02) 3px,
-          rgba(255,255,255,0) 6px
-        ),
-        /* metal base gradient */
-        linear-gradient(180deg, var(--al3), var(--al1) 35%, var(--al2));
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.85),
-        0 6px 18px rgba(2,6,23,.08);
     }
 
-    /* Header row: traffic + labels + title aligned */
+    /* =======================
+       iOS-style header
+       ======================= */
+    header.topHeader{
+      position:relative;
+      color:#fff;
+      padding: calc(12px + env(safe-area-inset-top)) 12px 58px; /* bottom padding for floating bar */
+      background:
+        radial-gradient(900px 260px at 20% 0%, rgba(255,255,255,.10), rgba(255,255,255,0) 60%),
+        radial-gradient(700px 240px at 80% 10%, rgba(255,255,255,.08), rgba(255,255,255,0) 55%),
+        linear-gradient(180deg, var(--header1), var(--header2) 48%, var(--header3));
+      overflow:hidden;
+    }
+    header.topHeader::after{
+      content:"";
+      position:absolute;
+      inset:auto -20% -42% -20%;
+      height:220px;
+      background: radial-gradient(closest-side, rgba(255,255,255,.08), rgba(255,255,255,0));
+      transform: rotate(-5deg);
+      pointer-events:none;
+    }
+
     .headerRow{
       display:flex;
-      align-items:center;
       justify-content:space-between;
-      gap:10px;
+      gap:12px;
+      align-items:flex-start;
+      position:relative;
+      z-index:2;
     }
 
-    .brandRow{
+    .leftCluster{
       display:flex;
-      align-items:center;
-      gap:10px;
-      min-width: 240px;
-      flex: 1 1 auto;
+      gap:12px;
+      align-items:flex-start;
+      min-width: 230px;
     }
 
-    .brandText{
+    .brand{
       display:flex;
       flex-direction:column;
-      gap:3px;
-      min-width: 0;
+      gap:4px;
+      padding-top:2px;
     }
-
-    .title{
-      font-weight: 1000;
-      font-size: 16px;
+    .brand .title{
+      font-weight:1000;
+      font-size:15px;
+      line-height:1.15;
       letter-spacing:.2px;
-      line-height:1.1;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
     }
-
-    .status{
-      font-size: 12px;
-      font-weight: 900;
-      opacity:.85;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
+    .brand .status{
+      font-size:12px;
+      font-weight:900;
+      opacity:.86;
     }
 
     .betaNote{
-      margin-top:6px;
-      font-size: 11px;
-      line-height: 1.2;
-      opacity:.78;
+      margin-top:8px;
+      font-size:11px;
+      line-height:1.2;
+      opacity:.82;
+      position:relative;
+      z-index:2;
     }
     .betaNote strong{font-weight:1000;}
 
-    .headerStats{
-      margin-top: 8px;
-      display:grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-    }
-    .stat{
-      background: rgba(255,255,255,.55);
-      border: 1px solid rgba(15,23,42,.06);
-      border-radius: 12px;
-      padding: 8px;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.7);
-    }
-    .stat .label{font-size: 11px; opacity:.85; font-weight: 900;}
-    .stat .value{margin-top: 2px; font-size: 14px; font-weight: 1000;}
-
-    /* =========================
-       Traffic light (matte black)
-       Labels to the right
-       ========================= */
+    /* Traffic light: matte black housing + subtle iOS highlight */
     .signalWrap{
       display:flex;
       gap:10px;
-      align-items:center;
+      align-items:flex-start;
       flex: 0 0 auto;
     }
-
     .signalBox{
-      width: 60px;
-      border-radius: 20px;
-      padding: 8px;
-      background: #0a0a0a;
-      border: 1px solid rgba(255,255,255,.08);
+      width:64px;
+      padding:8px;
+      border-radius:22px;
+      background:
+        radial-gradient(80px 110px at 30% 18%, rgba(255,255,255,.08), rgba(255,255,255,0) 60%),
+        linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.22)),
+        #0a0a0a;
+      border: 1px solid rgba(255,255,255,.07);
       box-shadow:
-        inset 0 2px 6px rgba(255,255,255,.04),
-        0 10px 18px rgba(0,0,0,.30);
+        inset 0 1px 0 rgba(255,255,255,.08),
+        inset 0 -10px 22px rgba(0,0,0,.35),
+        0 12px 28px rgba(0,0,0,.30);
     }
-
     .signal{
       display:flex;
       flex-direction:column;
-      gap: 8px;
+      gap:8px;
       align-items:center;
     }
-
     .lamp{
-      width: 40px;
-      height: 40px;
-      border-radius: 999px;
+      width:42px;
+      height:42px;
+      border-radius:999px;
       background: var(--lampOff);
-      box-shadow: inset 0 10px 16px rgba(0,0,0,.62);
+      box-shadow:
+        inset 0 12px 18px rgba(0,0,0,.62),
+        0 2px 0 rgba(255,255,255,.04);
       border: 2px solid rgba(0,0,0,.55);
+      position:relative;
+      overflow:hidden;
+    }
+    .lamp::after{
+      content:"";
+      position:absolute;
+      left:10px; top:9px;
+      width:22px; height:10px;
+      border-radius:999px;
+      background: rgba(255,255,255,.18);
+      transform: rotate(-12deg);
     }
 
     .signalLabels{
       display:flex;
       flex-direction:column;
-      gap: 8px;
-      min-width: 150px;
+      gap:8px;
+      min-width: 160px;
+      padding-top:0;
     }
-
     .sigLabel{
-      height: 40px;
+      height:42px;
       display:flex;
       align-items:center;
-      font-size: 11px;
-      font-weight: 950;
-      letter-spacing:.1px;
-      color: rgba(17,24,39,.92);
+      font-size:11px;
+      font-weight:950;
+      color: rgba(255,255,255,.96);
+      text-shadow: 0 2px 12px rgba(0,0,0,.45);
       opacity: 0;
       transform: translateX(-4px);
       transition: opacity .18s ease, transform .18s ease;
       user-select:none;
       white-space:nowrap;
     }
-
-    /* label visibility */
     .signalWrap[data-state="due"]  .sigLabel.red,
     .signalWrap[data-state="warn"] .sigLabel.amber,
     .signalWrap[data-state="ok"]   .sigLabel.green{
@@ -222,51 +202,192 @@
     }
     .signalWrap[data-state="off"] .sigLabel{opacity:0 !important;}
 
-    /* lamp ON styles */
     .signalWrap[data-state="ok"] .lamp.green{
       background: var(--ok);
-      box-shadow: inset 0 10px 16px rgba(0,0,0,.45), 0 0 16px rgba(22,163,74,.35);
+      box-shadow:
+        inset 0 12px 18px rgba(0,0,0,.45),
+        0 0 18px rgba(22,163,74,.45);
     }
-
     @keyframes amberFlash { 0%,100%{filter:brightness(1)} 50%{filter:brightness(1.30)} }
     .signalWrap[data-state="warn"] .lamp.amber{
       background: var(--warn);
-      box-shadow: inset 0 10px 16px rgba(0,0,0,.45), 0 0 16px rgba(245,158,11,.35);
+      box-shadow:
+        inset 0 12px 18px rgba(0,0,0,.45),
+        0 0 18px rgba(245,158,11,.45);
       animation: amberFlash 1s infinite;
     }
-
     .signalWrap[data-state="due"] .lamp.red{
       background: var(--due);
-      box-shadow: inset 0 10px 16px rgba(0,0,0,.45), 0 0 16px rgba(239,68,68,.35);
+      box-shadow:
+        inset 0 12px 18px rgba(0,0,0,.45),
+        0 0 18px rgba(239,68,68,.45);
     }
 
-    /* =========================
-       Main layout
-       ========================= */
+    /* Floating glass control bar */
+    .controlBar{
+      position:absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 10px;
+      z-index:3;
+
+      padding: 8px;
+      border-radius: 20px;
+
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.10));
+      border: 1px solid rgba(255,255,255,.20);
+      box-shadow: var(--shadowStrong);
+
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    .controlBarInner{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+
+    .rockerGroup{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .rockerWrap{
+      padding: 3px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.82);
+      border: 1px solid rgba(255,255,255,.55);
+      box-shadow: 0 8px 18px rgba(0,0,0,.10);
+    }
+    .rocker{
+      display:inline-flex;
+      border-radius:999px;
+      overflow:hidden;
+      background: rgba(15,23,42,.06);
+    }
+    .rockerBtn{
+      border:0;
+      background:transparent;
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 950;
+      cursor:pointer;
+      opacity:.88;
+      color:#0b1220;
+      user-select:none;
+    }
+    .rockerBtn.isOn{
+      background: rgba(255,255,255,.90);
+      opacity:1;
+      border-radius:999px;
+      box-shadow: 0 2px 8px rgba(2,6,23,.12);
+    }
+
+    .shiftLabel{
+      font-size:10px;
+      font-weight:950;
+      opacity:.80;
+      color:#0b1220;
+      line-height:1.1;
+      text-align:right;
+      white-space:nowrap;
+      margin-right:2px;
+    }
+
+    /* Header stats row (optional; we hide on iPhone 14 by height) */
+    .headerStats{
+      margin-top: 10px;
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      position:relative;
+      z-index:2;
+    }
+    .stat{
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 12px;
+      padding: 8px;
+    }
+    .stat .label{font-size: 11px; opacity:.85; font-weight: 900;}
+    .stat .value{margin-top: 2px; font-size: 14px; font-weight: 1000;}
+
+    /* =======================
+       Main panels + animation
+       ======================= */
     main{
       flex:1;
       min-height:0;
       padding-bottom: env(safe-area-inset-bottom);
+      overflow:hidden;
     }
 
-    .panel{height:100%; padding:10px;}
-    .panelFull{overflow:auto;}
+    .panes{
+      height:100%;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .pane{
+      position:absolute;
+      inset:0;
+      padding:10px 10px 12px;
+      will-change: transform, opacity;
+      transition: transform 260ms ease, opacity 260ms ease;
+    }
+    .pane.isHidden{
+      pointer-events:none;
+      opacity:0;
+    }
+
+    /* Slide transitions */
+    .pane.basic{
+      transform: translateX(0);
+      opacity:1;
+    }
+    .pane.full{
+      transform: translateX(8%);
+      opacity:0;
+    }
+    .panes.showFull .pane.basic{
+      transform: translateX(-8%);
+      opacity:0;
+      pointer-events:none;
+    }
+    .panes.showFull .pane.full{
+      transform: translateX(0);
+      opacity:1;
+      pointer-events:auto;
+    }
+
+    /* BASIC layout: no scrolling */
     .panelBasic{
       height:100%;
-      overflow:hidden; /* no scrolling */
+      overflow:hidden;
       display:grid;
-      grid-template-rows: auto auto auto 1fr auto;
+      grid-template-rows: auto auto 1fr auto;
       gap:10px;
     }
-    .isHidden{display:none !important;}
 
-    /* Controls */
+    /* FULL layout: scroll */
+    .panelFull{
+      height:100%;
+      overflow:auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 40px;
+    }
+
+    /* Controls/buttons */
     .controlsRow{
       display:grid;
       grid-template-columns: repeat(3, 1fr);
       gap:8px;
     }
-
     .btn{
       padding: 10px 8px;
       border-radius: 14px;
@@ -279,7 +400,6 @@
     }
     .btn:active{transform: translateY(1px);}
     .btn:disabled{opacity:.55; cursor:not-allowed;}
-
     .btn.primary{
       background: var(--btnPrimaryBg);
       color: var(--btnPrimaryText);
@@ -298,7 +418,6 @@
       background:#fff;
     }
 
-    /* Work/Break */
     .bigActions{
       display:grid;
       grid-template-columns: 1fr 1fr;
@@ -310,51 +429,8 @@
       border-radius: 18px;
       box-shadow: var(--shadow);
     }
+    .btn.big.isActive{outline: 3px solid rgba(2,6,23,.10);}
 
-    /* active highlights */
-    .btn.big.workActive{
-      background: var(--workTint);
-      border-color: var(--workTintBorder);
-    }
-    .btn.big.breakActive{
-      background: var(--breakTint);
-      border-color: var(--breakTintBorder);
-    }
-
-    /* Rockers moved below Work/Break */
-    .rockerRow{
-      display:flex;
-      gap:8px;
-      justify-content:space-between;
-      align-items:center;
-    }
-    .rockerWrap{
-      background: rgba(255,255,255,.92);
-      border: 1px solid rgba(15,23,42,.10);
-      border-radius: 999px;
-      padding: 3px;
-      box-shadow: 0 6px 16px rgba(2,6,23,.08);
-    }
-    .rocker{display:inline-flex; border-radius:999px; overflow:hidden;}
-    .rockerBtn{
-      border:0;
-      background:transparent;
-      padding: 7px 10px;
-      font-size: 12px;
-      font-weight: 950;
-      cursor:pointer;
-      opacity:.85;
-      color:#0b1220;
-      user-select:none;
-      white-space:nowrap;
-    }
-    .rockerBtn.isOn{
-      background: rgba(15,23,42,.10);
-      opacity:1;
-      border-radius:999px;
-    }
-
-    /* Cards */
     .miniGrid{
       display:grid;
       grid-template-columns: 1fr 1fr;
@@ -368,11 +444,24 @@
       padding: 10px;
       box-shadow: 0 1px 0 rgba(2,6,23,.04);
     }
-    .card .label{font-size: 12px; color: var(--muted); font-weight: 900;}
-    .card .metric{font-size: 18px; font-weight: 1000; margin-top: 6px; letter-spacing:.2px;}
-    .hint{font-size: 11px; color: rgba(15,23,42,.72);}
+    .card .label{
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 900;
+      letter-spacing: .2px;
+    }
+    .card .metric{
+      font-size: 18px;
+      font-weight: 1000;
+      margin-top: 6px;
+      letter-spacing:.2px;
+    }
+    .hint{
+      font-size: 11px;
+      color: rgba(15,23,42,.72);
+    }
 
-    /* Full mode */
+    /* Full mode UI */
     h3{margin: 12px 0 10px; font-size: 14px; color: rgba(15,23,42,.95);}
     .row{display:flex; gap:10px; flex-wrap:wrap;}
     .field{
@@ -385,7 +474,14 @@
       box-shadow: 0 1px 0 rgba(2,6,23,.04);
     }
     label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px; font-weight: 950;}
-    input,select{width:100%; padding:10px 12px; border-radius: 14px; border:1px solid var(--border); font-size:14px; background:#fff;}
+    input,select{
+      width:100%;
+      padding:10px 12px;
+      border-radius: 14px;
+      border:1px solid var(--border);
+      font-size:14px;
+      background:#fff;
+    }
     .logList{display:flex; flex-direction:column; gap:10px; margin-top:10px;}
     .logItem{background:#fff; border:1px solid var(--border); border-radius: 16px; padding: 12px; box-shadow: 0 1px 0 rgba(2,6,23,.04);}
     .logItem .top{display:flex; justify-content:space-between; gap:10px; align-items:center;}
@@ -398,38 +494,30 @@
     /* Overlay */
     .overlay{position:fixed; inset:0; display:none; align-items:flex-end; justify-content:center; background: rgba(0,0,0,.38); padding: 16px;}
     .overlay.show{display:flex;}
-    .sheet{width:min(520px, 100%); background:#fff; border-radius: 22px; padding: 14px; box-shadow: var(--shadow);}
+    .sheet{width:min(520px, 100%); background:#fff; border-radius: 22px; padding: 14px; box-shadow: var(--shadowStrong);}
     .sheet h2{margin:0; font-size:16px;}
     .sheet p{margin:8px 0 12px; color:#111827; font-size:14px; line-height:1.35;}
     .sheet .actions{display:flex; gap:10px;}
     .sheet .actions .btn{flex:1;}
 
-    /* ===== Height-based compacting so BASIC fits ===== */
-    @media (max-height: 740px){
-      header.topHeader{padding: calc(8px + env(safe-area-inset-top)) 8px 8px;}
-      .panel{padding:8px;}
+    /* =======================
+       iPhone 14 fit rules
+       ======================= */
+    @media (max-height: 720px){
+      .headerStats{display:none;} /* iPhone 14: reclaim vertical space */
+      header.topHeader{padding: calc(10px + env(safe-area-inset-top)) 10px 54px;}
+      .controlBar{left:10px; right:10px; bottom: 9px; padding:7px; border-radius:18px;}
       .panelBasic{gap:8px;}
       .btn{padding:9px 8px;}
       .btn.big{padding:12px 10px; font-size:15px;}
-      .card{padding:9px;}
       .card .metric{font-size:16px;}
-      .stat{padding:7px;}
-      .stat .value{font-size:13px;}
-      .lamp{width:36px; height:36px;}
-      .sigLabel{height:36px; font-size:10px;}
-      .signalBox{width:56px; padding:7px;}
-      .headerStats{gap:6px;}
+      .lamp{width:38px; height:38px;}
+      .sigLabel{height:38px; font-size:10px;}
+      .signalBox{width:60px; padding:7px;}
     }
-
     @media (max-height: 690px){
       .betaNote{display:none;}
       .hint{display:none;}
-      .signalLabels{min-width: 130px;}
-    }
-
-    @media (max-height: 640px){
-      .headerStats{display:none;}
-      .signalLabels{display:none;} /* extreme: reclaim space */
     }
   </style>
 </head>
@@ -439,7 +527,8 @@
 
   <header class="topHeader">
     <div class="headerRow">
-      <div class="brandRow">
+      <div class="leftCluster">
+        <!-- Traffic light + labels right -->
         <div id="signalWrap" class="signalWrap" data-state="off" aria-label="Compliance indicator">
           <div class="signalBox" aria-hidden="true">
             <div class="signal">
@@ -456,12 +545,14 @@
           </div>
         </div>
 
-        <div class="brandText">
+        <div class="brand">
           <div class="title">WTD Working Time Tracker</div>
           <div id="headerStatus" class="status">Ready</div>
         </div>
       </div>
-      <!-- Rockers moved out of header (per request) -->
+
+      <!-- headerRow right side intentionally empty (controls are in floating bar) -->
+      <div></div>
     </div>
 
     <div class="betaNote">
@@ -483,114 +574,128 @@
         <div id="hdrFinishBy" class="value">—</div>
       </div>
     </div>
+
+    <!-- Floating glass control bar (always visible in Basic + Full) -->
+    <div class="controlBar" role="region" aria-label="Controls">
+      <div class="controlBarInner">
+        <div class="rockerGroup">
+          <div class="rockerWrap" title="View mode">
+            <div class="rocker" role="group" aria-label="View mode">
+              <button id="btnViewBasic" class="rockerBtn isOn" type="button">Basic</button>
+              <button id="btnViewFull" class="rockerBtn" type="button">Full</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="rockerGroup">
+          <div class="shiftLabel">Length of shift<br/>for the day</div>
+          <div class="rockerWrap" title="Shift length">
+            <div class="rocker" role="group" aria-label="Shift length">
+              <button id="btnShift13" class="rockerBtn isOn" type="button">13h</button>
+              <button id="btnShift15" class="rockerBtn" type="button">15h</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </header>
 
   <main>
-    <!-- BASIC (no scrolling) -->
-    <section id="panelBasic" class="panel panelBasic">
-      <div class="controlsRow">
-        <button id="btnStartShift" class="btn primary startShift" type="button">Start shift</button>
-        <button id="btnEndShift" class="btn" type="button">End shift</button>
-        <button id="btnResetDay" class="btn danger" type="button">Reset day</button>
-      </div>
-
-      <div class="bigActions">
-        <button id="btnWork" class="btn big" type="button">Work</button>
-        <button id="btnBreak" class="btn big" type="button">Break</button>
-      </div>
-
-      <!-- Rockers moved BELOW work/break -->
-      <div class="rockerRow">
-        <div class="rockerWrap" title="View mode">
-          <div class="rocker" role="group" aria-label="View mode">
-            <button id="btnViewBasic" class="rockerBtn isOn" type="button">Basic</button>
-            <button id="btnViewFull" class="rockerBtn" type="button">Full</button>
+    <div id="panes" class="panes">
+      <!-- BASIC (no scrolling) -->
+      <section id="panelBasic" class="pane basic">
+        <div class="panelBasic">
+          <div class="controlsRow">
+            <button id="btnStartShift" class="btn primary startShift" type="button">Start shift</button>
+            <button id="btnEndShift" class="btn" type="button">End shift</button>
+            <button id="btnResetDay" class="btn danger" type="button">Reset day</button>
           </div>
-        </div>
 
-        <div class="rockerWrap" title="Shift length">
-          <div class="rocker" role="group" aria-label="Shift length">
-            <button id="btnShift13" class="rockerBtn isOn" type="button">13h</button>
-            <button id="btnShift15" class="rockerBtn" type="button">15h</button>
+          <div class="bigActions">
+            <button id="btnWork" class="btn big" type="button">Work</button>
+            <button id="btnBreak" class="btn big" type="button">Break</button>
           </div>
-        </div>
-      </div>
 
-      <div class="miniGrid">
-        <div class="card">
-          <div class="label">Shift time</div>
-          <div id="uiShiftTime" class="metric">00:00</div>
-        </div>
-        <div class="card">
-          <div class="label">Continuous work</div>
-          <div id="uiContinuous" class="metric">00:00</div>
-        </div>
-        <div class="card">
-          <div class="label">Next break in</div>
-          <div id="uiNextBreakIn" class="metric">—</div>
-        </div>
-        <div class="card">
-          <div class="label">Break still needed</div>
-          <div id="uiBreakNeeded" class="metric">00:00</div>
-        </div>
-      </div>
+          <div class="miniGrid">
+            <div class="card">
+              <div class="label">Shift time</div>
+              <div id="uiShiftTime" class="metric">00:00</div>
+            </div>
+            <div class="card">
+              <div class="label">Continuous work</div>
+              <div id="uiContinuous" class="metric">00:00</div>
+            </div>
+            <div class="card">
+              <div class="label">Next break in</div>
+              <div id="uiNextBreakIn" class="metric">—</div>
+            </div>
+            <div class="card">
+              <div class="label">Break still needed</div>
+              <div id="uiBreakNeeded" class="metric">00:00</div>
+            </div>
+          </div>
 
-      <div class="hint">Qualifying break (counts toward 30/45) = BREAK for ≥ 15 minutes.</div>
-    </section>
+          <div class="hint">Qualifying break (counts toward 30/45) = BREAK for ≥ 15 minutes.</div>
+        </div>
+      </section>
 
-    <!-- FULL (scrollable) -->
-    <section id="panelFull" class="panel panelFull isHidden">
-      <h3>Quick summary</h3>
-      <div class="miniGrid">
-        <div class="card">
-          <div class="label">Total work</div>
-          <div id="uiWorkTotal_full" class="metric">00:00</div>
-        </div>
-        <div class="card">
-          <div class="label">Qualifying breaks</div>
-          <div id="uiQualBreak_full" class="metric">00:00</div>
-        </div>
-        <div class="card">
-          <div class="label">Break required</div>
-          <div id="uiBreakReq_full" class="metric">00:00</div>
-        </div>
-        <div class="card">
-          <div class="label">Break still needed</div>
-          <div id="uiBreakNeed_full" class="metric">00:00</div>
-        </div>
-      </div>
+      <!-- FULL (scrollable) -->
+      <section id="panelFull" class="pane full isHidden">
+        <div class="panelFull">
+          <h3>Quick summary</h3>
+          <div class="miniGrid">
+            <div class="card">
+              <div class="label">Total work</div>
+              <div id="uiWorkTotal_full" class="metric">00:00</div>
+            </div>
+            <div class="card">
+              <div class="label">Qualifying breaks</div>
+              <div id="uiQualBreak_full" class="metric">00:00</div>
+            </div>
+            <div class="card">
+              <div class="label">Break required</div>
+              <div id="uiBreakReq_full" class="metric">00:00</div>
+            </div>
+            <div class="card">
+              <div class="label">Break still needed</div>
+              <div id="uiBreakNeed_full" class="metric">00:00</div>
+            </div>
+          </div>
 
-      <h3>Manual add segment</h3>
-      <div class="row">
-        <div class="field">
-          <label for="manType">Type</label>
-          <select id="manType">
-            <option value="WORK">WORK</option>
-            <option value="BREAK">BREAK</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="manStart">Start (HH:MM)</label>
-          <input id="manStart" inputmode="numeric" placeholder="08:00" />
-        </div>
-        <div class="field">
-          <label for="manEnd">End (HH:MM)</label>
-          <input id="manEnd" inputmode="numeric" placeholder="09:15" />
-        </div>
-      </div>
-      <div class="row" style="margin-top:10px;">
-        <button id="btnAddManual" class="btn primary" type="button">Add segment</button>
-        <button id="btnDeleteLast" class="btn" type="button">Delete last</button>
-      </div>
-      <div class="subtle" style="margin-top:8px;">
-        Times use today’s date. If end is earlier than start, it is treated as next day.
-      </div>
+          <h3>Manual add segment</h3>
+          <div class="row">
+            <div class="field">
+              <label for="manType">Type</label>
+              <select id="manType">
+                <option value="WORK">WORK</option>
+                <option value="BREAK">BREAK</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="manStart">Start (HHMM)</label>
+              <input id="manStart" inputmode="tel" placeholder="0800" />
+              <div class="subtle" style="margin-top:6px;">Auto formats to HH:MM on iPhone</div>
+            </div>
+            <div class="field">
+              <label for="manEnd">End (HHMM)</label>
+              <input id="manEnd" inputmode="tel" placeholder="0915" />
+            </div>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <button id="btnAddManual" class="btn primary" type="button">Add segment</button>
+            <button id="btnDeleteLast" class="btn" type="button">Delete last</button>
+          </div>
+          <div class="subtle" style="margin-top:8px;">
+            Times use today’s date. If end is earlier than start, it is treated as next day.
+          </div>
 
-      <h3>Segment log</h3>
-      <div id="logList" class="logList"></div>
+          <h3>Segment log</h3>
+          <div id="logList" class="logList"></div>
 
-      <div style="height:12px;"></div>
-    </section>
+          <div style="height:12px;"></div>
+        </div>
+      </section>
+    </div>
   </main>
 </div>
 
@@ -608,7 +713,7 @@
 
 <script>
 (() => {
-  const STORAGE_KEY = "wtd_app_v9_state";
+  const STORAGE_KEY = "wtd_app_ios_v1_state";
   const MIN  = 60000;
   const HOUR = 60 * MIN;
 
@@ -636,14 +741,12 @@
   function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 
   // DOM
+  const panes = document.getElementById("panes");
   const headerStatus = document.getElementById("headerStatus");
   const hdrStart = document.getElementById("hdrStart");
   const hdrDuration = document.getElementById("hdrDuration");
   const hdrFinishBy = document.getElementById("hdrFinishBy");
   const signalWrap = document.getElementById("signalWrap");
-
-  const panelBasic = document.getElementById("panelBasic");
-  const panelFull  = document.getElementById("panelFull");
 
   const btnViewBasic = document.getElementById("btnViewBasic");
   const btnViewFull  = document.getElementById("btnViewFull");
@@ -654,7 +757,6 @@
   const btnStartShift = document.getElementById("btnStartShift");
   const btnEndShift = document.getElementById("btnEndShift");
   const btnResetDay = document.getElementById("btnResetDay");
-
   const btnWork = document.getElementById("btnWork");
   const btnBreak = document.getElementById("btnBreak");
 
@@ -673,7 +775,6 @@
   const manEnd = document.getElementById("manEnd");
   const btnAddManual = document.getElementById("btnAddManual");
   const btnDeleteLast = document.getElementById("btnDeleteLast");
-
   const logList = document.getElementById("logList");
 
   const overlay = document.getElementById("overlay");
@@ -698,20 +799,31 @@
   }
   function isShiftRunning(){ return !!state.shiftStartMs; }
 
+  /* iPhone-friendly time entry: type 0800 -> becomes 08:00 */
+  function autoColon(el){
+    el.addEventListener("input", () => {
+      let v = (el.value || "").replace(/[^\d]/g,"").slice(0,4);
+      if(v.length >= 3) v = v.slice(0,2) + ":" + v.slice(2);
+      el.value = v;
+    });
+  }
+  autoColon(manStart);
+  autoColon(manEnd);
+
   function applyView(view){
-    panelBasic.classList.toggle("isHidden", view !== "basic");
-    panelFull.classList.toggle("isHidden", view !== "full");
+    panes.classList.toggle("showFull", view === "full");
     btnViewBasic.classList.toggle("isOn", view === "basic");
     btnViewFull.classList.toggle("isOn", view === "full");
-  }
-  function applyShiftHours(h){
-    btnShift13.classList.toggle("isOn", h === 13);
-    btnShift15.classList.toggle("isOn", h === 15);
   }
   function setView(view){
     state.view = view;
     saveState();
     applyView(view);
+  }
+
+  function applyShiftHours(h){
+    btnShift13.classList.toggle("isOn", h === 13);
+    btnShift15.classList.toggle("isOn", h === 15);
   }
   function setShiftHours(h){
     state.shiftHours = h;
@@ -735,11 +847,6 @@
     state.currentType = null;
   }
 
-  function refreshWorkBreakHighlights(){
-    btnWork.classList.toggle("workActive", state.currentType === "WORK");
-    btnBreak.classList.toggle("breakActive", state.currentType === "BREAK");
-  }
-
   function startSegment(type){
     if(!isShiftRunning()) return;
     const now = Date.now();
@@ -751,7 +858,6 @@
     state.currentType = type;
     state.segments.push({ type, startMs: now, endMs: null });
     saveState();
-    refreshWorkBreakHighlights();
     render();
   }
 
@@ -763,24 +869,21 @@
     state.segments = [];
     state.overlayDismissedAtMs = null;
     saveState();
-    refreshWorkBreakHighlights();
     render();
   }
 
   function endShift(){
     if(!isShiftRunning()) return;
     closeOpenSegment(Date.now());
-    state.shiftStartMs = null;     // fully ended
+    state.shiftStartMs = null;     // truly end
     state.currentType = null;
     saveState();
-    refreshWorkBreakHighlights();
     render();
   }
 
   function resetDay(){
     state = defaultState();
     saveState();
-    refreshWorkBreakHighlights();
     render();
   }
 
@@ -793,12 +896,13 @@
     d.setHours(hh, mm, 0, 0);
     return d.getTime();
   }
+
   function addManualSegment(){
     const type = manType.value;
     const s = parseTimeToMs(manStart.value);
     const e0 = parseTimeToMs(manEnd.value);
     if(s == null || e0 == null){
-      alert("Please enter valid times like 08:00");
+      alert("Enter times like 08:00 (or type 0800 and it will format).");
       return;
     }
     let e = e0;
@@ -807,13 +911,13 @@
     saveState();
     render();
   }
+
   function deleteLast(){
     if(state.segments.length === 0) return;
     const last = state.segments[state.segments.length - 1];
     state.segments.pop();
     if(last && last.endMs == null) state.currentType = null;
     saveState();
-    refreshWorkBreakHighlights();
     render();
   }
 
@@ -832,11 +936,18 @@
         return acc + (dur >= 15 * MIN ? dur : 0);
       }, 0);
   }
+
+  /* WTD daily break rule used here:
+     - >6h work => 30m break
+     - >9h work => 45m break
+     (qualifying break segments count only if >=15m)
+  */
   function requiredBreakMs(workMs){
     if(workMs > 9 * HOUR) return 45 * MIN;
     if(workMs > 6 * HOUR) return 30 * MIN;
     return 0;
   }
+
   // Continuous work interrupted by ANY break (even <15m)
   function continuousWorkSinceLastAnyBreakMs(segments){
     let lastBreakEnd = null;
@@ -851,6 +962,7 @@
         return acc + clamp0(s.endMs - start);
       }, 0);
   }
+
   function nextBreakDueInMs(continuousWorkMs){
     return 6 * HOUR - continuousWorkMs;
   }
@@ -872,6 +984,34 @@
     saveState();
     hideOverlay();
   });
+
+  function renderLog(segs){
+    if(segs.length === 0){
+      logList.innerHTML = `<div class="subtle">No segments yet.</div>`;
+      return;
+    }
+    const items = [...segs].sort((a,b) => b.startMs - a.startMs);
+    logList.innerHTML = items.map(s => {
+      const dur = clamp0(s.endMs - s.startMs);
+      const isQual = s.type === "BREAK" && dur >= 15 * MIN;
+      const pillClass = s.type === "WORK" ? "work" : "break";
+      const qualPill = isQual ? `<span class="pill qual">QUAL</span>` : "";
+      return `
+        <div class="logItem">
+          <div class="top">
+            <div>
+              <span class="pill ${pillClass}">${s.type}</span>
+              ${qualPill}
+            </div>
+            <div class="subtle">${fmtDur(dur)}</div>
+          </div>
+          <div class="subtle" style="margin-top:8px;">
+            ${fmtHHMM(s.startMs)} → ${fmtHHMM(s.endMs)}
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
 
   function render(){
     const now = Date.now();
@@ -900,7 +1040,8 @@
       hdrFinishBy.textContent = fmtHHMM(state.shiftStartMs + state.shiftHours * HOUR);
     }
 
-    refreshWorkBreakHighlights();
+    btnWork.classList.toggle("isActive", state.currentType === "WORK");
+    btnBreak.classList.toggle("isActive", state.currentType === "BREAK");
 
     const segs = getSegmentsResolved(now);
     const workMs = sumDurationMs(segs, "WORK");
@@ -949,34 +1090,6 @@
     }
   }
 
-  function renderLog(segs){
-    if(segs.length === 0){
-      logList.innerHTML = `<div class="subtle">No segments yet.</div>`;
-      return;
-    }
-    const items = [...segs].sort((a,b) => b.startMs - a.startMs);
-    logList.innerHTML = items.map(s => {
-      const dur = clamp0(s.endMs - s.startMs);
-      const isQual = s.type === "BREAK" && dur >= 15 * MIN;
-      const pillClass = s.type === "WORK" ? "work" : "break";
-      const qualPill = isQual ? `<span class="pill qual">QUAL</span>` : "";
-      return `
-        <div class="logItem">
-          <div class="top">
-            <div>
-              <span class="pill ${pillClass}">${s.type}</span>
-              ${qualPill}
-            </div>
-            <div class="subtle">${fmtDur(dur)}</div>
-          </div>
-          <div class="subtle" style="margin-top:8px;">
-            ${fmtHHMM(s.startMs)} → ${fmtHHMM(s.endMs)}
-          </div>
-        </div>
-      `;
-    }).join("");
-  }
-
   // Events
   btnViewBasic.addEventListener("click", () => setView("basic"));
   btnViewFull.addEventListener("click", () => setView("full"));
@@ -999,11 +1112,6 @@
   btnDeleteLast.addEventListener("click", deleteLast);
 
   setInterval(render, 1000);
-
-  // PWA (optional)
-  if("serviceWorker" in navigator){
-    navigator.serviceWorker.register("./sw.js").catch(() => {});
-  }
 
   // Init
   applyView(state.view);
