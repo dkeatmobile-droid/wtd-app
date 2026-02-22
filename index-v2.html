@@ -9,7 +9,6 @@
   <style>
     :root{
       --page:#e5e7eb;
-
       --text:#0f172a;
 
       --header1:#0b1220;
@@ -44,7 +43,6 @@
       --dashBorder: rgba(255,255,255,.10);
       --dashText: rgba(255,255,255,.94);
       --dashSub: rgba(255,255,255,.74);
-
       --progressTrack: rgba(255,255,255,.14);
     }
 
@@ -55,7 +53,7 @@
       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
       background: var(--page);
       color: var(--text);
-      overflow:hidden;
+      overflow:hidden; /* page itself locked; sheet will scroll */
     }
 
     .app{
@@ -227,9 +225,10 @@
       min-height:0;
       padding: 10px 12px 12px;
       padding-bottom: calc(12px + env(safe-area-inset-bottom));
-      overflow:hidden;
+      overflow:hidden; /* keep page locked, sheet will scroll */
     }
 
+    /* ✅ FIX: SHEET is the single scroll container */
     .sheet{
       height:100%;
       border-radius: var(--radiusSheet) var(--radiusSheet) 0 0;
@@ -242,8 +241,11 @@
       display:flex;
       flex-direction:column;
       gap:10px;
-      overflow:hidden;
+
+      overflow:auto;
+      -webkit-overflow-scrolling: touch;
     }
+    .sheet::-webkit-scrollbar{ width:0; height:0; } /* iOS/clean */
 
     .glass{
       background: linear-gradient(180deg, var(--glass1), var(--glass2));
@@ -354,18 +356,17 @@
     /* =========================
        Driver dashboard blocks
        ========================= */
+    /* ✅ FIX: do NOT clip dashboard */
     .dash{
       display:flex;
       flex-direction:column;
       gap:10px;
-      flex:1;
-      min-height:0;
-      overflow:hidden;
+      overflow:visible;
     }
 
     .dashCard{
       border-radius: 22px;
-      border: 1px solid var(--dashBorder);
+      border: 1px solid rgba(255,255,255,.10);
       background:
         radial-gradient(520px 180px at 25% 18%, rgba(255,255,255,.10), rgba(255,255,255,0) 60%),
         radial-gradient(520px 200px at 78% 30%, rgba(255,255,255,.08), rgba(255,255,255,0) 70%),
@@ -374,7 +375,7 @@
         0 18px 44px rgba(2,6,23,.22),
         inset 0 1px 0 rgba(255,255,255,.12),
         inset 0 -14px 30px rgba(0,0,0,.26);
-      color: var(--dashText);
+      color: rgba(255,255,255,.94);
       overflow:hidden;
     }
 
@@ -407,7 +408,7 @@
       display:flex;
       flex-direction:column;
       gap:6px;
-      color: var(--dashSub);
+      color: rgba(255,255,255,.74);
       font-weight: 850;
     }
     .dashLine{
@@ -452,9 +453,7 @@
       gap:10px;
     }
 
-    .dashSmall{
-      padding: 12px 14px;
-    }
+    .dashSmall{ padding: 12px 14px; }
     .dashSmall .k{
       font-size: 13px;
       font-weight: 950;
@@ -486,7 +485,7 @@
       margin-top: 12px;
       height: 10px;
       border-radius: 999px;
-      background: var(--progressTrack);
+      background: rgba(255,255,255,.14);
       overflow:hidden;
       border: 1px solid rgba(255,255,255,.08);
     }
@@ -540,39 +539,40 @@
       box-shadow: 0 18px 44px rgba(245,158,11,.18);
     }
 
-    /* Panes */
+    /* =========================
+       Panes
+       ========================= */
+
+    /* ✅ FIX: panes should NOT be absolute/inset (that clips height) */
     .panes{
-      position:relative;
       flex:1;
       min-height:0;
-      overflow:hidden;
+      position:relative;
+      overflow:visible;
     }
-    .pane{
-      position:absolute;
-      inset:0;
-      transition: transform 240ms ease, opacity 240ms ease;
-      will-change: transform, opacity;
-    }
-    .pane.basic{opacity:1; transform: translateX(0); pointer-events:auto;}
-    .pane.full {opacity:0; transform: translateX(8%); pointer-events:none;}
-    .panes.showFull .pane.basic{opacity:0; transform: translateX(-8%); pointer-events:none;}
-    .panes.showFull .pane.full {opacity:1; transform: translateX(0); pointer-events:auto;}
 
-    /* ✅ FIX: allow scrolling on small screens (prevents clipping) */
+    .pane{
+      display:none;
+    }
+    .panes.showFull .pane.full{ display:block; }
+    .panes.showFull .pane.basic{ display:none; }
+    .panes:not(.showFull) .pane.basic{ display:block; }
+
+    /* ✅ FIX: Basic grid should not be its own scroll region */
     .basicGrid{
-      height:100%;
-      overflow:auto;
-      -webkit-overflow-scrolling: touch;
       display:flex;
       flex-direction:column;
       gap:10px;
+      height:auto;
+      overflow:visible;
     }
 
+    /* Full view scroll is fine, but sheet already scrolls;
+       keep it visible (no nested scroll fighting) */
     .fullScroll{
-      height:100%;
-      overflow:auto;
-      -webkit-overflow-scrolling: touch;
-      padding-bottom: 40px;
+      overflow:visible;
+      height:auto;
+      padding-bottom: 10px;
     }
 
     h3{
@@ -1021,7 +1021,7 @@
   }
   function qualifyingBreakMs(segs){
     return segs
-      .filter(s => s.type === "REST") // stored as REST, displayed as BREAK
+      .filter(s => s.type === "REST")
       .reduce((acc, s) => {
         const d = clamp0(s.endMs - s.startMs);
         return acc + (d >= 15*MIN ? d : 0);
@@ -1066,7 +1066,6 @@
   function toggleWorkBreak(){
     if(!isRunning()) return;
     haptic(10);
-    // If on BREAK -> resume WORK, else -> start BREAK
     if(state.currentType === "REST"){
       startSegment("WORK");
     } else {
@@ -1075,10 +1074,9 @@
   }
 
   function setTraffic(stateKey, text){
-    signalWrap.dataset.state = stateKey; // off | ok | warn | due
+    signalWrap.dataset.state = stateKey;
     headerStatus.textContent = text;
 
-    // Mini lamps inside card
     const off = "rgba(255,255,255,.18)";
     miniLampTop.style.background = off;
     miniLampMid.style.background = off;
@@ -1118,7 +1116,7 @@
   }
 
   function addManual(){
-    const type = manType.value; // WORK or REST (REST displayed as BREAK)
+    const type = manType.value;
     const s = parseTimeToMs(manStart.value);
     const e0 = parseTimeToMs(manEnd.value);
     if(s == null || e0 == null){
@@ -1181,10 +1179,8 @@
 
   function updateToggleButton(running){
     btnToggle.disabled = !running;
-
     const onBreak = state.currentType === "REST";
     btnToggle.classList.toggle("isOnBreak", onBreak);
-
     btnToggle.textContent = onBreak ? "Resume work" : "Start break";
   }
 
@@ -1192,7 +1188,6 @@
     const now = Date.now();
     const running = isRunning();
 
-    // Start/End buttons
     btnStartShift.classList.toggle("isRunning", running);
     btnStartShift.textContent = running ? "Shift running" : "Start shift";
     btnStartShift.disabled = running;
@@ -1223,6 +1218,7 @@
       uiQualRest_full.textContent  = "00:00";
       uiRestReq_full.textContent   = "00:00";
       uiRestNeed_full.textContent  = "00:00";
+
       renderLog([]);
       setTraffic("off", "Ready");
       return;
@@ -1238,10 +1234,8 @@
     const contMs = continuousWorkMs(segs);
     const dueInMs = nextBreakDueInMs(contMs);
 
-    // WORK SAFE FOR
     uiWorkSafeFor.textContent = fmtDur(Math.max(0, dueInMs));
 
-    // Break required at
     if(dueInMs <= 0){
       uiBreakAt.textContent = "Break required";
     } else {
@@ -1252,7 +1246,6 @@
     uiShiftStartSmall.textContent = `Shift start ${fmtTime(state.shiftStartMs)}`;
     uiShiftTime.textContent = fmtDur(now - state.shiftStartMs);
 
-    // WTD today (WORK total in your model)
     uiWtdToday.textContent = fmtDur(workMs);
     uiWtdLimit.textContent = `/ ${pad2(state.shiftHours)}:00`;
 
@@ -1262,7 +1255,6 @@
     const wtdPct = Math.min(100, Math.max(0, (workMs / (state.shiftHours * HOUR)) * 100));
     barWtd.style.width = `${wtdPct}%`;
 
-    // Break building: show progress only while currently on break
     const lastBreak = lastBreakSegment(segs);
     let currentBreakMs = 0;
     if(state.currentType === "REST" && lastBreak){
@@ -1278,7 +1270,6 @@
 
     uiRestNeeded.textContent = fmtDur(needMs);
 
-    // Full view stats
     uiWorkTotal_full.textContent = fmtDur(workMs);
     uiQualRest_full.textContent  = fmtDur(qualMs);
     uiRestReq_full.textContent   = fmtDur(reqMs);
@@ -1286,7 +1277,6 @@
 
     renderLog(segs);
 
-    // Traffic light state
     const warnThreshold = 15*MIN;
     if(dueInMs <= 0){
       setTraffic("due", "Break due (continuous work)");
@@ -1304,7 +1294,6 @@
     if(isRunning()) return;
     haptic(12);
     state.shiftStartMs = Date.now();
-    // sensible default: start WORK immediately so the main button reads "Start break"
     state.currentType = "WORK";
     state.segments = [{ type:"WORK", startMs: state.shiftStartMs, endMs: null }];
     save();
@@ -1333,7 +1322,6 @@
   });
 
   btnToggle.addEventListener("click", toggleWorkBreak);
-
   btnAddManual.addEventListener("click", () => { haptic(8); addManual(); });
   btnDeleteLast.addEventListener("click", () => { haptic(8); deleteLast(); });
 
