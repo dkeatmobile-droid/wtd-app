@@ -313,7 +313,7 @@
       flex-direction:column;
       gap: 10px;
       padding-top: 6px; /* align with lamps */
-      min-width: 140px;
+      min-width: 180px;
     }
 
     .sigLabel{
@@ -325,7 +325,7 @@
       letter-spacing: .2px;
       color: rgba(255,255,255,.95);
       text-shadow: 0 2px 12px rgba(0,0,0,.45);
-      opacity: 0;                /* hidden unless active */
+      opacity: 0; /* hidden unless active */
       transform: translateX(-4px);
       transition: opacity .18s ease, transform .18s ease;
       user-select:none;
@@ -338,6 +338,12 @@
     .signalWrap[data-state="ok"]   .sigLabel.green{
       opacity: 1;
       transform: translateX(0);
+    }
+
+    /* OFF state: no labels */
+    .signalWrap[data-state="off"] .sigLabel{
+      opacity: 0 !important;
+      transform: translateX(-4px) !important;
     }
 
     /* ON states for lamps */
@@ -532,7 +538,7 @@
       .stat{padding:8px 9px;}
       .betaNote{max-width: 520px;}
       .signalWrap{transform: scale(.92); transform-origin: top left;}
-      .signalLabels{min-width: 120px;}
+      .signalLabels{min-width: 160px;}
     }
   </style>
 </head>
@@ -544,7 +550,7 @@
     <div class="headerTop">
       <div class="leftCluster">
         <!-- Chrome traffic light + labels to right -->
-        <div id="signalWrap" class="signalWrap" data-state="ok" aria-label="Compliance indicator">
+        <div id="signalWrap" class="signalWrap" data-state="off" aria-label="Compliance indicator">
           <div class="signalBox" aria-hidden="true">
             <div class="signalCap" aria-hidden="true"></div>
             <div class="signal">
@@ -711,7 +717,7 @@
 
 <script>
 (() => {
-  const STORAGE_KEY = "wtd_app_v6_state";
+  const STORAGE_KEY = "wtd_app_v7_state";
   const MIN  = 60000;
   const HOUR = 60 * MIN;
 
@@ -824,13 +830,22 @@
     render();
   }
 
-  // Compliance also drives the traffic light state + header colour
+  // When shift is not running: show no lights/labels (OFF)
+  function setOffState(){
+    signalWrap.dataset.state = "off";
+    headerStatus.textContent = "Ready";
+    // keep header in OK colour so UI doesn't look broken
+    topHeader.classList.remove("compliance-warn","compliance-due");
+    topHeader.classList.add("compliance-ok");
+    const theme = document.querySelector('meta[name="theme-color"]');
+    if(theme) theme.setAttribute("content", "#1f7a3a");
+  }
+
+  // Compliance drives traffic light + header colour when running
   function setCompliance(level, text){
     topHeader.classList.remove("compliance-ok","compliance-warn","compliance-due");
     topHeader.classList.add(level === "due" ? "compliance-due" : level === "warn" ? "compliance-warn" : "compliance-ok");
     headerStatus.textContent = text;
-
-    // traffic light + labels (only one label visible)
     signalWrap.dataset.state = (level === "due") ? "due" : (level === "warn") ? "warn" : "ok";
 
     const theme = document.querySelector('meta[name="theme-color"]');
@@ -869,12 +884,17 @@
     saveState();
     render();
   }
+
   function endShift(){
     if(!isShiftRunning()) return;
+    // close any open segment then STOP the shift
     closeOpenSegment(Date.now());
+    state.shiftStartMs = null;     // <-- FIX: truly end the shift
+    state.currentType = null;
     saveState();
     render();
   }
+
   function resetDay(){
     state = defaultState();
     saveState();
@@ -976,13 +996,17 @@
     applyShiftHours(state.shiftHours);
 
     const running = isShiftRunning();
+
+    // Start button visuals (back to original when ended)
     btnStartShift.classList.toggle("isRunning", running);
     btnStartShift.textContent = running ? "Shift running" : "Start shift";
     btnStartShift.disabled = running;
+
     btnEndShift.disabled = !running;
     btnWork.disabled = !running;
     btnBreak.disabled = !running;
 
+    // Header times
     if(!running){
       hdrStart.textContent = "—";
       hdrDuration.textContent = "00:00";
@@ -993,9 +1017,11 @@
       hdrFinishBy.textContent = fmtHHMM(state.shiftStartMs + state.shiftHours * HOUR);
     }
 
+    // Button active states
     btnWork.classList.toggle("isActive", state.currentType === "WORK");
     btnBreak.classList.toggle("isActive", state.currentType === "BREAK");
 
+    // Metrics
     const segs = getSegmentsResolved(now);
     const workMs = sumDurationMs(segs, "WORK");
     const qualMs = qualifyingBreakMs(segs);
@@ -1020,8 +1046,9 @@
 
     renderLog(segs);
 
+    // Traffic light and overlay behaviour
     if(!running){
-      setCompliance("ok", "Ready");
+      setOffState();      // <-- FIX: off/blank state when not running
       hideOverlay();
       return;
     }
