@@ -4,11 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0b1220" />
-  <title>WTD Working Time Tracker (Beta) — V2</title>
+  <title>WTD Working Time Tracker (Beta) — Single Page</title>
 
   <style>
     :root{
       --page:#e5e7eb;
+
       --text:#0f172a;
 
       --header1:#0b1220;
@@ -43,6 +44,7 @@
       --dashBorder: rgba(255,255,255,.10);
       --dashText: rgba(255,255,255,.94);
       --dashSub: rgba(255,255,255,.74);
+
       --progressTrack: rgba(255,255,255,.14);
     }
 
@@ -53,7 +55,7 @@
       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
       background: var(--page);
       color: var(--text);
-      overflow:hidden; /* page itself locked; sheet will scroll */
+      overflow:hidden;
     }
 
     .app{
@@ -218,17 +220,66 @@
     }
 
     /* =========================
-       Main sheet
+       Timing pill (under header)
+       ========================= */
+    .islandWrap{
+      padding: 10px 12px 0;
+      margin-top: -8px;
+      display:flex;
+      justify-content:center;
+      position:relative;
+      z-index:2;
+    }
+    .dynamicIsland{
+      width: min(520px, calc(100vw - 24px));
+      border-radius: 999px;
+      padding: 10px 14px;
+      background:
+        radial-gradient(220px 70px at 25% 15%, rgba(255,255,255,.16), rgba(255,255,255,0) 60%),
+        radial-gradient(260px 90px at 75% 30%, rgba(255,255,255,.10), rgba(255,255,255,0) 70%),
+        linear-gradient(180deg, rgba(30,41,59,.88), rgba(15,23,42,.92));
+      border: 1px solid rgba(255,255,255,.14);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow:
+        0 18px 44px rgba(2,6,23,.26),
+        inset 0 1px 0 rgba(255,255,255,.14),
+        inset 0 -14px 30px rgba(0,0,0,.30);
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:12px;
+      align-items:center;
+    }
+    .dStat .k{
+      font-size:10px;
+      font-weight:950;
+      letter-spacing:.25px;
+      color: rgba(255,255,255,.72);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .dStat .v{
+      margin-top:2px;
+      font-size:13px;
+      font-weight:1000;
+      color: rgba(255,255,255,.96);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    /* =========================
+       Main sheet (scrolls)
        ========================= */
     main{
       flex:1;
       min-height:0;
       padding: 10px 12px 12px;
       padding-bottom: calc(12px + env(safe-area-inset-bottom));
-      overflow:hidden; /* keep page locked, sheet will scroll */
+      overflow:hidden;
     }
 
-    /* ✅ FIX: SHEET is the single scroll container */
     .sheet{
       height:100%;
       border-radius: var(--radiusSheet) var(--radiusSheet) 0 0;
@@ -245,7 +296,7 @@
       overflow:auto;
       -webkit-overflow-scrolling: touch;
     }
-    .sheet::-webkit-scrollbar{ width:0; height:0; } /* iOS/clean */
+    .sheet::-webkit-scrollbar{ width:0; height:0; }
 
     .glass{
       background: linear-gradient(180deg, var(--glass1), var(--glass2));
@@ -294,7 +345,7 @@
       background: rgba(255,255,255,.78);
     }
 
-    /* Segmented */
+    /* Shift length segmented */
     .strip{
       padding: 10px;
       display:flex;
@@ -353,10 +404,28 @@
       white-space:nowrap;
     }
 
+    /* Single driver action button */
+    .driverActionRow{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:10px;
+    }
+    .btn.driverBig{
+      padding: 18px 12px;
+      font-size: 17px;
+      border-radius: 18px;
+      box-shadow: 0 18px 40px rgba(2,6,23,.10);
+    }
+    .btn.driverBig.isOnBreak{
+      background: rgba(245,158,11,.92);
+      border-color: rgba(255,255,255,.18);
+      color: rgba(0,0,0,.92);
+      box-shadow: 0 18px 44px rgba(245,158,11,.18);
+    }
+
     /* =========================
        Driver dashboard blocks
        ========================= */
-    /* ✅ FIX: do NOT clip dashboard */
     .dash{
       display:flex;
       flex-direction:column;
@@ -520,74 +589,26 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* Single driver action button */
-    .driverActionRow{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:10px;
-    }
-    .btn.driverBig{
-      padding: 18px 12px;
-      font-size: 17px;
-      border-radius: 18px;
-      box-shadow: 0 18px 40px rgba(2,6,23,.10);
-    }
-    .btn.driverBig.isOnBreak{
-      background: rgba(245,158,11,.92);
-      border-color: rgba(255,255,255,.18);
-      color: rgba(0,0,0,.92);
-      box-shadow: 0 18px 44px rgba(245,158,11,.18);
-    }
-
     /* =========================
-       Panes
+       Manual add + log
        ========================= */
-
-    /* ✅ FIX: panes should NOT be absolute/inset (that clips height) */
-    .panes{
-      flex:1;
-      min-height:0;
-      position:relative;
-      overflow:visible;
-    }
-
-    .pane{
-      display:none;
-    }
-    .panes.showFull .pane.full{ display:block; }
-    .panes.showFull .pane.basic{ display:none; }
-    .panes:not(.showFull) .pane.basic{ display:block; }
-
-    /* ✅ FIX: Basic grid should not be its own scroll region */
-    .basicGrid{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      height:auto;
-      overflow:visible;
-    }
-
-    /* Full view scroll is fine, but sheet already scrolls;
-       keep it visible (no nested scroll fighting) */
-    .fullScroll{
-      overflow:visible;
-      height:auto;
-      padding-bottom: 10px;
-    }
-
     h3{
       margin: 12px 2px 10px;
       font-size: 14px;
       color: rgba(15,23,42,.92);
     }
 
-    .row{display:flex; gap:10px; flex-wrap:wrap;}
+    .rowGrid2{
+      display:grid;
+      grid-template-columns: 1fr 1fr; /* ✅ Start and End same size */
+      gap:10px;
+    }
+
     .field{
-      flex:1;
-      min-width: 140px;
       padding: 12px;
       border-radius: var(--radius);
     }
+
     label{
       display:block;
       font-size:12px;
@@ -605,6 +626,12 @@
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       outline:none;
+    }
+
+    .rowBtns{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
     }
 
     .logList{display:flex; flex-direction:column; gap:10px; margin-top:10px;}
@@ -626,6 +653,7 @@
     .pill.qual{background: rgba(16,185,129,.12); border-color: rgba(16,185,129,.22);}
     .subtle{font-size:12px; color: rgba(15,23,42,.55);}
 
+    /* iPhone fit */
     @media (max-height: 720px){
       main{padding: 8px 10px 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom));}
       .sheet{padding:10px;}
@@ -637,6 +665,8 @@
       :root{ --rowH: 38px; }
       .signalTextGrid{min-width:110px; max-width:130px;}
       .btn.driverBig{ padding: 16px 12px; font-size: 16px; }
+      .dynamicIsland{ padding: 8px 12px; }
+      .dStat .v{ font-size:12px; }
     }
 
     @media (max-height: 690px){
@@ -678,6 +708,24 @@
     </div>
   </header>
 
+  <!-- ✅ Timing pill with Start time / End time -->
+  <div class="islandWrap" aria-label="Shift timing">
+    <div class="dynamicIsland">
+      <div class="dStat">
+        <div class="k">Start time</div>
+        <div id="hdrStart" class="v">—</div>
+      </div>
+      <div class="dStat">
+        <div class="k">Duration</div>
+        <div id="hdrDuration" class="v">00:00</div>
+      </div>
+      <div class="dStat">
+        <div class="k">End time</div>
+        <div id="hdrEnd" class="v">—</div>
+      </div>
+    </div>
+  </div>
+
   <main>
     <div class="sheet">
 
@@ -687,181 +735,142 @@
         <button id="btnResetDay" class="btn danger" type="button">Reset day</button>
       </div>
 
-      <div class="glass strip" aria-label="Mode and shift controls">
-        <div class="seg" id="segView" role="group" aria-label="View mode">
+      <div class="glass strip" aria-label="Shift controls">
+        <div class="shiftLabel">Length of shift<br/>for the day</div>
+        <div class="seg" id="segShift" role="group" aria-label="Shift length">
           <div class="segThumb" aria-hidden="true"></div>
-          <button class="segBtn" type="button" data-value="basic">Basic</button>
-          <button class="segBtn" type="button" data-value="full">Full</button>
-        </div>
-
-        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
-          <div class="shiftLabel">Length of shift<br/>for the day</div>
-          <div class="seg" id="segShift" role="group" aria-label="Shift length">
-            <div class="segThumb" aria-hidden="true"></div>
-            <button class="segBtn" type="button" data-value="13">13h</button>
-            <button class="segBtn" type="button" data-value="15">15h</button>
-          </div>
+          <button class="segBtn" type="button" data-value="13">13h</button>
+          <button class="segBtn" type="button" data-value="15">15h</button>
         </div>
       </div>
 
-      <div id="panes" class="panes">
-        <!-- BASIC (Driver Dashboard) -->
-        <section class="pane basic">
-          <div class="basicGrid">
-
-            <div class="driverActionRow">
-              <button id="btnToggle" class="btn driverBig primary" type="button">Start break</button>
-            </div>
-
-            <div class="dash" aria-label="Driver dashboard">
-
-              <!-- WORK SAFE FOR -->
-              <div class="dashCard">
-                <div class="dashMain">
-                  <div aria-hidden="true">
-                    <div style="width:64px;height:108px;border-radius:22px;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.10);display:grid;place-items:center;">
-                      <div style="display:flex;flex-direction:column;gap:8px;align-items:center;">
-                        <div id="miniLampTop" style="width:16px;height:16px;border-radius:999px;background:rgba(255,255,255,.18);"></div>
-                        <div id="miniLampMid" style="width:16px;height:16px;border-radius:999px;background:rgba(255,255,255,.18);"></div>
-                        <div id="miniLampBot" style="width:16px;height:16px;border-radius:999px;background:rgba(255,255,255,.18);"></div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div class="bigTitle">WORK SAFE FOR</div>
-                    <div id="uiWorkSafeFor" class="bigTime">—:—</div>
-
-                    <div class="dashSub">
-                      <div class="dashLine">
-                        <span class="warnIcon">!</span>
-                        <span id="uiBreakAt">Break required at —</span>
-                      </div>
-                      <div class="dashLine">
-                        <span>Continuous work</span>
-                        <span class="mono" id="uiContVsLimit">— / 06:00</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="cardHint">
-                  <div>Qualifying break counts at ≥ 15 min</div>
-                  <div id="uiShiftStartSmall">Shift start —</div>
-                </div>
-              </div>
-
-              <!-- WTD TODAY + BREAK BUILDING -->
-              <div class="twoCol">
-                <div class="dashCard dashSmall">
-                  <div class="k">WTD TODAY</div>
-                  <div class="vRow">
-                    <div class="v" id="uiWtdToday">00:00</div>
-                    <div class="vSub" id="uiWtdLimit">/ 13:00</div>
-                  </div>
-                  <div class="vRow" style="margin-top:8px;">
-                    <div style="font-size:13px;font-weight:950;color:rgba(255,255,255,.72);">Remaining</div>
-                    <div style="font-size:18px;font-weight:1100;color:rgba(255,255,255,.92);" id="uiWtdRemaining">—</div>
-                  </div>
-                  <div class="progress" aria-hidden="true">
-                    <div id="barWtd" class="bar"></div>
-                  </div>
-                </div>
-
-                <div class="dashCard dashSmall">
-                  <div class="k">BREAK BUILDING</div>
-                  <div class="vRow">
-                    <div class="v" id="uiBreakBuild">00</div>
-                    <div class="vSub">/ 15</div>
-                  </div>
-                  <div class="vRow" style="margin-top:8px;">
-                    <div style="font-size:13px;font-weight:950;color:rgba(255,255,255,.72);">Last break</div>
-                    <div style="font-size:18px;font-weight:1100;color:rgba(255,255,255,.92);" id="uiLastRest">—</div>
-                  </div>
-                  <div class="progress" aria-hidden="true">
-                    <div id="barBreak" class="bar"></div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Secondary details -->
-              <div class="dashCard">
-                <div class="dashMeta">
-                  <div class="metaItem">
-                    <div class="mk">Shift time</div>
-                    <div class="mv" id="uiShiftTime">00:00</div>
-                  </div>
-                  <div class="metaItem">
-                    <div class="mk">Break still needed</div>
-                    <div class="mv" id="uiRestNeeded">00:00</div>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </section>
-
-        <!-- FULL -->
-        <section class="pane full">
-          <div class="fullScroll">
-            <div class="glass" style="padding:10px;">
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                <div class="glass" style="padding:12px;border-radius:18px;">
-                  <div style="font-size:12px;color:rgba(15,23,42,.65);font-weight:950;">Total work</div>
-                  <div id="uiWorkTotal_full" style="margin-top:7px;font-size:18px;font-weight:1000;">00:00</div>
-                </div>
-                <div class="glass" style="padding:12px;border-radius:18px;">
-                  <div style="font-size:12px;color:rgba(15,23,42,.65);font-weight:950;">Qualifying break</div>
-                  <div id="uiQualRest_full" style="margin-top:7px;font-size:18px;font-weight:1000;">00:00</div>
-                </div>
-                <div class="glass" style="padding:12px;border-radius:18px;">
-                  <div style="font-size:12px;color:rgba(15,23,42,.65);font-weight:950;">Break required</div>
-                  <div id="uiRestReq_full" style="margin-top:7px;font-size:18px;font-weight:1000;">00:00</div>
-                </div>
-                <div class="glass" style="padding:12px;border-radius:18px;">
-                  <div style="font-size:12px;color:rgba(15,23,42,.65);font-weight:950;">Break still needed</div>
-                  <div id="uiRestNeed_full" style="margin-top:7px;font-size:18px;font-weight:1000;">00:00</div>
-                </div>
-              </div>
-            </div>
-
-            <h3>Manual add segment</h3>
-            <div class="row">
-              <div class="glass field">
-                <label for="manType">Type</label>
-                <select id="manType">
-                  <option value="WORK">WORK</option>
-                  <option value="REST">BREAK</option>
-                </select>
-              </div>
-
-              <div class="glass field">
-                <label for="manStart">Start (type 0800)</label>
-                <input id="manStart" inputmode="tel" placeholder="0800" />
-                <div class="subtle" style="margin-top:6px;">Auto formats to HH:MM on iPhone</div>
-              </div>
-
-              <div class="glass field">
-                <label for="manEnd">End (type 0915)</label>
-                <input id="manEnd" inputmode="tel" placeholder="0915" />
-              </div>
-            </div>
-
-            <div class="row" style="margin-top:10px;">
-              <button id="btnAddManual" class="btn primary" type="button">Add segment</button>
-              <button id="btnDeleteLast" class="btn" type="button">Delete last</button>
-            </div>
-
-            <div class="subtle" style="margin-top:8px;">
-              Times use today’s date. If end is earlier than start, it is treated as next day.
-            </div>
-
-            <h3>Segment log</h3>
-            <div id="logList" class="logList"></div>
-          </div>
-        </section>
+      <div class="driverActionRow">
+        <button id="btnToggle" class="btn driverBig primary" type="button">Start break</button>
       </div>
+
+      <div class="dash" aria-label="Driver dashboard">
+
+        <!-- WORK SAFE FOR -->
+        <div class="dashCard">
+          <div class="dashMain">
+            <div aria-hidden="true">
+              <div style="width:64px;height:108px;border-radius:22px;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.10);display:grid;place-items:center;">
+                <div style="display:flex;flex-direction:column;gap:8px;align-items:center;">
+                  <div id="miniLampTop" style="width:16px;height:16px;border-radius:999px;background:rgba(255,255,255,.18);"></div>
+                  <div id="miniLampMid" style="width:16px;height:16px;border-radius:999px;background:rgba(255,255,255,.18);"></div>
+                  <div id="miniLampBot" style="width:16px;height:16px;border-radius:999px;background:rgba(255,255,255,.18);"></div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="bigTitle">WORK SAFE FOR</div>
+              <div id="uiWorkSafeFor" class="bigTime">—:—</div>
+
+              <div class="dashSub">
+                <div class="dashLine">
+                  <span class="warnIcon">!</span>
+                  <span id="uiBreakAt">Break required at —</span>
+                </div>
+                <div class="dashLine">
+                  <span>Continuous work</span>
+                  <span class="mono" id="uiContVsLimit">— / 06:00</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="cardHint">
+            <div>Qualifying break counts at ≥ 15 min</div>
+            <div id="uiShiftStartSmall">Shift start —</div>
+          </div>
+        </div>
+
+        <!-- WTD TODAY + BREAK BUILDING -->
+        <div class="twoCol">
+          <div class="dashCard dashSmall">
+            <div class="k">WTD TODAY</div>
+            <div class="vRow">
+              <div class="v" id="uiWtdToday">00:00</div>
+              <div class="vSub" id="uiWtdLimit">/ 13:00</div>
+            </div>
+            <div class="vRow" style="margin-top:8px;">
+              <div style="font-size:13px;font-weight:950;color:rgba(255,255,255,.72);">Remaining</div>
+              <div style="font-size:18px;font-weight:1100;color:rgba(255,255,255,.92);" id="uiWtdRemaining">—</div>
+            </div>
+            <div class="progress" aria-hidden="true">
+              <div id="barWtd" class="bar"></div>
+            </div>
+          </div>
+
+          <div class="dashCard dashSmall">
+            <div class="k">BREAK BUILDING</div>
+            <div class="vRow">
+              <div class="v" id="uiBreakBuild">00</div>
+              <div class="vSub">/ 15</div>
+            </div>
+            <div class="vRow" style="margin-top:8px;">
+              <div style="font-size:13px;font-weight:950;color:rgba(255,255,255,.72);">Last break</div>
+              <div style="font-size:18px;font-weight:1100;color:rgba(255,255,255,.92);" id="uiLastRest">—</div>
+            </div>
+            <div class="progress" aria-hidden="true">
+              <div id="barBreak" class="bar"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Secondary details -->
+        <div class="dashCard">
+          <div class="dashMeta">
+            <div class="metaItem">
+              <div class="mk">Shift time</div>
+              <div class="mv" id="uiShiftTime">00:00</div>
+            </div>
+            <div class="metaItem">
+              <div class="mk">Break still needed</div>
+              <div class="mv" id="uiRestNeeded">00:00</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Manual + log (same page) -->
+      <h3>Manual add segment</h3>
+
+      <div class="glass field">
+        <label for="manType">Type</label>
+        <select id="manType">
+          <option value="WORK">WORK</option>
+          <option value="REST">BREAK</option>
+        </select>
+      </div>
+
+      <!-- ✅ Start and End equal width -->
+      <div class="rowGrid2">
+        <div class="glass field">
+          <label for="manStart">Start time (type 0800)</label>
+          <input id="manStart" inputmode="tel" placeholder="0800" />
+          <div class="subtle" style="margin-top:6px;">Auto formats to HH:MM on iPhone</div>
+        </div>
+
+        <div class="glass field">
+          <label for="manEnd">End time (type 0915)</label>
+          <input id="manEnd" inputmode="tel" placeholder="0915" />
+        </div>
+      </div>
+
+      <div class="rowBtns">
+        <button id="btnAddManual" class="btn primary" type="button">Add segment</button>
+        <button id="btnDeleteLast" class="btn" type="button">Delete last</button>
+      </div>
+
+      <div class="subtle">
+        Times use today’s date. If end is earlier than start, it is treated as next day.
+      </div>
+
+      <h3>Segment log</h3>
+      <div id="logList" class="logList"></div>
 
     </div>
   </main>
@@ -869,12 +878,11 @@
 
 <script>
 (() => {
-  const STORAGE_KEY = "wtd_driver_dashboard_v2_single_button_break";
+  const STORAGE_KEY = "wtd_single_page_driver_v3";
   const MIN  = 60000;
   const HOUR = 60 * MIN;
 
   const defaults = () => ({
-    view: "basic",
     shiftHours: 13,
     shiftStartMs: null,
     currentType: null, // "WORK" | "REST" | null (REST == BREAK in UI)
@@ -895,15 +903,20 @@
   function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 
   // DOM
-  const panes = document.getElementById("panes");
   const signalWrap = document.getElementById("signalWrap");
   const headerStatus = document.getElementById("headerStatus");
+
+  // Timing pill
+  const hdrStart = document.getElementById("hdrStart");
+  const hdrDuration = document.getElementById("hdrDuration");
+  const hdrEnd = document.getElementById("hdrEnd");
 
   const btnStartShift = document.getElementById("btnStartShift");
   const btnEndShift   = document.getElementById("btnEndShift");
   const btnResetDay   = document.getElementById("btnResetDay");
-
   const btnToggle = document.getElementById("btnToggle");
+
+  const segShift = document.getElementById("segShift");
 
   // Driver dashboard fields
   const uiWorkSafeFor     = document.getElementById("uiWorkSafeFor");
@@ -927,21 +940,13 @@
   const miniLampMid       = document.getElementById("miniLampMid");
   const miniLampBot       = document.getElementById("miniLampBot");
 
-  // Full view
-  const uiWorkTotal_full  = document.getElementById("uiWorkTotal_full");
-  const uiQualRest_full   = document.getElementById("uiQualRest_full");
-  const uiRestReq_full    = document.getElementById("uiRestReq_full");
-  const uiRestNeed_full   = document.getElementById("uiRestNeed_full");
-
+  // Manual + log
   const manType = document.getElementById("manType");
   const manStart = document.getElementById("manStart");
   const manEnd = document.getElementById("manEnd");
   const btnAddManual = document.getElementById("btnAddManual");
   const btnDeleteLast = document.getElementById("btnDeleteLast");
   const logList = document.getElementById("logList");
-
-  const segView  = document.getElementById("segView");
-  const segShift = document.getElementById("segShift");
 
   const pad2 = (n) => String(n).padStart(2,"0");
   const clamp0 = (ms) => Math.max(0, ms);
@@ -1091,20 +1096,6 @@
     }
   }
 
-  function applyView(view){
-    panes.classList.toggle("showFull", view === "full");
-  }
-  function setView(view){
-    state.view = view;
-    save();
-    applyView(view);
-  }
-  function setShiftHours(h){
-    state.shiftHours = Number(h);
-    save();
-    render();
-  }
-
   function parseTimeToMs(hhmm){
     const m = /^(\d{1,2}):(\d{2})$/.exec((hhmm||"").trim());
     if(!m) return null;
@@ -1116,7 +1107,7 @@
   }
 
   function addManual(){
-    const type = manType.value;
+    const type = manType.value; // WORK or REST (REST displayed as BREAK)
     const s = parseTimeToMs(manStart.value);
     const e0 = parseTimeToMs(manEnd.value);
     if(s == null || e0 == null){
@@ -1188,12 +1179,23 @@
     const now = Date.now();
     const running = isRunning();
 
+    // Timing pill
+    if(!running){
+      hdrStart.textContent = "—";
+      hdrDuration.textContent = "00:00";
+      hdrEnd.textContent = "—";
+    } else {
+      hdrStart.textContent = fmtTime(state.shiftStartMs);
+      hdrDuration.textContent = fmtDur(now - state.shiftStartMs);
+      hdrEnd.textContent = fmtTime(state.shiftStartMs + (state.shiftHours * HOUR));
+    }
+
+    // Start/End buttons
     btnStartShift.classList.toggle("isRunning", running);
     btnStartShift.textContent = running ? "Shift running" : "Start shift";
     btnStartShift.disabled = running;
 
     btnEndShift.disabled = !running;
-
     updateToggleButton(running);
 
     if(!running){
@@ -1214,11 +1216,6 @@
       uiShiftTime.textContent = "00:00";
       uiRestNeeded.textContent = "00:00";
 
-      uiWorkTotal_full.textContent = "00:00";
-      uiQualRest_full.textContent  = "00:00";
-      uiRestReq_full.textContent   = "00:00";
-      uiRestNeed_full.textContent  = "00:00";
-
       renderLog([]);
       setTraffic("off", "Ready");
       return;
@@ -1234,8 +1231,10 @@
     const contMs = continuousWorkMs(segs);
     const dueInMs = nextBreakDueInMs(contMs);
 
+    // WORK SAFE FOR
     uiWorkSafeFor.textContent = fmtDur(Math.max(0, dueInMs));
 
+    // Break required at
     if(dueInMs <= 0){
       uiBreakAt.textContent = "Break required";
     } else {
@@ -1246,6 +1245,7 @@
     uiShiftStartSmall.textContent = `Shift start ${fmtTime(state.shiftStartMs)}`;
     uiShiftTime.textContent = fmtDur(now - state.shiftStartMs);
 
+    // WTD today (WORK total in your model)
     uiWtdToday.textContent = fmtDur(workMs);
     uiWtdLimit.textContent = `/ ${pad2(state.shiftHours)}:00`;
 
@@ -1255,6 +1255,7 @@
     const wtdPct = Math.min(100, Math.max(0, (workMs / (state.shiftHours * HOUR)) * 100));
     barWtd.style.width = `${wtdPct}%`;
 
+    // Break building: show progress only while currently on break
     const lastBreak = lastBreakSegment(segs);
     let currentBreakMs = 0;
     if(state.currentType === "REST" && lastBreak){
@@ -1270,13 +1271,9 @@
 
     uiRestNeeded.textContent = fmtDur(needMs);
 
-    uiWorkTotal_full.textContent = fmtDur(workMs);
-    uiQualRest_full.textContent  = fmtDur(qualMs);
-    uiRestReq_full.textContent   = fmtDur(reqMs);
-    uiRestNeed_full.textContent  = fmtDur(needMs);
-
     renderLog(segs);
 
+    // Traffic light
     const warnThreshold = 15*MIN;
     if(dueInMs <= 0){
       setTraffic("due", "Break due (continuous work)");
@@ -1289,11 +1286,20 @@
     updateToggleButton(running);
   }
 
+  // Shift length segmented
+  const segShiftAPI = makeSegmented(segShift, String(state.shiftHours), (v) => {
+    state.shiftHours = Number(v);
+    save();
+    render();
+    requestAnimationFrame(() => segShiftAPI.setValue(String(state.shiftHours)));
+  });
+
   // Events
   btnStartShift.addEventListener("click", () => {
     if(isRunning()) return;
     haptic(12);
     state.shiftStartMs = Date.now();
+    // Default: start WORK immediately so the main button reads "Start break"
     state.currentType = "WORK";
     state.segments = [{ type:"WORK", startMs: state.shiftStartMs, endMs: null }];
     save();
@@ -1317,27 +1323,15 @@
     state = defaults();
     save();
     render();
-    segViewAPI.setValue(state.view);
     segShiftAPI.setValue(String(state.shiftHours));
   });
 
   btnToggle.addEventListener("click", toggleWorkBreak);
+
   btnAddManual.addEventListener("click", () => { haptic(8); addManual(); });
   btnDeleteLast.addEventListener("click", () => { haptic(8); deleteLast(); });
 
-  // Segmented controls
-  const segViewAPI = makeSegmented(segView, state.view, (v) => {
-    setView(v);
-    requestAnimationFrame(() => segViewAPI.setValue(state.view));
-  });
-
-  const segShiftAPI = makeSegmented(segShift, String(state.shiftHours), (v) => {
-    setShiftHours(v);
-    requestAnimationFrame(() => segShiftAPI.setValue(String(state.shiftHours)));
-  });
-
   // Init
-  applyView(state.view);
   setInterval(render, 1000);
   render();
 })();
