@@ -3,68 +3,53 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#1f7a3a" />
+  <meta name="theme-color" content="#0f172a" />
   <title>WTD Working Time Tracker (Beta)</title>
 
   <link rel="manifest" href="manifest.webmanifest" />
 
   <style>
     :root{
-      /* compliance */
-      --ok:#1f7a3a;
-      --warn:#b26b00;
-      --due:#a32121;
-
-      /* UI */
       --bg:#f3f5f7;
       --card:#ffffff;
       --text:#0f172a;
       --muted:#6b7280;
       --border:#e5e7eb;
-      --shadow: 0 10px 28px rgba(2,6,23,.10);
-      --radius: 18px;
 
-      /* toggles */
-      --toggleBg: rgba(255,255,255,.92);
-      --toggleBorder: rgba(255,255,255,.55);
-      --toggleText: #0b1220;
-      --toggleOn: #0f172a;
+      /* professional header */
+      --header1:#0f172a;
+      --header2:#111827;
+
+      /* compliance lamps */
+      --ok:#16a34a;
+      --warn:#f59e0b;
+      --due:#ef4444;
+      --lampOff:#4b5563;
 
       /* buttons */
       --btnPrimaryBg:#0f172a;
       --btnPrimaryText:#ffffff;
-
       --btnRunningBg:#0b3b1f;
       --btnRunningText:#ffffff;
 
-      /* traffic light off */
-      --lampOff:#4b5563;
+      --radius: 16px;
+      --shadow: 0 10px 28px rgba(2,6,23,.10);
     }
 
-    html,body{
-      height:100%;
-      margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      color:var(--text);
-      background:var(--bg);
+    *{box-sizing:border-box;}
+    html,body{height:100%; margin:0; font-family: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial; background:var(--bg); color:var(--text);}
+
+    .app{
+      height: 100vh;
+      height: 100svh; /* better on mobile */
+      display:flex;
+      flex-direction:column;
     }
 
-    .app{height:100vh; display:flex; flex-direction:column;}
-    main{flex:1; min-height:0;}
-    .panel{height:100%; box-sizing:border-box; padding:12px;}
-    .panelFull{overflow:auto;}
-    .panelBasic{
-      overflow:hidden; /* BASIC: no scrolling */
-      display:grid;
-      grid-template-rows: auto auto 1fr auto;
-      gap:12px;
-    }
-    .isHidden{display:none !important;}
-
-    /* Header */
     header.topHeader{
+      padding: calc(10px + env(safe-area-inset-top)) 10px 10px;
       color:#fff;
-      padding: 12px;
+      background: linear-gradient(180deg, var(--header1), var(--header2));
       position:relative;
       overflow:hidden;
     }
@@ -72,334 +57,196 @@
       content:"";
       position:absolute;
       inset:-40px -40px auto -40px;
-      height:180px;
-      background: radial-gradient(closest-side, rgba(255,255,255,.18), rgba(255,255,255,0));
+      height:160px;
+      background: radial-gradient(closest-side, rgba(255,255,255,.12), rgba(255,255,255,0));
       pointer-events:none;
       transform: rotate(-6deg);
     }
-    header.compliance-ok{background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,0)) , var(--ok);}
-    header.compliance-warn{background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,0)) , var(--warn);}
-    header.compliance-due{background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,0)) , var(--due);}
 
     .headerTop{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:12px;
       position:relative;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:10px;
     }
 
+    /* left cluster: traffic + brand */
     .leftCluster{
       display:flex;
       align-items:flex-start;
-      gap:12px;
-      min-width: 280px;
+      gap:10px;
+      min-width: 220px;
     }
 
-    .brand{display:flex; flex-direction:column; gap:4px;}
-    .brand .title{
-      font-weight: 950;
-      letter-spacing: .2px;
-      font-size: 16px;
-      line-height: 1.15;
-      margin-top: 1px;
-    }
-    .brand .status{
-      font-size: 12px;
-      opacity: .95;
-      font-weight: 900;
-    }
+    .brand{display:flex; flex-direction:column; gap:3px;}
+    .brand .title{font-weight: 1000; font-size: 15px; letter-spacing:.2px; line-height:1.1;}
+    .brand .status{font-size: 12px; opacity:.86; font-weight: 900;}
 
     .betaNote{
-      margin-top:8px;
+      margin-top:6px;
       font-size: 11px;
-      line-height: 1.25;
-      opacity: .92;
-      max-width: 700px;
+      line-height: 1.2;
+      opacity: .82;
       position:relative;
     }
-    .betaNote strong{font-weight: 950;}
+    .betaNote strong{font-weight:1000;}
 
-    /* Toggles */
+    /* toggles */
     .toggleBar{
       display:flex;
-      gap:10px;
+      gap:8px;
       flex-wrap:wrap;
       justify-content:flex-end;
       align-items:flex-start;
     }
-
     .rockerWrap{
-      background: var(--toggleBg);
-      border: 1px solid var(--toggleBorder);
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(255,255,255,.55);
       border-radius: 999px;
-      padding: 4px;
-      box-shadow: 0 8px 20px rgba(0,0,0,.10);
+      padding: 3px;
+      box-shadow: 0 8px 18px rgba(0,0,0,.12);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
     }
     .rocker{display:inline-flex; border-radius:999px; overflow:hidden;}
     .rockerBtn{
       border:0;
-      background: transparent;
-      color: var(--toggleText);
-      padding: 8px 10px;
+      background:transparent;
+      padding: 7px 9px;
       font-size: 12px;
       font-weight: 950;
       cursor:pointer;
       opacity:.85;
+      color:#0b1220;
       user-select:none;
     }
     .rockerBtn.isOn{
       background: rgba(15,23,42,.10);
-      color: var(--toggleOn);
-      opacity: 1;
-      border-radius: 999px;
+      opacity:1;
+      border-radius:999px;
     }
 
-    .headerStats{
-      margin-top: 12px;
-      display:grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      position:relative;
-    }
-    .stat{
-      background: rgba(255,255,255,.14);
-      border: 1px solid rgba(255,255,255,.18);
-      border-radius: 14px;
-      padding: 10px 10px;
-    }
-    .stat .label{
-      font-size: 11px;
-      opacity:.92;
-      font-weight: 900;
-      letter-spacing: .2px;
-    }
-    .stat .value{
-      margin-top: 4px;
-      font-size: 14px;
-      font-weight: 950;
-    }
-
-    /* =========================
-       Chrome traffic light + labels RIGHT
-       ========================= */
+    /* traffic light (matte black housing) */
     .signalWrap{
       display:flex;
+      gap:8px;
       align-items:flex-start;
-      gap:10px;
       flex: 0 0 auto;
     }
-
     .signalBox{
-      width: 74px;
-      border-radius: 28px;
-      padding: 10px 10px;
-      position:relative;
-
-      background:
-        radial-gradient(140px 220px at 35% 20%, rgba(255,255,255,.14), rgba(255,255,255,0) 62%),
-        linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,.26)),
-        rgba(0,0,0,.34);
-
-      border: 1px solid rgba(255,255,255,.18);
-      box-shadow:
-        0 18px 34px rgba(0,0,0,.28),
-        inset 0 1px 0 rgba(255,255,255,.14),
-        inset 0 -12px 28px rgba(0,0,0,.30);
-
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
+      width: 62px;
+      border-radius: 22px;
+      padding: 8px;
+      background: #0a0a0a;
+      border: 1px solid rgba(255,255,255,.08);
+      box-shadow: inset 0 2px 6px rgba(255,255,255,.04), 0 10px 18px rgba(0,0,0,.35);
     }
-
-    /* chrome side rails */
-    .signalBox::before,
-    .signalBox::after{
-      content:"";
-      position:absolute;
-      top: 10px;
-      bottom: 10px;
-      width: 10px;
-      border-radius: 999px;
-      background:
-        linear-gradient(180deg,
-          rgba(255,255,255,.75) 0%,
-          rgba(255,255,255,.28) 10%,
-          rgba(0,0,0,.10) 32%,
-          rgba(255,255,255,.22) 52%,
-          rgba(0,0,0,.20) 72%,
-          rgba(255,255,255,.18) 88%,
-          rgba(255,255,255,.45) 100%
-        );
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.55),
-        inset 0 -1px 0 rgba(0,0,0,.35),
-        0 10px 22px rgba(0,0,0,.20);
-      opacity:.95;
-      pointer-events:none;
-    }
-    .signalBox::before{left: -6px;}
-    .signalBox::after{right: -6px;}
-
-    /* chrome top cap */
-    .signalCap{
-      position:absolute;
-      left: 8px;
-      right: 8px;
-      top: -10px;
-      height: 18px;
-      border-radius: 999px;
-      background:
-        linear-gradient(180deg,
-          rgba(255,255,255,.78) 0%,
-          rgba(255,255,255,.22) 26%,
-          rgba(0,0,0,.15) 60%,
-          rgba(255,255,255,.18) 100%
-        );
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.55),
-        0 10px 22px rgba(0,0,0,.18);
-      opacity:.92;
-      pointer-events:none;
-    }
-
     .signal{
       display:flex;
       flex-direction:column;
-      gap: 10px;
+      gap: 8px;
       align-items:center;
-      position:relative;
-      z-index:1;
     }
-
     .lamp{
-      width: 50px;
-      height: 50px;
+      width: 42px;
+      height: 42px;
       border-radius: 999px;
-      position:relative;
-
-      /* recess/socket + off lens */
-      background:
-        radial-gradient(circle at 50% 55%, rgba(0,0,0,.58), rgba(0,0,0,.12) 55%, rgba(255,255,255,.06) 70%, rgba(0,0,0,.38) 100%),
-        linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.22)),
-        var(--lampOff);
-
-      border: 2px solid rgba(10,12,18,.92);
-      box-shadow:
-        inset 0 10px 22px rgba(0,0,0,.45),
-        0 2px 0 rgba(255,255,255,.06);
-
-      overflow:hidden;
+      background: var(--lampOff);
+      box-shadow: inset 0 10px 16px rgba(0,0,0,.62);
+      border: 2px solid rgba(0,0,0,.55);
     }
 
-    .lamp::after{
-      content:"";
-      position:absolute;
-      left: 11px;
-      top: 10px;
-      width: 26px;
-      height: 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.22);
-      filter: blur(.3px);
-      transform: rotate(-12deg);
-      opacity: .95;
-    }
-
-    /* Labels to the RIGHT */
     .signalLabels{
       display:flex;
       flex-direction:column;
-      gap: 10px;
-      padding-top: 6px; /* align with lamps */
-      min-width: 180px;
+      gap: 8px;
+      padding-top: 0px;
+      min-width: 160px;
     }
-
     .sigLabel{
-      height: 50px; /* match lamp height */
+      height: 42px;
       display:flex;
       align-items:center;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 950;
-      letter-spacing: .2px;
-      color: rgba(255,255,255,.95);
+      color: rgba(255,255,255,.96);
       text-shadow: 0 2px 12px rgba(0,0,0,.45);
-      opacity: 0; /* hidden unless active */
+      opacity: 0;
       transform: translateX(-4px);
       transition: opacity .18s ease, transform .18s ease;
       user-select:none;
       white-space:nowrap;
     }
 
-    /* Active label visibility based on state */
+    /* label visibility */
     .signalWrap[data-state="due"]  .sigLabel.red,
     .signalWrap[data-state="warn"] .sigLabel.amber,
     .signalWrap[data-state="ok"]   .sigLabel.green{
       opacity: 1;
       transform: translateX(0);
     }
+    .signalWrap[data-state="off"] .sigLabel{opacity:0 !important;}
 
-    /* OFF state: no labels */
-    .signalWrap[data-state="off"] .sigLabel{
-      opacity: 0 !important;
-      transform: translateX(-4px) !important;
-    }
-
-    /* ON states for lamps */
+    /* lamp ON styles */
     .signalWrap[data-state="ok"] .lamp.green{
-      background:
-        radial-gradient(circle at 35% 35%, rgba(255,255,255,.38), rgba(255,255,255,0) 42%),
-        radial-gradient(circle at 50% 65%, rgba(0,0,0,.18), rgba(0,0,0,0) 58%),
-        linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,.22)),
-        #16a34a;
-      box-shadow:
-        inset 0 10px 22px rgba(0,0,0,.42),
-        0 0 0 5px rgba(22,163,74,.12),
-        0 0 22px rgba(22,163,74,.52);
-      border-color: rgba(8, 29, 16, .92);
+      background: var(--ok);
+      box-shadow: inset 0 10px 16px rgba(0,0,0,.45), 0 0 18px rgba(22,163,74,.45);
     }
 
-    /* Amber FLASH when lit */
-    @keyframes amberFlash {
-      0%, 100% { filter: brightness(1); }
-      50%      { filter: brightness(1.25); }
-    }
-
+    @keyframes amberFlash { 0%,100%{filter:brightness(1)} 50%{filter:brightness(1.30)} }
     .signalWrap[data-state="warn"] .lamp.amber{
-      background:
-        radial-gradient(circle at 35% 35%, rgba(255,255,255,.38), rgba(255,255,255,0) 42%),
-        radial-gradient(circle at 50% 65%, rgba(0,0,0,.18), rgba(0,0,0,0) 58%),
-        linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,.22)),
-        #f59e0b;
-      box-shadow:
-        inset 0 10px 22px rgba(0,0,0,.42),
-        0 0 0 5px rgba(245,158,11,.12),
-        0 0 22px rgba(245,158,11,.52);
-      border-color: rgba(41, 24, 4, .92);
+      background: var(--warn);
+      box-shadow: inset 0 10px 16px rgba(0,0,0,.45), 0 0 18px rgba(245,158,11,.45);
       animation: amberFlash 1s infinite;
     }
 
     .signalWrap[data-state="due"] .lamp.red{
-      background:
-        radial-gradient(circle at 35% 35%, rgba(255,255,255,.38), rgba(255,255,255,0) 42%),
-        radial-gradient(circle at 50% 65%, rgba(0,0,0,.18), rgba(0,0,0,0) 58%),
-        linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,.22)),
-        #ef4444;
-      box-shadow:
-        inset 0 10px 22px rgba(0,0,0,.42),
-        0 0 0 5px rgba(239,68,68,.12),
-        0 0 22px rgba(239,68,68,.52);
-      border-color: rgba(44, 8, 8, .92);
+      background: var(--due);
+      box-shadow: inset 0 10px 16px rgba(0,0,0,.45), 0 0 18px rgba(239,68,68,.45);
     }
 
+    /* header stats row */
+    .headerStats{
+      margin-top: 8px;
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      position:relative;
+    }
+    .stat{
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 12px;
+      padding: 8px;
+    }
+    .stat .label{font-size: 11px; opacity:.85; font-weight: 900;}
+    .stat .value{margin-top: 2px; font-size: 14px; font-weight: 1000;}
+
+    /* MAIN */
+    main{
+      flex:1;
+      min-height:0;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .panel{height:100%; padding:10px;}
+    .panelFull{overflow:auto;}
+    .panelBasic{
+      height:100%;
+      overflow:hidden; /* no scrolling in BASIC */
+      display:grid;
+      grid-template-rows: auto auto 1fr auto;
+      gap:10px;
+    }
+    .isHidden{display:none !important;}
+
     /* Buttons */
-    .controlsRow{display:grid; grid-template-columns: repeat(3, 1fr); gap:10px;}
+    .controlsRow{display:grid; grid-template-columns: repeat(3, 1fr); gap:8px;}
     .btn{
-      padding: 12px 10px;
-      border-radius: 16px;
+      padding: 10px 8px;
+      border-radius: 14px;
       border: 1px solid var(--border);
-      background: #fff;
+      background:#fff;
       color: var(--text);
       font-weight: 950;
       cursor:pointer;
@@ -408,61 +255,40 @@
     .btn:active{transform: translateY(1px);}
     .btn:disabled{opacity:.55; cursor:not-allowed;}
 
-    .btn.primary{
-      background: var(--btnPrimaryBg);
-      color: var(--btnPrimaryText);
-      border-color: rgba(255,255,255,.2);
-      box-shadow: var(--shadow);
-    }
-    .btn.startShift.isRunning{
-      background: var(--btnRunningBg);
-      color: var(--btnRunningText);
-      border-color: rgba(255,255,255,.25);
-    }
-    .btn.danger{
-      border-color:#b00020;
-      color:#b00020;
-      background:#fff;
-    }
+    .btn.primary{background: var(--btnPrimaryBg); color: var(--btnPrimaryText); border-color: rgba(255,255,255,.12); box-shadow: var(--shadow);}
+    .btn.startShift.isRunning{background: var(--btnRunningBg); color: var(--btnRunningText); border-color: rgba(255,255,255,.12); box-shadow: var(--shadow);}
+    .btn.danger{border-color:#b00020; color:#b00020; background:#fff;}
 
-    .bigActions{display:grid; grid-template-columns: 1fr 1fr; gap:12px;}
+    .bigActions{display:grid; grid-template-columns: 1fr 1fr; gap:10px;}
     .btn.big{
-      padding: 18px 10px;
-      font-size: 18px;
-      border-radius: 20px;
+      padding: 14px 10px;
+      font-size: 16px;
+      border-radius: 18px;
       box-shadow: var(--shadow);
     }
     .btn.big.isActive{outline: 3px solid rgba(2,6,23,.10);}
 
+    /* cards grid */
     .miniGrid{
       display:grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      gap:10px;
       align-content:start;
     }
     .card{
       background: var(--card);
       border:1px solid var(--border);
       border-radius: var(--radius);
-      padding: 12px;
+      padding: 10px;
       box-shadow: 0 1px 0 rgba(2,6,23,.04);
     }
-    .card .label{
-      font-size: 12px;
-      color: var(--muted);
-      font-weight: 900;
-      letter-spacing: .2px;
-    }
-    .card .metric{
-      font-size: 20px;
-      font-weight: 1000;
-      margin-top: 8px;
-      letter-spacing: .2px;
-    }
-    .hint{font-size: 12px; color: rgba(15,23,42,.72);}
+    .card .label{font-size: 12px; color: var(--muted); font-weight: 900;}
+    .card .metric{font-size: 18px; font-weight: 1000; margin-top: 6px; letter-spacing:.2px;}
 
-    /* Full mode */
-    h3{margin: 14px 0 10px; font-size: 14px; color: rgba(15,23,42,.95);}
+    .hint{font-size: 11px; color: rgba(15,23,42,.72);}
+
+    /* FULL mode basics */
+    h3{margin: 12px 0 10px; font-size: 14px; color: rgba(15,23,42,.95);}
     .row{display:flex; gap:10px; flex-wrap:wrap;}
     .field{
       flex:1;
@@ -473,72 +299,52 @@
       padding: 12px;
       box-shadow: 0 1px 0 rgba(2,6,23,.04);
     }
-    label{
-      display:block;
-      font-size:12px;
-      color:var(--muted);
-      margin-bottom:6px;
-      font-weight: 950;
-      letter-spacing:.2px;
-    }
-    input, select{
-      width:100%;
-      box-sizing:border-box;
-      padding:10px 12px;
-      border-radius: 14px;
-      border:1px solid var(--border);
-      font-size:14px;
-      background:#fff;
-    }
+    label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px; font-weight: 950;}
+    input,select{width:100%; padding:10px 12px; border-radius: 14px; border:1px solid var(--border); font-size:14px; background:#fff;}
     .logList{display:flex; flex-direction:column; gap:10px; margin-top:10px;}
-    .logItem{
-      background:#fff;
-      border:1px solid var(--border);
-      border-radius: 16px;
-      padding: 12px;
-      box-shadow: 0 1px 0 rgba(2,6,23,.04);
-    }
+    .logItem{background:#fff; border:1px solid var(--border); border-radius: 16px; padding: 12px; box-shadow: 0 1px 0 rgba(2,6,23,.04);}
     .logItem .top{display:flex; justify-content:space-between; gap:10px; align-items:center;}
-    .pill{
-      display:inline-block;
-      padding:4px 10px;
-      border-radius: 999px;
-      font-size:12px;
-      font-weight: 950;
-      border:1px solid var(--border);
-      background:#fafafa;
-    }
+    .pill{display:inline-block; padding:4px 10px; border-radius: 999px; font-size:12px; font-weight: 950; border:1px solid var(--border); background:#fafafa;}
     .pill.work{background:#eef6ff; border-color:#cfe6ff;}
     .pill.break{background:#fff5e8; border-color:#ffe1b7;}
     .pill.qual{background:#e9fff0; border-color:#bff0cd;}
     .subtle{font-size:12px; color: var(--muted);}
 
     /* Overlay */
-    .overlay{
-      position:fixed; inset:0; display:none; align-items:flex-end; justify-content:center;
-      background: rgba(0,0,0,.38); padding: 16px;
-    }
+    .overlay{position:fixed; inset:0; display:none; align-items:flex-end; justify-content:center; background: rgba(0,0,0,.38); padding: 16px;}
     .overlay.show{display:flex;}
-    .sheet{
-      width:min(520px, 100%);
-      background:#fff;
-      border-radius: 22px;
-      padding: 14px;
-      box-shadow: var(--shadow);
-    }
+    .sheet{width:min(520px, 100%); background:#fff; border-radius: 22px; padding: 14px; box-shadow: var(--shadow);}
     .sheet h2{margin:0; font-size:16px;}
     .sheet p{margin:8px 0 12px; color:#111827; font-size:14px; line-height:1.35;}
     .sheet .actions{display:flex; gap:10px;}
     .sheet .actions .btn{flex:1;}
 
-    @media (max-height: 700px){
-      .btn.big{padding:14px 10px; font-size:16px;}
-      .card .metric{font-size:18px;}
-      .headerStats{gap:8px;}
-      .stat{padding:8px 9px;}
-      .betaNote{max-width: 520px;}
-      .signalWrap{transform: scale(.92); transform-origin: top left;}
-      .signalLabels{min-width: 160px;}
+    /* ===== Height-based compacting so BASIC fits ===== */
+    @media (max-height: 740px){
+      header.topHeader{padding: calc(8px + env(safe-area-inset-top)) 8px 8px;}
+      .panel{padding:8px;}
+      .panelBasic{gap:8px;}
+      .btn{padding:9px 8px;}
+      .btn.big{padding:12px 10px; font-size:15px;}
+      .card{padding:9px;}
+      .card .metric{font-size:16px;}
+      .stat{padding:7px;}
+      .stat .value{font-size:13px;}
+      .lamp{width:38px; height:38px;}
+      .sigLabel{height:38px; font-size:10px;}
+      .signalBox{width:58px; padding:7px;}
+      .headerStats{gap:6px;}
+    }
+
+    @media (max-height: 690px){
+      .betaNote{display:none;}      /* reclaim vertical space */
+      .hint{display:none;}          /* reclaim vertical space */
+      .panelBasic{grid-template-rows:auto auto 1fr auto;}
+    }
+
+    @media (max-height: 640px){
+      .headerStats{display:none;}   /* extreme small screens: remove stats row */
+      .panelBasic{grid-template-rows:auto auto 1fr;}
     }
   </style>
 </head>
@@ -546,13 +352,11 @@
 <body>
 <div class="app">
 
-  <header id="topHeader" class="topHeader compliance-ok">
+  <header class="topHeader">
     <div class="headerTop">
       <div class="leftCluster">
-        <!-- Chrome traffic light + labels to right -->
         <div id="signalWrap" class="signalWrap" data-state="off" aria-label="Compliance indicator">
           <div class="signalBox" aria-hidden="true">
-            <div class="signalCap" aria-hidden="true"></div>
             <div class="signal">
               <div class="lamp red"></div>
               <div class="lamp amber"></div>
@@ -561,7 +365,7 @@
           </div>
 
           <div class="signalLabels" aria-hidden="true">
-            <div class="sigLabel red">STOP — break must be taken</div>
+            <div class="sigLabel red">STOP — break required</div>
             <div class="sigLabel amber">Break upcoming</div>
             <div class="sigLabel green">Compliant</div>
           </div>
@@ -615,7 +419,7 @@
     <!-- BASIC (no scrolling) -->
     <section id="panelBasic" class="panel panelBasic">
       <div class="controlsRow">
-        <button id="btnStartShift" class="btn startShift primary" type="button">Start shift</button>
+        <button id="btnStartShift" class="btn primary startShift" type="button">Start shift</button>
         <button id="btnEndShift" class="btn" type="button">End shift</button>
         <button id="btnResetDay" class="btn danger" type="button">Reset day</button>
       </div>
@@ -717,7 +521,7 @@
 
 <script>
 (() => {
-  const STORAGE_KEY = "wtd_app_v7_state";
+  const STORAGE_KEY = "wtd_app_v8_state";
   const MIN  = 60000;
   const HOUR = 60 * MIN;
 
@@ -745,7 +549,6 @@
   function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 
   // DOM
-  const topHeader = document.getElementById("topHeader");
   const headerStatus = document.getElementById("headerStatus");
   const hdrStart = document.getElementById("hdrStart");
   const hdrDuration = document.getElementById("hdrDuration");
@@ -830,28 +633,13 @@
     render();
   }
 
-  // When shift is not running: show no lights/labels (OFF)
   function setOffState(){
     signalWrap.dataset.state = "off";
     headerStatus.textContent = "Ready";
-    // keep header in OK colour so UI doesn't look broken
-    topHeader.classList.remove("compliance-warn","compliance-due");
-    topHeader.classList.add("compliance-ok");
-    const theme = document.querySelector('meta[name="theme-color"]');
-    if(theme) theme.setAttribute("content", "#1f7a3a");
   }
-
-  // Compliance drives traffic light + header colour when running
-  function setCompliance(level, text){
-    topHeader.classList.remove("compliance-ok","compliance-warn","compliance-due");
-    topHeader.classList.add(level === "due" ? "compliance-due" : level === "warn" ? "compliance-warn" : "compliance-ok");
+  function setSignal(level, text){
     headerStatus.textContent = text;
-    signalWrap.dataset.state = (level === "due") ? "due" : (level === "warn") ? "warn" : "ok";
-
-    const theme = document.querySelector('meta[name="theme-color"]');
-    if(theme){
-      theme.setAttribute("content", level === "due" ? "#a32121" : level === "warn" ? "#b26b00" : "#1f7a3a");
-    }
+    signalWrap.dataset.state = level; // ok | warn | due
   }
 
   function closeOpenSegment(nowMs){
@@ -887,9 +675,8 @@
 
   function endShift(){
     if(!isShiftRunning()) return;
-    // close any open segment then STOP the shift
     closeOpenSegment(Date.now());
-    state.shiftStartMs = null;     // <-- FIX: truly end the shift
+    state.shiftStartMs = null;     // fully ended
     state.currentType = null;
     saveState();
     render();
@@ -997,7 +784,7 @@
 
     const running = isShiftRunning();
 
-    // Start button visuals (back to original when ended)
+    // Start button visuals
     btnStartShift.classList.toggle("isRunning", running);
     btnStartShift.textContent = running ? "Shift running" : "Start shift";
     btnStartShift.disabled = running;
@@ -1006,7 +793,6 @@
     btnWork.disabled = !running;
     btnBreak.disabled = !running;
 
-    // Header times
     if(!running){
       hdrStart.textContent = "—";
       hdrDuration.textContent = "00:00";
@@ -1017,11 +803,9 @@
       hdrFinishBy.textContent = fmtHHMM(state.shiftStartMs + state.shiftHours * HOUR);
     }
 
-    // Button active states
     btnWork.classList.toggle("isActive", state.currentType === "WORK");
     btnBreak.classList.toggle("isActive", state.currentType === "BREAK");
 
-    // Metrics
     const segs = getSegmentsResolved(now);
     const workMs = sumDurationMs(segs, "WORK");
     const qualMs = qualifyingBreakMs(segs);
@@ -1046,9 +830,8 @@
 
     renderLog(segs);
 
-    // Traffic light and overlay behaviour
     if(!running){
-      setOffState();      // <-- FIX: off/blank state when not running
+      setOffState();
       hideOverlay();
       return;
     }
@@ -1056,16 +839,16 @@
     const warnThreshold = 15 * MIN;
 
     if(dueInMs <= 0){
-      setCompliance("due", "Break due now (continuous work)");
+      setSignal("due", "Break due now (continuous work)");
       const dismissedRecently = state.overlayDismissedAtMs && (now - state.overlayDismissedAtMs) < 10 * MIN;
       if(!dismissedRecently && !overlay.classList.contains("show")){
         showOverlay("Break due", "You have reached 6 hours continuous working time. Take a break now.");
       }
     } else if(dueInMs <= warnThreshold){
-      setCompliance("warn", `Break due in ${fmtDur(dueInMs)} (continuous work)`);
+      setSignal("warn", `Break due in ${fmtDur(dueInMs)} (continuous work)`);
       hideOverlay();
     } else {
-      setCompliance("ok", `Next break in ${fmtDur(dueInMs)} (continuous work)`);
+      setSignal("ok", `Next break in ${fmtDur(dueInMs)} (continuous work)`);
       hideOverlay();
     }
   }
@@ -1101,11 +884,13 @@
   // Events
   btnViewBasic.addEventListener("click", () => setView("basic"));
   btnViewFull.addEventListener("click", () => setView("full"));
+
   btnShift13.addEventListener("click", () => setShiftHours(13));
   btnShift15.addEventListener("click", () => setShiftHours(15));
 
   btnStartShift.addEventListener("click", startShift);
   btnEndShift.addEventListener("click", endShift);
+
   btnResetDay.addEventListener("click", () => {
     const ok = confirm("Reset day? This clears the shift and all segments.");
     if(ok) resetDay();
