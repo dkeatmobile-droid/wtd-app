@@ -4,14 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0b1220" />
-  <title>WTD Working Time Tracker (Beta)</title>
+  <title>WTD Working Time Tracker (Beta) — Single Page</title>
 
   <style>
     :root{
       --page:#e5e7eb;
-
       --text:#0f172a;
-      --muted:#64748b;
 
       --header1:#0b1220;
       --header2:#0f172a;
@@ -21,7 +19,6 @@
       --glass2: rgba(255,255,255,.56);
       --glassBorder: rgba(255,255,255,.62);
 
-      --shadow: 0 18px 44px rgba(2,6,23,.14);
       --shadowSoft: 0 12px 28px rgba(2,6,23,.10);
 
       --segBg: rgba(255,255,255,.55);
@@ -30,8 +27,6 @@
       --segText: rgba(15,23,42,.70);
       --segTextOn: rgba(15,23,42,.98);
 
-      --primary:#0f172a;
-      --running:#0b3b1f;
       --danger:#b00020;
 
       --ok:#16a34a;
@@ -217,57 +212,36 @@
     }
 
     /* =========================
-       Dynamic Island (below header)
+       Timing pill
        ========================= */
     .islandWrap{
-      position:relative;
-      z-index:2;
       padding: 10px 12px 0;
-      margin-top: -8px; /* tighter to header */
+      margin-top: -8px;
       display:flex;
       justify-content:center;
+      position:relative;
+      z-index:2;
     }
-
-    /* iOS Dynamic Island-like pill */
     .dynamicIsland{
       width: min(520px, calc(100vw - 24px));
       border-radius: 999px;
       padding: 10px 14px;
-
-      /* dark glass pill like Dynamic Island */
       background:
         radial-gradient(220px 70px at 25% 15%, rgba(255,255,255,.16), rgba(255,255,255,0) 60%),
         radial-gradient(260px 90px at 75% 30%, rgba(255,255,255,.10), rgba(255,255,255,0) 70%),
         linear-gradient(180deg, rgba(30,41,59,.88), rgba(15,23,42,.92));
       border: 1px solid rgba(255,255,255,.14);
-
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
-
       box-shadow:
         0 18px 44px rgba(2,6,23,.26),
         inset 0 1px 0 rgba(255,255,255,.14),
         inset 0 -14px 30px rgba(0,0,0,.30);
-
       display:grid;
       grid-template-columns: 1fr 1fr 1fr;
       gap:12px;
       align-items:center;
-      position:relative;
-      overflow:hidden;
     }
-
-    .dynamicIsland::after{
-      content:"";
-      position:absolute;
-      top:-40px; left:-80px;
-      width:220px; height:140px;
-      background: radial-gradient(circle at 40% 40%, rgba(255,255,255,.18), rgba(255,255,255,0) 70%);
-      transform: rotate(-12deg);
-      pointer-events:none;
-    }
-
-    .dStat{ min-width:0; }
     .dStat .k{
       font-size:10px;
       font-weight:950;
@@ -288,7 +262,7 @@
     }
 
     /* =========================
-       Main sheet
+       Sheet
        ========================= */
     main{
       flex:1;
@@ -310,8 +284,10 @@
       display:flex;
       flex-direction:column;
       gap:10px;
-      overflow:hidden;
+      overflow:auto;
+      -webkit-overflow-scrolling: touch;
     }
+    .sheet::-webkit-scrollbar{ width:0; height:0; }
 
     .glass{
       background: linear-gradient(180deg, var(--glass1), var(--glass2));
@@ -353,13 +329,14 @@
       box-shadow: 0 18px 40px rgba(2,6,23,.18);
     }
     .btn.primary.isRunning{ background: rgba(11,59,31,.92); }
+
     .btn.danger{
       color: var(--danger);
       border-color: rgba(176,0,32,.28);
       background: rgba(255,255,255,.78);
     }
 
-    /* Segmented */
+    /* Segmented control */
     .strip{
       padding: 10px;
       display:flex;
@@ -418,98 +395,234 @@
       white-space:nowrap;
     }
 
-    /* Work/Rest */
-    .bigActions{
+    /* Single driver action button */
+    .driverActionRow{
       display:grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr;
       gap:10px;
     }
-    .btn.big{
-      padding: 14px 10px;
-      font-size: 16px;
+    .btn.driverBig{
+      padding: 18px 12px;
+      font-size: 17px;
       border-radius: 18px;
       box-shadow: 0 18px 40px rgba(2,6,23,.10);
     }
-    .btn.big.isActive{
-      background: rgba(15,23,42,.92);
-      color:#fff;
-      border-color: rgba(255,255,255,.16);
-      box-shadow: 0 18px 44px rgba(2,6,23,.20);
+    .btn.driverBig.isOnBreak{
+      background: rgba(245,158,11,.92);
+      border-color: rgba(255,255,255,.18);
+      color: rgba(0,0,0,.92);
+      box-shadow: 0 18px 44px rgba(245,158,11,.18);
     }
 
-    /* Cards */
-    .miniGrid{
+    /* Dashboard */
+    .dash{ display:flex; flex-direction:column; gap:10px; }
+
+    .dashCard{
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,.10);
+      background:
+        radial-gradient(520px 180px at 25% 18%, rgba(255,255,255,.10), rgba(255,255,255,0) 60%),
+        radial-gradient(520px 200px at 78% 30%, rgba(255,255,255,.08), rgba(255,255,255,0) 70%),
+        linear-gradient(180deg, rgba(30,41,59,.86), rgba(15,23,42,.92));
+      box-shadow:
+        0 18px 44px rgba(2,6,23,.22),
+        inset 0 1px 0 rgba(255,255,255,.12),
+        inset 0 -14px 30px rgba(0,0,0,.26);
+      color: rgba(255,255,255,.94);
+      overflow:hidden;
+    }
+
+    .dashMain{
+      padding: 14px 14px 12px;
+      display:grid;
+      grid-template-columns: 74px 1fr;
+      gap:12px;
+      align-items:center;
+    }
+
+    /* ✅ extracted from inline styles (left mini panel) */
+    .dashIconPanel{
+      width:64px;
+      height:108px;
+      border-radius:22px;
+      background: rgba(0,0,0,.28);
+      border: 1px solid rgba(255,255,255,.10);
+      display:grid;
+      place-items:center;
+    }
+    .dashIconStack{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      align-items:center;
+    }
+    .miniDot{
+      width:16px;
+      height:16px;
+      border-radius:999px;
+      background: rgba(255,255,255,.18);
+    }
+
+    .dashMain .bigTitle{
+      font-size: 22px;
+      font-weight: 1000;
+      letter-spacing:.6px;
+      color: rgba(255,255,255,.92);
+      text-transform: uppercase;
+    }
+    .dashMain .bigTime{
+      margin-top: 6px;
+      font-size: 72px;
+      line-height: .95;
+      font-weight: 1100;
+      letter-spacing: 1px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .dashSub{
+      margin-top: 10px;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      color: rgba(255,255,255,.74);
+      font-weight: 850;
+    }
+    .dashLine{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-size: 16px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .dashLine .mono{ font-variant-numeric: tabular-nums; color: rgba(255,255,255,.92); }
+
+    .warnIcon{
+      width: 18px;
+      height: 18px;
+      display:inline-grid;
+      place-items:center;
+      border-radius:6px;
+      background: rgba(245,158,11,.20);
+      border: 1px solid rgba(245,158,11,.32);
+      color: rgba(245,158,11,.95);
+      font-size: 13px;
+      flex:0 0 auto;
+    }
+
+    .cardHint{
+      padding: 10px 14px 12px;
+      border-top: 1px solid rgba(255,255,255,.10);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      color: rgba(255,255,255,.70);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .twoCol{
       display:grid;
       grid-template-columns: 1fr 1fr;
       gap:10px;
-      align-content:start;
     }
-    .card{ padding: 12px; border-radius: var(--radius); }
-    .card .label{
-      font-size: 12px;
-      color: rgba(15,23,42,.65);
+
+    .dashSmall{ padding: 12px 14px; }
+    .dashSmall .k{
+      font-size: 13px;
       font-weight: 950;
-      letter-spacing:.2px;
+      letter-spacing:.4px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.78);
     }
-    .card .metric{
-      margin-top: 7px;
+    .dashSmall .vRow{
+      margin-top: 10px;
+      display:flex;
+      align-items:baseline;
+      justify-content:space-between;
+      gap:12px;
+      font-variant-numeric: tabular-nums;
+    }
+    .dashSmall .vRow.tight{ margin-top:8px; } /* ✅ extracted */
+    .dashSmall .v{
+      font-size: 34px;
+      font-weight: 1100;
+      color: rgba(255,255,255,.96);
+    }
+    .dashSmall .vSub{
       font-size: 18px;
       font-weight: 1000;
-      letter-spacing:.2px;
-      color: rgba(15,23,42,.98);
-    }
-    .hint{
-      font-size: 11px;
-      color: rgba(15,23,42,.62);
-      padding: 0 4px;
+      color: rgba(255,255,255,.84);
+      white-space:nowrap;
     }
 
-    /* Panes */
-    .panes{
-      position:relative;
-      flex:1;
-      min-height:0;
+    .metaLabel{
+      font-size:13px;
+      font-weight:950;
+      color:rgba(255,255,255,.72);
+    }
+    .metaValue{
+      font-size:18px;
+      font-weight:1100;
+      color:rgba(255,255,255,.92);
+    }
+
+    .progress{
+      margin-top: 12px;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.14);
       overflow:hidden;
+      border: 1px solid rgba(255,255,255,.08);
     }
-    .pane{
-      position:absolute;
-      inset:0;
-      transition: transform 240ms ease, opacity 240ms ease;
-      will-change: transform, opacity;
-    }
-    .pane.basic{opacity:1; transform: translateX(0); pointer-events:auto;}
-    .pane.full {opacity:0; transform: translateX(8%); pointer-events:none;}
-    .panes.showFull .pane.basic{opacity:0; transform: translateX(-8%); pointer-events:none;}
-    .panes.showFull .pane.full {opacity:1; transform: translateX(0); pointer-events:auto;}
-
-    .basicGrid{
+    .bar{
       height:100%;
-      overflow:hidden;
+      width:0%;
+      background: linear-gradient(90deg, rgba(245,158,11,.92), rgba(245,158,11,.70));
+    }
+
+    .dashMeta{
+      padding: 12px 14px;
       display:grid;
-      grid-template-rows: auto 1fr auto;
+      grid-template-columns: 1fr 1fr;
       gap:10px;
     }
-
-    .fullScroll{
-      height:100%;
-      overflow:auto;
-      -webkit-overflow-scrolling: touch;
-      padding-bottom: 40px;
+    .metaItem{
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.10);
+    }
+    .metaItem .mk{
+      font-size: 12px;
+      font-weight: 950;
+      color: rgba(255,255,255,.70);
+    }
+    .metaItem .mv{
+      margin-top:6px;
+      font-size: 18px;
+      font-weight: 1050;
+      color: rgba(255,255,255,.94);
+      font-variant-numeric: tabular-nums;
     }
 
+    /* Manual add + log */
     h3{
       margin: 12px 2px 10px;
       font-size: 14px;
       color: rgba(15,23,42,.92);
     }
 
-    .row{display:flex; gap:10px; flex-wrap:wrap;}
-    .field{
-      flex:1;
-      min-width: 140px;
-      padding: 12px;
-      border-radius: var(--radius);
+    .rowGrid2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
     }
+
+    .field{ padding: 12px; border-radius: var(--radius); }
+
     label{
       display:block;
       font-size:12px;
@@ -517,21 +630,26 @@
       margin-bottom:6px;
       font-weight: 950;
     }
+
+    /* ✅ iOS Safari zoom fix: keep font-size >= 16px */
     input,select{
       width:100%;
       padding:10px 12px;
       border-radius: 14px;
       border:1px solid rgba(15,23,42,.10);
-      font-size:14px;
+      font-size:16px;
       background: rgba(255,255,255,.80);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       outline:none;
     }
 
+    .rowBtns{ display:flex; gap:10px; flex-wrap:wrap; }
+
     .logList{display:flex; flex-direction:column; gap:10px; margin-top:10px;}
     .logItem{ padding: 12px; border-radius: var(--radius); }
     .logItem .top{display:flex; justify-content:space-between; gap:10px; align-items:center;}
+
     .pill{
       display:inline-block;
       padding:4px 10px;
@@ -546,29 +664,26 @@
     .pill.work{background: rgba(59,130,246,.12); border-color: rgba(59,130,246,.22);}
     .pill.rest{background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.22);}
     .pill.qual{background: rgba(16,185,129,.12); border-color: rgba(16,185,129,.22);}
+
     .subtle{font-size:12px; color: rgba(15,23,42,.55);}
 
     /* iPhone fit */
     @media (max-height: 720px){
       main{padding: 8px 10px 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom));}
       .sheet{padding:10px;}
-      .controlsRow,.bigActions,.miniGrid{gap:8px;}
+      .controlsRow{gap:8px;}
       .btn{padding:10px 9px;}
-      .btn.big{padding:12px 10px; font-size:15px;}
-      .card{padding:10px;}
-      .card .metric{font-size:16px;}
+      .dashMain .bigTime{ font-size: 62px; }
       .lamp{width:38px; height:38px;}
       .signalBox{width:60px; padding:7px;}
       :root{ --rowH: 38px; }
       .signalTextGrid{min-width:110px; max-width:130px;}
-      .islandWrap{padding: 8px 10px 0; margin-top:-8px;}
-      .dynamicIsland{padding:8px 12px; gap:10px;}
-      .dStat .v{font-size:12px;}
+      .btn.driverBig{ padding: 16px 12px; font-size: 16px; }
+      .dynamicIsland{ padding: 8px 12px; }
+      .dStat .v{ font-size:12px; }
     }
-
     @media (max-height: 690px){
       .betaNote{display:none;}
-      .hint{display:none;}
     }
   </style>
 </head>
@@ -588,8 +703,8 @@
         </div>
 
         <div class="signalTextGrid" aria-hidden="true">
-          <div class="sigLabel red">STOP — rest required</div>
-          <div class="sigLabel amber">Rest upcoming</div>
+          <div class="sigLabel red">STOP — break required</div>
+          <div class="sigLabel amber">Break upcoming</div>
           <div class="sigLabel green">Compliant</div>
         </div>
       </div>
@@ -606,11 +721,11 @@
     </div>
   </header>
 
-  <!-- iOS Dynamic Island style pill -->
-  <div class="islandWrap" aria-label="Shift timing island">
+  <!-- Timing pill -->
+  <div class="islandWrap" aria-label="Shift timing">
     <div class="dynamicIsland">
       <div class="dStat">
-        <div class="k">Shift start</div>
+        <div class="k">Start time</div>
         <div id="hdrStart" class="v">—</div>
       </div>
       <div class="dStat">
@@ -618,8 +733,8 @@
         <div id="hdrDuration" class="v">00:00</div>
       </div>
       <div class="dStat">
-        <div class="k">Finish by</div>
-        <div id="hdrFinishBy" class="v">—</div>
+        <div class="k">End time</div>
+        <div id="hdrEnd" class="v">—</div>
       </div>
     </div>
   </div>
@@ -633,114 +748,140 @@
         <button id="btnResetDay" class="btn danger" type="button">Reset day</button>
       </div>
 
-      <div class="glass strip" aria-label="Mode and shift controls">
-        <div class="seg" id="segView" role="group" aria-label="View mode">
+      <div class="glass strip" aria-label="Shift controls">
+        <div class="shiftLabel">Length of shift<br/>for the day</div>
+        <div class="seg" id="segShift" role="group" aria-label="Shift length">
           <div class="segThumb" aria-hidden="true"></div>
-          <button class="segBtn" type="button" data-value="basic">Basic</button>
-          <button class="segBtn" type="button" data-value="full">Full</button>
-        </div>
-
-        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
-          <div class="shiftLabel">Length of shift<br/>for the day</div>
-          <div class="seg" id="segShift" role="group" aria-label="Shift length">
-            <div class="segThumb" aria-hidden="true"></div>
-            <button class="segBtn" type="button" data-value="13">13h</button>
-            <button class="segBtn" type="button" data-value="15">15h</button>
-          </div>
+          <button class="segBtn" type="button" data-value="13">13h</button>
+          <button class="segBtn" type="button" data-value="15">15h</button>
         </div>
       </div>
 
-      <div id="panes" class="panes">
-        <!-- BASIC -->
-        <section class="pane basic">
-          <div class="basicGrid">
-
-            <div class="bigActions">
-              <button id="btnWork" class="btn big" type="button">Work</button>
-              <button id="btnRest" class="btn big" type="button">Rest</button>
-            </div>
-
-            <div class="miniGrid">
-              <div class="glass card">
-                <div class="label">Shift time</div>
-                <div id="uiShiftTime" class="metric">00:00</div>
-              </div>
-              <div class="glass card">
-                <div class="label">Continuous work</div>
-                <div id="uiContinuous" class="metric">00:00</div>
-              </div>
-              <div class="glass card">
-                <div class="label">Next rest in</div>
-                <div id="uiNextRestIn" class="metric">—</div>
-              </div>
-              <div class="glass card">
-                <div class="label">Rest still needed</div>
-                <div id="uiRestNeeded" class="metric">00:00</div>
-              </div>
-            </div>
-
-            <div class="hint">Qualifying rest (counts toward 30/45) = REST for ≥ 15 minutes.</div>
-          </div>
-        </section>
-
-        <!-- FULL -->
-        <section class="pane full">
-          <div class="fullScroll">
-            <div class="miniGrid">
-              <div class="glass card">
-                <div class="label">Total work</div>
-                <div id="uiWorkTotal_full" class="metric">00:00</div>
-              </div>
-              <div class="glass card">
-                <div class="label">Qualifying rest</div>
-                <div id="uiQualRest_full" class="metric">00:00</div>
-              </div>
-              <div class="glass card">
-                <div class="label">Rest required</div>
-                <div id="uiRestReq_full" class="metric">00:00</div>
-              </div>
-              <div class="glass card">
-                <div class="label">Rest still needed</div>
-                <div id="uiRestNeed_full" class="metric">00:00</div>
-              </div>
-            </div>
-
-            <h3>Manual add segment</h3>
-            <div class="row">
-              <div class="glass field">
-                <label for="manType">Type</label>
-                <select id="manType">
-                  <option value="WORK">WORK</option>
-                  <option value="REST">REST</option>
-                </select>
-              </div>
-
-              <div class="glass field">
-                <label for="manStart">Start (type 0800)</label>
-                <input id="manStart" inputmode="tel" placeholder="0800" />
-                <div class="subtle" style="margin-top:6px;">Auto formats to HH:MM on iPhone</div>
-              </div>
-
-              <div class="glass field">
-                <label for="manEnd">End (type 0915)</label>
-                <input id="manEnd" inputmode="tel" placeholder="0915" />
-              </div>
-            </div>
-
-            <div class="row" style="margin-top:10px;">
-              <button id="btnAddManual" class="btn primary" type="button">Add segment</button>
-              <button id="btnDeleteLast" class="btn" type="button">Delete last</button>
-            </div>
-
-            <div class="subtle" style="margin-top:8px;">
-              Times use today’s date. If end is earlier than start, it is treated as next day.
-            </div>
-
-            <h3>Segment log</h3>
-            <div id="logList" class="logList"></div>
-          </div>
-        </section>
+      <div class="driverActionRow">
+        <button id="btnToggle" class="btn driverBig primary" type="button">Start break</button>
       </div>
+
+      <div class="dash" aria-label="Driver dashboard">
+
+        <!-- WORK SAFE FOR -->
+        <div class="dashCard">
+          <div class="dashMain">
+            <div aria-hidden="true">
+              <div class="dashIconPanel">
+                <div class="dashIconStack">
+                  <div id="miniLampTop" class="miniDot"></div>
+                  <div id="miniLampMid" class="miniDot"></div>
+                  <div id="miniLampBot" class="miniDot"></div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="bigTitle">WORK SAFE FOR</div>
+              <div id="uiWorkSafeFor" class="bigTime">—:—</div>
+
+              <div class="dashSub">
+                <div class="dashLine">
+                  <span class="warnIcon">!</span>
+                  <span id="uiBreakAt">Break required at —</span>
+                </div>
+                <div class="dashLine">
+                  <span>Continuous work</span>
+                  <span class="mono" id="uiContVsLimit">— / 06:00</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="cardHint">
+            <div>Qualifying break counts at ≥ 15 min</div>
+            <div id="uiShiftStartSmall">Shift start —</div>
+          </div>
+        </div>
+
+        <!-- WTD TODAY + BREAK BUILDING -->
+        <div class="twoCol">
+          <div class="dashCard dashSmall">
+            <div class="k">WTD TODAY</div>
+            <div class="vRow">
+              <div class="v" id="uiWtdToday">00:00</div>
+              <div class="vSub" id="uiWtdLimit">/ 13:00</div>
+            </div>
+            <div class="vRow tight">
+              <div class="metaLabel">Remaining</div>
+              <div class="metaValue" id="uiWtdRemaining">—</div>
+            </div>
+            <div class="progress" aria-hidden="true">
+              <div id="barWtd" class="bar"></div>
+            </div>
+          </div>
+
+          <div class="dashCard dashSmall">
+            <div class="k">BREAK BUILDING</div>
+            <div class="vRow">
+              <div class="v" id="uiBreakBuild">00</div>
+              <div class="vSub">/ 15</div>
+            </div>
+            <div class="vRow tight">
+              <div class="metaLabel">Last break</div>
+              <div class="metaValue" id="uiLastRest">—</div>
+            </div>
+            <div class="progress" aria-hidden="true">
+              <div id="barBreak" class="bar"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Secondary details -->
+        <div class="dashCard">
+          <div class="dashMeta">
+            <div class="metaItem">
+              <div class="mk">Shift time</div>
+              <div class="mv" id="uiShiftTime">00:00</div>
+            </div>
+            <div class="metaItem">
+              <div class="mk">Break still needed</div>
+              <div class="mv" id="uiRestNeeded">00:00</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <h3>Manual add segment</h3>
+
+      <div class="glass field">
+        <label for="manType">Type</label>
+        <select id="manType">
+          <option value="WORK">WORK</option>
+          <option value="REST">BREAK</option>
+        </select>
+      </div>
+
+      <div class="rowGrid2">
+        <div class="glass field">
+          <label for="manStart">Start time</label>
+          <input id="manStart" inputmode="tel" placeholder="08:00" />
+          <div class="subtle" style="margin-top:6px;">Auto formats to HH:MM on iPhone</div>
+        </div>
+
+        <div class="glass field">
+          <label for="manEnd">Finish time</label>
+          <input id="manEnd" inputmode="tel" placeholder="09:15" />
+        </div>
+      </div>
+
+      <div class="rowBtns">
+        <button id="btnAddManual" class="btn primary" type="button">Add segment</button>
+        <button id="btnDeleteLast" class="btn" type="button">Delete last</button>
+      </div>
+
+      <div class="subtle">
+        Times use today’s date. If end is earlier than start, it is treated as next day.
+      </div>
+
+      <h3>Segment log</h3>
+      <div id="logList" class="logList"></div>
 
     </div>
   </main>
@@ -748,15 +889,14 @@
 
 <script>
 (() => {
-  const STORAGE_KEY = "wtd_app_dynamic_island_v1";
+  const STORAGE_KEY = "wtd_single_page_driver_v3";
   const MIN  = 60000;
   const HOUR = 60 * MIN;
 
   const defaults = () => ({
-    view: "basic",
     shiftHours: 13,
     shiftStartMs: null,
-    currentType: null, // "WORK" | "REST" | null
+    currentType: null, // "WORK" | "REST" | null (REST == BREAK in UI)
     segments: []       // {type,startMs,endMs}
   });
 
@@ -774,40 +914,50 @@
   function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 
   // DOM
-  const panes = document.getElementById("panes");
   const signalWrap = document.getElementById("signalWrap");
   const headerStatus = document.getElementById("headerStatus");
 
+  // Timing pill
   const hdrStart = document.getElementById("hdrStart");
   const hdrDuration = document.getElementById("hdrDuration");
-  const hdrFinishBy = document.getElementById("hdrFinishBy");
+  const hdrEnd = document.getElementById("hdrEnd");
 
   const btnStartShift = document.getElementById("btnStartShift");
   const btnEndShift   = document.getElementById("btnEndShift");
   const btnResetDay   = document.getElementById("btnResetDay");
+  const btnToggle = document.getElementById("btnToggle");
 
-  const btnWork  = document.getElementById("btnWork");
-  const btnRest  = document.getElementById("btnRest");
+  const segShift = document.getElementById("segShift");
 
-  const uiShiftTime    = document.getElementById("uiShiftTime");
-  const uiContinuous   = document.getElementById("uiContinuous");
-  const uiNextRestIn   = document.getElementById("uiNextRestIn");
-  const uiRestNeeded   = document.getElementById("uiRestNeeded");
+  // Driver dashboard fields
+  const uiWorkSafeFor     = document.getElementById("uiWorkSafeFor");
+  const uiBreakAt         = document.getElementById("uiBreakAt");
+  const uiContVsLimit     = document.getElementById("uiContVsLimit");
+  const uiShiftStartSmall = document.getElementById("uiShiftStartSmall");
 
-  const uiWorkTotal_full = document.getElementById("uiWorkTotal_full");
-  const uiQualRest_full  = document.getElementById("uiQualRest_full");
-  const uiRestReq_full   = document.getElementById("uiRestReq_full");
-  const uiRestNeed_full  = document.getElementById("uiRestNeed_full");
+  const uiWtdToday        = document.getElementById("uiWtdToday");
+  const uiWtdLimit        = document.getElementById("uiWtdLimit");
+  const uiWtdRemaining    = document.getElementById("uiWtdRemaining");
+  const barWtd            = document.getElementById("barWtd");
 
+  const uiBreakBuild      = document.getElementById("uiBreakBuild");
+  const uiLastRest        = document.getElementById("uiLastRest");
+  const barBreak          = document.getElementById("barBreak");
+
+  const uiShiftTime       = document.getElementById("uiShiftTime");
+  const uiRestNeeded      = document.getElementById("uiRestNeeded");
+
+  const miniLampTop       = document.getElementById("miniLampTop");
+  const miniLampMid       = document.getElementById("miniLampMid");
+  const miniLampBot       = document.getElementById("miniLampBot");
+
+  // Manual + log
   const manType = document.getElementById("manType");
   const manStart = document.getElementById("manStart");
   const manEnd = document.getElementById("manEnd");
   const btnAddManual = document.getElementById("btnAddManual");
   const btnDeleteLast = document.getElementById("btnDeleteLast");
   const logList = document.getElementById("logList");
-
-  const segView  = document.getElementById("segView");
-  const segShift = document.getElementById("segShift");
 
   const pad2 = (n) => String(n).padStart(2,"0");
   const clamp0 = (ms) => Math.max(0, ms);
@@ -851,18 +1001,17 @@
       thumb.style.transform = `translateX(${left}px)`;
     }
 
-    function setValue(value, fire=false){
+    function setValue(value){
       btns.forEach(b => b.classList.toggle("isOn", b.dataset.value === String(value)));
       const active = btns.find(b => b.classList.contains("isOn")) || btns[0];
       moveTo(active);
-      if(fire) onChange(String(value));
     }
 
     btns.forEach(btn => {
       btn.addEventListener("click", () => {
         haptic(8);
         const v = btn.dataset.value;
-        setValue(v, false);
+        setValue(v);
         onChange(v);
       });
     });
@@ -873,20 +1022,20 @@
     });
     ro.observe(segEl);
 
-    requestAnimationFrame(() => setValue(initialValue, false));
+    requestAnimationFrame(() => setValue(initialValue));
     return { setValue };
   }
 
   // WTD-only logic:
-  // - "Rest due" when continuous WORK reaches 6h
-  // - "Rest required" totals: >6h => 30m, >9h => 45m (qualifying REST >= 15m)
+  // - "Break due" when continuous WORK reaches 6h
+  // - "Break required" totals: >6h => 30m, >9h => 45m (qualifying BREAK >= 15m)
   function resolvedSegments(now){
     return state.segments.map(s => ({...s, endMs: (s.endMs == null ? now : s.endMs)}));
   }
   function sumMs(segs, type){
     return segs.filter(s => s.type === type).reduce((a,s)=> a + clamp0(s.endMs - s.startMs), 0);
   }
-  function qualifyingRestMs(segs){
+  function qualifyingBreakMs(segs){
     return segs
       .filter(s => s.type === "REST")
       .reduce((acc, s) => {
@@ -894,25 +1043,25 @@
         return acc + (d >= 15*MIN ? d : 0);
       }, 0);
   }
-  function requiredRestMs(workMs){
+  function requiredBreakMs(workMs){
     if(workMs > 9*HOUR) return 45*MIN;
     if(workMs > 6*HOUR) return 30*MIN;
     return 0;
   }
   function continuousWorkMs(segs){
-    let lastRestEnd = null;
+    let lastBreakEnd = null;
     for(const s of segs){
-      if(s.type === "REST") lastRestEnd = s.endMs;
+      if(s.type === "REST") lastBreakEnd = s.endMs;
     }
-    if(lastRestEnd == null) return sumMs(segs, "WORK");
+    if(lastBreakEnd == null) return sumMs(segs, "WORK");
     return segs
-      .filter(s => s.type === "WORK" && s.endMs > lastRestEnd)
+      .filter(s => s.type === "WORK" && s.endMs > lastBreakEnd)
       .reduce((acc, s) => {
-        const start = Math.max(s.startMs, lastRestEnd);
+        const start = Math.max(s.startMs, lastBreakEnd);
         return acc + clamp0(s.endMs - start);
       }, 0);
   }
-  function nextRestDueInMs(contWorkMs){ return 6*HOUR - contWorkMs; }
+  function nextBreakDueInMs(contWorkMs){ return 6*HOUR - contWorkMs; }
 
   function closeOpenSegment(now){
     const last = state.segments[state.segments.length - 1];
@@ -930,23 +1079,32 @@
     render();
   }
 
-  function setTraffic(stateKey, text){
-    signalWrap.dataset.state = stateKey; // off | ok | warn | due
-    headerStatus.textContent = text;
+  function toggleWorkBreak(){
+    if(!isRunning()) return;
+    haptic(10);
+    if(state.currentType === "REST"){
+      startSegment("WORK");
+    } else {
+      startSegment("REST");
+    }
   }
 
-  function applyView(view){
-    panes.classList.toggle("showFull", view === "full");
-  }
-  function setView(view){
-    state.view = view;
-    save();
-    applyView(view);
-  }
-  function setShiftHours(h){
-    state.shiftHours = Number(h);
-    save();
-    render(); // finish-by updates immediately
+  function setTraffic(stateKey, text){
+    signalWrap.dataset.state = stateKey;
+    headerStatus.textContent = text;
+
+    const off = "rgba(255,255,255,.18)";
+    miniLampTop.style.background = off;
+    miniLampMid.style.background = off;
+    miniLampBot.style.background = off;
+
+    if(stateKey === "due"){
+      miniLampTop.style.background = "rgba(239,68,68,.95)";
+    } else if(stateKey === "warn"){
+      miniLampMid.style.background = "rgba(245,158,11,.95)";
+    } else if(stateKey === "ok"){
+      miniLampBot.style.background = "rgba(22,163,74,.95)";
+    }
   }
 
   function parseTimeToMs(hhmm){
@@ -960,7 +1118,7 @@
   }
 
   function addManual(){
-    const type = manType.value;
+    const type = manType.value; // WORK or REST
     const s = parseTimeToMs(manStart.value);
     const e0 = parseTimeToMs(manEnd.value);
     if(s == null || e0 == null){
@@ -995,6 +1153,7 @@
       const dur = clamp0(s.endMs - s.startMs);
       const isQual = s.type === "REST" && dur >= 15*MIN;
       const pillClass = s.type === "WORK" ? "work" : "rest";
+      const label = s.type === "WORK" ? "WORK" : "BREAK";
       const qualPill = isQual ? `<span class="pill qual">QUAL</span>` : "";
       const t1 = fmtTime(s.startMs);
       const t2 = fmtTime(s.endMs);
@@ -1002,7 +1161,7 @@
         <div class="glass logItem">
           <div class="top">
             <div>
-              <span class="pill ${pillClass}">${s.type}</span>
+              <span class="pill ${pillClass}">${label}</span>
               ${qualPill}
             </div>
             <div class="subtle">${fmtDur(dur)}</div>
@@ -1013,81 +1172,139 @@
     }).join("");
   }
 
+  function lastBreakSegment(segs){
+    for(let i=segs.length-1; i>=0; i--){
+      if(segs[i].type === "REST") return segs[i];
+    }
+    return null;
+  }
+
+  function updateToggleButton(running){
+    btnToggle.disabled = !running;
+    const onBreak = state.currentType === "REST";
+    btnToggle.classList.toggle("isOnBreak", onBreak);
+    btnToggle.textContent = onBreak ? "Resume work" : "Start break";
+  }
+
   function render(){
     const now = Date.now();
     const running = isRunning();
 
-    // Dynamic Island timing
+    // Timing pill
     if(!running){
       hdrStart.textContent = "—";
       hdrDuration.textContent = "00:00";
-      hdrFinishBy.textContent = "—";
+      hdrEnd.textContent = "—";
     } else {
       hdrStart.textContent = fmtTime(state.shiftStartMs);
       hdrDuration.textContent = fmtDur(now - state.shiftStartMs);
-      hdrFinishBy.textContent = fmtTime(state.shiftStartMs + (state.shiftHours * HOUR));
+      hdrEnd.textContent = fmtTime(state.shiftStartMs + (state.shiftHours * HOUR));
     }
 
-    // Start/End
+    // Start/End buttons
     btnStartShift.classList.toggle("isRunning", running);
     btnStartShift.textContent = running ? "Shift running" : "Start shift";
     btnStartShift.disabled = running;
 
     btnEndShift.disabled = !running;
-    btnWork.disabled = !running;
-    btnRest.disabled = !running;
+    updateToggleButton(running);
 
-    // Work/Rest active colours
-    btnWork.classList.toggle("isActive", state.currentType === "WORK");
-    btnRest.classList.toggle("isActive", state.currentType === "REST");
-
-    // Metrics
-    const segs = resolvedSegments(now);
-    const workMs = sumMs(segs, "WORK");
-    const qualMs = qualifyingRestMs(segs);
-    const reqMs  = requiredRestMs(workMs);
-    const needMs = clamp0(reqMs - qualMs);
-
-    const contMs = continuousWorkMs(segs);
-    const dueInMs = nextRestDueInMs(contMs);
-
-    uiShiftTime.textContent   = running ? fmtDur(now - state.shiftStartMs) : "00:00";
-    uiContinuous.textContent  = fmtDur(contMs);
-    uiRestNeeded.textContent  = fmtDur(needMs);
-
-    if(!running) uiNextRestIn.textContent = "—";
-    else if(dueInMs <= 0) uiNextRestIn.textContent = "DUE";
-    else uiNextRestIn.textContent = fmtDur(dueInMs);
-
-    uiWorkTotal_full.textContent = fmtDur(workMs);
-    uiQualRest_full.textContent  = fmtDur(qualMs);
-    uiRestReq_full.textContent   = fmtDur(reqMs);
-    uiRestNeed_full.textContent  = fmtDur(needMs);
-
-    renderLog(segs);
-
-    // Traffic light
     if(!running){
+      uiWorkSafeFor.textContent = "—:—";
+      uiBreakAt.textContent = "Break required at —";
+      uiContVsLimit.textContent = "— / 06:00";
+      uiShiftStartSmall.textContent = "Shift start —";
+
+      uiWtdToday.textContent = "00:00";
+      uiWtdLimit.textContent = `/ ${pad2(state.shiftHours)}:00`;
+      uiWtdRemaining.textContent = "—";
+      barWtd.style.width = "0%";
+
+      uiBreakBuild.textContent = "00";
+      uiLastRest.textContent = "—";
+      barBreak.style.width = "0%";
+
+      uiShiftTime.textContent = "00:00";
+      uiRestNeeded.textContent = "00:00";
+
+      renderLog([]);
       setTraffic("off", "Ready");
       return;
     }
+
+    const segs = resolvedSegments(now);
+
+    const workMs = sumMs(segs, "WORK");
+    const qualMs = qualifyingBreakMs(segs);
+    const reqMs  = requiredBreakMs(workMs);
+    const needMs = clamp0(reqMs - qualMs);
+
+    const contMs = continuousWorkMs(segs);
+    const dueInMs = nextBreakDueInMs(contMs);
+
+    uiWorkSafeFor.textContent = fmtDur(Math.max(0, dueInMs));
+
+    if(dueInMs <= 0){
+      uiBreakAt.textContent = "Break required";
+    } else {
+      uiBreakAt.textContent = `Break required at ${fmtTime(now + dueInMs)}`;
+    }
+
+    uiContVsLimit.textContent = `${fmtDur(contMs)} / 06:00`;
+    uiShiftStartSmall.textContent = `Shift start ${fmtTime(state.shiftStartMs)}`;
+    uiShiftTime.textContent = fmtDur(now - state.shiftStartMs);
+
+    uiWtdToday.textContent = fmtDur(workMs);
+    uiWtdLimit.textContent = `/ ${pad2(state.shiftHours)}:00`;
+
+    const remainingMs = Math.max(0, state.shiftHours * HOUR - workMs);
+    uiWtdRemaining.textContent = fmtDur(remainingMs);
+
+    const wtdPct = Math.min(100, Math.max(0, (workMs / (state.shiftHours * HOUR)) * 100));
+    barWtd.style.width = `${wtdPct}%`;
+
+    const lastBreak = lastBreakSegment(segs);
+    let currentBreakMs = 0;
+    if(state.currentType === "REST" && lastBreak){
+      currentBreakMs = clamp0(lastBreak.endMs - lastBreak.startMs);
+    }
+
+    const breakBuildMin = Math.min(15, Math.floor(currentBreakMs / MIN));
+    uiBreakBuild.textContent = pad2(breakBuildMin);
+    uiLastRest.textContent = lastBreak ? fmtDur(clamp0(lastBreak.endMs - lastBreak.startMs)) : "—";
+
+    const breakPct = Math.min(100, Math.max(0, (currentBreakMs / (15*MIN)) * 100));
+    barBreak.style.width = `${breakPct}%`;
+
+    uiRestNeeded.textContent = fmtDur(needMs);
+
+    renderLog(segs);
+
     const warnThreshold = 15*MIN;
     if(dueInMs <= 0){
-      setTraffic("due", "Rest due (continuous work)");
+      setTraffic("due", "Break due (continuous work)");
     } else if(dueInMs <= warnThreshold){
-      setTraffic("warn", `Rest soon: ${fmtDur(dueInMs)}`);
+      setTraffic("warn", `Break soon: ${fmtDur(dueInMs)}`);
     } else {
-      setTraffic("ok", `Compliant: next rest ${fmtDur(dueInMs)}`);
+      setTraffic("ok", `Compliant: break in ${fmtDur(dueInMs)}`);
     }
+
+    updateToggleButton(running);
   }
 
-  // Events
+  const segShiftAPI = makeSegmented(segShift, String(state.shiftHours), (v) => {
+    state.shiftHours = Number(v);
+    save();
+    render();
+    requestAnimationFrame(() => segShiftAPI.setValue(String(state.shiftHours)));
+  });
+
   btnStartShift.addEventListener("click", () => {
     if(isRunning()) return;
     haptic(12);
     state.shiftStartMs = Date.now();
-    state.currentType = null;
-    state.segments = [];
+    state.currentType = "WORK";
+    state.segments = [{ type:"WORK", startMs: state.shiftStartMs, endMs: null }];
     save();
     render();
   });
@@ -1109,29 +1326,13 @@
     state = defaults();
     save();
     render();
-    segViewAPI.setValue(state.view, false);
-    segShiftAPI.setValue(String(state.shiftHours), false);
+    segShiftAPI.setValue(String(state.shiftHours));
   });
 
-  btnWork.addEventListener("click", () => { haptic(8); startSegment("WORK"); });
-  btnRest.addEventListener("click", () => { haptic(8); startSegment("REST"); });
-
+  btnToggle.addEventListener("click", toggleWorkBreak);
   btnAddManual.addEventListener("click", () => { haptic(8); addManual(); });
   btnDeleteLast.addEventListener("click", () => { haptic(8); deleteLast(); });
 
-  // Segmented controls
-  const segViewAPI = makeSegmented(segView, state.view, (v) => {
-    setView(v);
-    requestAnimationFrame(() => segViewAPI.setValue(state.view, false));
-  });
-
-  const segShiftAPI = makeSegmented(segShift, String(state.shiftHours), (v) => {
-    setShiftHours(v);
-    requestAnimationFrame(() => segShiftAPI.setValue(String(state.shiftHours), false));
-  });
-
-  // Init
-  applyView(state.view);
   setInterval(render, 1000);
   render();
 })();
