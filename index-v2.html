@@ -4,14 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0b1220" />
-  <title>WTD Working Time Tracker (Beta)</title>
+  <title>WTD Working Time Tracker (Beta) — V2</title>
 
   <style>
     :root{
       --page:#e5e7eb;
 
       --text:#0f172a;
-      --muted:#64748b;
 
       --header1:#0b1220;
       --header2:#0f172a;
@@ -534,7 +533,7 @@
       border-radius: 18px;
       box-shadow: 0 18px 40px rgba(2,6,23,.10);
     }
-    .btn.driverBig.isResting{
+    .btn.driverBig.isOnBreak{
       background: rgba(245,158,11,.92);
       border-color: rgba(255,255,255,.18);
       color: rgba(0,0,0,.92);
@@ -559,11 +558,13 @@
     .panes.showFull .pane.basic{opacity:0; transform: translateX(-8%); pointer-events:none;}
     .panes.showFull .pane.full {opacity:1; transform: translateX(0); pointer-events:auto;}
 
+    /* ✅ FIX: allow scrolling on small screens (prevents clipping) */
     .basicGrid{
       height:100%;
-      overflow:hidden;
-      display:grid;
-      grid-template-rows: auto 1fr;
+      overflow:auto;
+      -webkit-overflow-scrolling: touch;
+      display:flex;
+      flex-direction:column;
       gap:10px;
     }
 
@@ -659,8 +660,8 @@
         </div>
 
         <div class="signalTextGrid" aria-hidden="true">
-          <div class="sigLabel red">STOP — rest required</div>
-          <div class="sigLabel amber">Rest upcoming</div>
+          <div class="sigLabel red">STOP — break required</div>
+          <div class="sigLabel amber">Break upcoming</div>
           <div class="sigLabel green">Compliant</div>
         </div>
       </div>
@@ -709,7 +710,7 @@
           <div class="basicGrid">
 
             <div class="driverActionRow">
-              <button id="btnToggle" class="btn driverBig primary" type="button">Start rest</button>
+              <button id="btnToggle" class="btn driverBig primary" type="button">Start break</button>
             </div>
 
             <div class="dash" aria-label="Driver dashboard">
@@ -774,7 +775,7 @@
                     <div class="vSub">/ 15</div>
                   </div>
                   <div class="vRow" style="margin-top:8px;">
-                    <div style="font-size:13px;font-weight:950;color:rgba(255,255,255,.72);">Last rest</div>
+                    <div style="font-size:13px;font-weight:950;color:rgba(255,255,255,.72);">Last break</div>
                     <div style="font-size:18px;font-weight:1100;color:rgba(255,255,255,.92);" id="uiLastRest">—</div>
                   </div>
                   <div class="progress" aria-hidden="true">
@@ -791,7 +792,7 @@
                     <div class="mv" id="uiShiftTime">00:00</div>
                   </div>
                   <div class="metaItem">
-                    <div class="mk">Rest still needed</div>
+                    <div class="mk">Break still needed</div>
                     <div class="mv" id="uiRestNeeded">00:00</div>
                   </div>
                 </div>
@@ -811,15 +812,15 @@
                   <div id="uiWorkTotal_full" style="margin-top:7px;font-size:18px;font-weight:1000;">00:00</div>
                 </div>
                 <div class="glass" style="padding:12px;border-radius:18px;">
-                  <div style="font-size:12px;color:rgba(15,23,42,.65);font-weight:950;">Qualifying rest</div>
+                  <div style="font-size:12px;color:rgba(15,23,42,.65);font-weight:950;">Qualifying break</div>
                   <div id="uiQualRest_full" style="margin-top:7px;font-size:18px;font-weight:1000;">00:00</div>
                 </div>
                 <div class="glass" style="padding:12px;border-radius:18px;">
-                  <div style="font-size:12px;color:rgba(15,23,42,.65);font-weight:950;">Rest required</div>
+                  <div style="font-size:12px;color:rgba(15,23,42,.65);font-weight:950;">Break required</div>
                   <div id="uiRestReq_full" style="margin-top:7px;font-size:18px;font-weight:1000;">00:00</div>
                 </div>
                 <div class="glass" style="padding:12px;border-radius:18px;">
-                  <div style="font-size:12px;color:rgba(15,23,42,.65);font-weight:950;">Rest still needed</div>
+                  <div style="font-size:12px;color:rgba(15,23,42,.65);font-weight:950;">Break still needed</div>
                   <div id="uiRestNeed_full" style="margin-top:7px;font-size:18px;font-weight:1000;">00:00</div>
                 </div>
               </div>
@@ -831,7 +832,7 @@
                 <label for="manType">Type</label>
                 <select id="manType">
                   <option value="WORK">WORK</option>
-                  <option value="REST">REST</option>
+                  <option value="REST">BREAK</option>
                 </select>
               </div>
 
@@ -868,7 +869,7 @@
 
 <script>
 (() => {
-  const STORAGE_KEY = "wtd_driver_dashboard_v2_single_button";
+  const STORAGE_KEY = "wtd_driver_dashboard_v2_single_button_break";
   const MIN  = 60000;
   const HOUR = 60 * MIN;
 
@@ -876,7 +877,7 @@
     view: "basic",
     shiftHours: 13,
     shiftStartMs: null,
-    currentType: null, // "WORK" | "REST" | null
+    currentType: null, // "WORK" | "REST" | null (REST == BREAK in UI)
     segments: []       // {type,startMs,endMs}
   });
 
@@ -1010,41 +1011,41 @@
   }
 
   // WTD-only logic:
-  // - "Rest due" when continuous WORK reaches 6h
-  // - "Rest required" totals: >6h => 30m, >9h => 45m (qualifying REST >= 15m)
+  // - "Break due" when continuous WORK reaches 6h
+  // - "Break required" totals: >6h => 30m, >9h => 45m (qualifying BREAK >= 15m)
   function resolvedSegments(now){
     return state.segments.map(s => ({...s, endMs: (s.endMs == null ? now : s.endMs)}));
   }
   function sumMs(segs, type){
     return segs.filter(s => s.type === type).reduce((a,s)=> a + clamp0(s.endMs - s.startMs), 0);
   }
-  function qualifyingRestMs(segs){
+  function qualifyingBreakMs(segs){
     return segs
-      .filter(s => s.type === "REST")
+      .filter(s => s.type === "REST") // stored as REST, displayed as BREAK
       .reduce((acc, s) => {
         const d = clamp0(s.endMs - s.startMs);
         return acc + (d >= 15*MIN ? d : 0);
       }, 0);
   }
-  function requiredRestMs(workMs){
+  function requiredBreakMs(workMs){
     if(workMs > 9*HOUR) return 45*MIN;
     if(workMs > 6*HOUR) return 30*MIN;
     return 0;
   }
   function continuousWorkMs(segs){
-    let lastRestEnd = null;
+    let lastBreakEnd = null;
     for(const s of segs){
-      if(s.type === "REST") lastRestEnd = s.endMs;
+      if(s.type === "REST") lastBreakEnd = s.endMs;
     }
-    if(lastRestEnd == null) return sumMs(segs, "WORK");
+    if(lastBreakEnd == null) return sumMs(segs, "WORK");
     return segs
-      .filter(s => s.type === "WORK" && s.endMs > lastRestEnd)
+      .filter(s => s.type === "WORK" && s.endMs > lastBreakEnd)
       .reduce((acc, s) => {
-        const start = Math.max(s.startMs, lastRestEnd);
+        const start = Math.max(s.startMs, lastBreakEnd);
         return acc + clamp0(s.endMs - start);
       }, 0);
   }
-  function nextRestDueInMs(contWorkMs){ return 6*HOUR - contWorkMs; }
+  function nextBreakDueInMs(contWorkMs){ return 6*HOUR - contWorkMs; }
 
   function closeOpenSegment(now){
     const last = state.segments[state.segments.length - 1];
@@ -1062,13 +1063,10 @@
     render();
   }
 
-  function toggleWorkRest(){
+  function toggleWorkBreak(){
     if(!isRunning()) return;
     haptic(10);
-
-    // Driver workflow:
-    // - If currently REST -> RESUME WORK
-    // - Otherwise -> START REST
+    // If on BREAK -> resume WORK, else -> start BREAK
     if(state.currentType === "REST"){
       startSegment("WORK");
     } else {
@@ -1120,7 +1118,7 @@
   }
 
   function addManual(){
-    const type = manType.value;
+    const type = manType.value; // WORK or REST (REST displayed as BREAK)
     const s = parseTimeToMs(manStart.value);
     const e0 = parseTimeToMs(manEnd.value);
     if(s == null || e0 == null){
@@ -1155,6 +1153,7 @@
       const dur = clamp0(s.endMs - s.startMs);
       const isQual = s.type === "REST" && dur >= 15*MIN;
       const pillClass = s.type === "WORK" ? "work" : "rest";
+      const label = s.type === "WORK" ? "WORK" : "BREAK";
       const qualPill = isQual ? `<span class="pill qual">QUAL</span>` : "";
       const t1 = fmtTime(s.startMs);
       const t2 = fmtTime(s.endMs);
@@ -1162,7 +1161,7 @@
         <div class="glass logItem">
           <div class="top">
             <div>
-              <span class="pill ${pillClass}">${s.type}</span>
+              <span class="pill ${pillClass}">${label}</span>
               ${qualPill}
             </div>
             <div class="subtle">${fmtDur(dur)}</div>
@@ -1173,7 +1172,7 @@
     }).join("");
   }
 
-  function lastRestSegment(segs){
+  function lastBreakSegment(segs){
     for(let i=segs.length-1; i>=0; i--){
       if(segs[i].type === "REST") return segs[i];
     }
@@ -1183,11 +1182,10 @@
   function updateToggleButton(running){
     btnToggle.disabled = !running;
 
-    const resting = state.currentType === "REST";
-    btnToggle.classList.toggle("isResting", resting);
+    const onBreak = state.currentType === "REST";
+    btnToggle.classList.toggle("isOnBreak", onBreak);
 
-    // Labels that match how drivers think
-    btnToggle.textContent = resting ? "Resume work" : "Start rest";
+    btnToggle.textContent = onBreak ? "Resume work" : "Start break";
   }
 
   function render(){
@@ -1233,19 +1231,19 @@
     const segs = resolvedSegments(now);
 
     const workMs = sumMs(segs, "WORK");
-    const qualMs = qualifyingRestMs(segs);
-    const reqMs  = requiredRestMs(workMs);
+    const qualMs = qualifyingBreakMs(segs);
+    const reqMs  = requiredBreakMs(workMs);
     const needMs = clamp0(reqMs - qualMs);
 
     const contMs = continuousWorkMs(segs);
-    const dueInMs = nextRestDueInMs(contMs);
+    const dueInMs = nextBreakDueInMs(contMs);
 
     // WORK SAFE FOR
     uiWorkSafeFor.textContent = fmtDur(Math.max(0, dueInMs));
 
     // Break required at
     if(dueInMs <= 0){
-      uiBreakAt.textContent = "Break required now";
+      uiBreakAt.textContent = "Break required";
     } else {
       uiBreakAt.textContent = `Break required at ${fmtTime(now + dueInMs)}`;
     }
@@ -1264,18 +1262,18 @@
     const wtdPct = Math.min(100, Math.max(0, (workMs / (state.shiftHours * HOUR)) * 100));
     barWtd.style.width = `${wtdPct}%`;
 
-    // Break building: show progress only while currently resting
-    const lastRest = lastRestSegment(segs);
-    let currentRestMs = 0;
-    if(state.currentType === "REST" && lastRest){
-      currentRestMs = clamp0(lastRest.endMs - lastRest.startMs);
+    // Break building: show progress only while currently on break
+    const lastBreak = lastBreakSegment(segs);
+    let currentBreakMs = 0;
+    if(state.currentType === "REST" && lastBreak){
+      currentBreakMs = clamp0(lastBreak.endMs - lastBreak.startMs);
     }
 
-    const breakBuildMin = Math.min(15, Math.floor(currentRestMs / MIN));
+    const breakBuildMin = Math.min(15, Math.floor(currentBreakMs / MIN));
     uiBreakBuild.textContent = pad2(breakBuildMin);
-    uiLastRest.textContent = lastRest ? fmtDur(clamp0(lastRest.endMs - lastRest.startMs)) : "—";
+    uiLastRest.textContent = lastBreak ? fmtDur(clamp0(lastBreak.endMs - lastBreak.startMs)) : "—";
 
-    const breakPct = Math.min(100, Math.max(0, (currentRestMs / (15*MIN)) * 100));
+    const breakPct = Math.min(100, Math.max(0, (currentBreakMs / (15*MIN)) * 100));
     barBreak.style.width = `${breakPct}%`;
 
     uiRestNeeded.textContent = fmtDur(needMs);
@@ -1291,9 +1289,9 @@
     // Traffic light state
     const warnThreshold = 15*MIN;
     if(dueInMs <= 0){
-      setTraffic("due", "Rest due (continuous work)");
+      setTraffic("due", "Break due (continuous work)");
     } else if(dueInMs <= warnThreshold){
-      setTraffic("warn", `Rest soon: ${fmtDur(dueInMs)}`);
+      setTraffic("warn", `Break soon: ${fmtDur(dueInMs)}`);
     } else {
       setTraffic("ok", `Compliant: break in ${fmtDur(dueInMs)}`);
     }
@@ -1306,7 +1304,8 @@
     if(isRunning()) return;
     haptic(12);
     state.shiftStartMs = Date.now();
-    state.currentType = "WORK"; // sensible default so the button shows START REST
+    // sensible default: start WORK immediately so the main button reads "Start break"
+    state.currentType = "WORK";
     state.segments = [{ type:"WORK", startMs: state.shiftStartMs, endMs: null }];
     save();
     render();
@@ -1333,7 +1332,7 @@
     segShiftAPI.setValue(String(state.shiftHours));
   });
 
-  btnToggle.addEventListener("click", toggleWorkRest);
+  btnToggle.addEventListener("click", toggleWorkBreak);
 
   btnAddManual.addEventListener("click", () => { haptic(8); addManual(); });
   btnDeleteLast.addEventListener("click", () => { haptic(8); deleteLast(); });
