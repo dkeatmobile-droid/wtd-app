@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#1f7a3a" />
-  <title>WTD Tracker (Beta)</title>
+  <title>WTD Working Time Tracker (Beta)</title>
 
   <link rel="manifest" href="manifest.webmanifest" />
 
@@ -39,6 +39,10 @@
 
       --btnRunningBg:#0b3b1f;     /* Start shift when running */
       --btnRunningText:#ffffff;
+
+      /* traffic light */
+      --lampOff:#4b5563;
+      --lampOffRim:#111827;
     }
 
     html,body{
@@ -49,7 +53,6 @@
       background:var(--bg);
     }
 
-    /* Layout */
     .app{height:100vh; display:flex; flex-direction:column;}
     main{flex:1; min-height:0;}
     .panel{height:100%; box-sizing:border-box; padding:12px; }
@@ -65,7 +68,7 @@
     /* Header (professional) */
     header.topHeader{
       color:#fff;
-      padding: 12px 12px 12px;
+      padding: 12px;
       position:relative;
       overflow:hidden;
     }
@@ -83,32 +86,48 @@
     header.compliance-due{background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,0)) , var(--due);}
 
     .headerTop{
-      display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
       position:relative;
     }
+
+    /* Left cluster: traffic light + brand */
+    .leftCluster{
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+      min-width: 220px;
+    }
+
     .brand{
-      display:flex; flex-direction:column; gap:4px;
-      min-width: 160px;
+      display:flex;
+      flex-direction:column;
+      gap:4px;
     }
     .brand .title{
       font-weight: 950;
       letter-spacing: .2px;
       font-size: 16px;
       line-height: 1.15;
+      margin-top: 1px;
     }
     .brand .status{
       font-size: 12px;
       opacity: .95;
-      font-weight: 700;
+      font-weight: 800;
     }
+
     .betaNote{
       margin-top:8px;
       font-size: 11px;
       line-height: 1.25;
       opacity: .92;
-      max-width: 560px;
+      max-width: 640px;
+      position:relative;
     }
-    .betaNote strong{font-weight: 900;}
+    .betaNote strong{font-weight: 950;}
 
     .toggleBar{
       display:flex;
@@ -139,7 +158,7 @@
       color: var(--toggleText);
       padding: 8px 10px;
       font-size: 12px;
-      font-weight: 900;
+      font-weight: 950;
       cursor:pointer;
       opacity:.85;
       user-select:none;
@@ -167,7 +186,7 @@
     .stat .label{
       font-size: 11px;
       opacity:.92;
-      font-weight: 800;
+      font-weight: 850;
       letter-spacing: .2px;
     }
     .stat .value{
@@ -176,25 +195,124 @@
       font-weight: 950;
     }
 
+    /* ===== Traffic light indicator ===== */
+    .signalBox{
+      width: 62px;
+      border-radius: 16px;
+      background: rgba(0,0,0,.30);
+      border: 1px solid rgba(255,255,255,.22);
+      box-shadow: 0 12px 26px rgba(0,0,0,.22);
+      padding: 8px 6px;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      flex: 0 0 auto;
+    }
+    .signal{
+      display:flex;
+      flex-direction:column;
+      gap: 8px;
+      align-items:center;
+    }
+    .lamp{
+      width: 44px;
+      height: 44px;
+      border-radius: 999px;
+      position:relative;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,.25), rgba(255,255,255,0) 35%),
+        linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.25)),
+        var(--lampOff);
+      border: 2px solid rgba(17,24,39,.85);
+      box-shadow: inset 0 8px 18px rgba(0,0,0,.35);
+      overflow:hidden;
+    }
+    .lamp::after{
+      content:"";
+      position:absolute;
+      inset: 6px 10px auto 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.18);
+      filter: blur(.2px);
+      transform: rotate(-10deg);
+      opacity: .9;
+    }
+
+    .lampLabel{
+      position:absolute;
+      inset:auto 4px 4px 4px;
+      font-size: 9px;
+      line-height: 1.1;
+      font-weight: 950;
+      text-align:center;
+      color: rgba(255,255,255,.98);
+      text-transform: uppercase;
+      letter-spacing: .2px;
+      opacity: 0;                /* hidden when not active */
+      transform: translateY(3px);
+      transition: opacity .18s ease, transform .18s ease;
+      pointer-events:none;
+      text-shadow: 0 2px 10px rgba(0,0,0,.55);
+    }
+
+    /* ACTIVE STATES: only one lamp lit + label visible */
+    .signal[data-state="ok"] .lamp.green{
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,.35), rgba(255,255,255,0) 38%),
+        linear-gradient(180deg, rgba(255,255,255,.12), rgba(0,0,0,.22)),
+        #16a34a;
+      box-shadow:
+        inset 0 8px 18px rgba(0,0,0,.35),
+        0 0 0 4px rgba(22,163,74,.12),
+        0 0 18px rgba(22,163,74,.45);
+      border-color: rgba(8, 29, 16, .9);
+    }
+    .signal[data-state="ok"] .lamp.green .lampLabel{opacity: 1; transform: translateY(0);}
+
+    .signal[data-state="warn"] .lamp.amber{
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,.35), rgba(255,255,255,0) 38%),
+        linear-gradient(180deg, rgba(255,255,255,.12), rgba(0,0,0,.22)),
+        #f59e0b;
+      box-shadow:
+        inset 0 8px 18px rgba(0,0,0,.35),
+        0 0 0 4px rgba(245,158,11,.12),
+        0 0 18px rgba(245,158,11,.45);
+      border-color: rgba(41, 24, 4, .9);
+    }
+    .signal[data-state="warn"] .lamp.amber .lampLabel{opacity: 1; transform: translateY(0);}
+
+    .signal[data-state="due"] .lamp.red{
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,.35), rgba(255,255,255,0) 38%),
+        linear-gradient(180deg, rgba(255,255,255,.12), rgba(0,0,0,.22)),
+        #ef4444;
+      box-shadow:
+        inset 0 8px 18px rgba(0,0,0,.35),
+        0 0 0 4px rgba(239,68,68,.12),
+        0 0 18px rgba(239,68,68,.45);
+      border-color: rgba(44, 8, 8, .9);
+    }
+    .signal[data-state="due"] .lamp.red .lampLabel{opacity: 1; transform: translateY(0);}
+
     /* Buttons */
     .controlsRow{display:grid; grid-template-columns: repeat(3, 1fr); gap:10px;}
     .btn{
       padding: 12px 10px;
       border-radius: 16px;
       border: 1px solid var(--border);
-      background: var(--btnBg);
-      color: var(--btnText);
+      background: #fff;
+      color: var(--text);
       font-weight: 950;
       cursor:pointer;
       box-shadow: 0 1px 0 rgba(2,6,23,.04);
     }
     .btn:active{transform: translateY(1px);}
-    .btn:disabled{
-      opacity:.55;
-      cursor:not-allowed;
-    }
+    .btn:disabled{opacity:.55; cursor:not-allowed;}
 
-    /* Start shift: changes color once running */
     .btn.startShift.isRunning{
       background: var(--btnRunningBg);
       color: var(--btnRunningText);
@@ -213,7 +331,6 @@
       background:#fff;
     }
 
-    /* Big Work/Break buttons */
     .bigActions{display:grid; grid-template-columns: 1fr 1fr; gap:12px;}
     .btn.big{
       padding: 18px 10px;
@@ -223,7 +340,6 @@
     }
     .btn.big.isActive{outline: 3px solid rgba(2,6,23,.10);}
 
-    /* Cards */
     .miniGrid{
       display:grid;
       grid-template-columns: 1fr 1fr;
@@ -240,7 +356,7 @@
     .card .label{
       font-size: 12px;
       color: var(--muted);
-      font-weight: 800;
+      font-weight: 850;
       letter-spacing: .2px;
     }
     .card .metric{
@@ -249,10 +365,7 @@
       margin-top: 8px;
       letter-spacing: .2px;
     }
-    .hint{
-      font-size: 12px;
-      color: rgba(15,23,42,.72);
-    }
+    .hint{font-size: 12px; color: rgba(15,23,42,.72);}
 
     /* Full mode */
     h3{margin: 14px 0 10px; font-size: 14px; color: rgba(15,23,42,.95);}
@@ -271,7 +384,7 @@
       font-size:12px;
       color:var(--muted);
       margin-bottom:6px;
-      font-weight: 900;
+      font-weight: 950;
       letter-spacing:.2px;
     }
     input, select{
@@ -324,13 +437,13 @@
     .sheet .actions{display:flex; gap:10px;}
     .sheet .actions .btn{flex:1;}
 
-    /* Smaller screens */
     @media (max-height: 700px){
       .btn.big{padding:14px 10px; font-size:16px;}
       .card .metric{font-size:18px;}
       .headerStats{gap:8px;}
       .stat{padding:8px 9px;}
-      .betaNote{max-width: 440px;}
+      .betaNote{max-width: 480px;}
+      .signalBox{transform: scale(.92); transform-origin: top left;}
     }
   </style>
 </head>
@@ -340,9 +453,26 @@
 
   <header id="topHeader" class="topHeader compliance-ok">
     <div class="headerTop">
-      <div class="brand">
-        <div class="title">WTD Working Time Tracker</div>
-        <div id="headerStatus" class="status">Ready</div>
+      <div class="leftCluster">
+        <!-- Traffic light indicator -->
+        <div class="signalBox" aria-label="Compliance indicator">
+          <div id="signal" class="signal" data-state="ok">
+            <div class="lamp red">
+              <div class="lampLabel">STOP<br>BREAK</div>
+            </div>
+            <div class="lamp amber">
+              <div class="lampLabel">BREAK<br>UPCOMING</div>
+            </div>
+            <div class="lamp green">
+              <div class="lampLabel">COMPLIANT</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="brand">
+          <div class="title">WTD Working Time Tracker</div>
+          <div id="headerStatus" class="status">Ready</div>
+        </div>
       </div>
 
       <div class="toggleBar">
@@ -490,19 +620,16 @@
 
 <script>
 (() => {
-  // -------------------------
-  // Storage
-  // -------------------------
-  const STORAGE_KEY = "wtd_app_v3_state";
+  const STORAGE_KEY = "wtd_app_v4_state";
   const MIN  = 60000;
   const HOUR = 60 * MIN;
 
   const defaultState = () => ({
-    view: "basic",        // "basic" | "full"
-    shiftHours: 13,       // 13 or 15
-    shiftStartMs: null,   // number | null
-    currentType: null,    // "WORK" | "BREAK" | null
-    segments: [],         // [{type, startMs, endMs|null}]
+    view: "basic",
+    shiftHours: 13,
+    shiftStartMs: null,
+    currentType: null,
+    segments: [],
     overlayDismissedAtMs: null
   });
 
@@ -518,18 +645,15 @@
       return defaultState();
     }
   }
-  function saveState(){
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }
+  function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 
-  // -------------------------
   // DOM
-  // -------------------------
   const topHeader = document.getElementById("topHeader");
   const headerStatus = document.getElementById("headerStatus");
   const hdrStart = document.getElementById("hdrStart");
   const hdrDuration = document.getElementById("hdrDuration");
   const hdrFinishBy = document.getElementById("hdrFinishBy");
+  const signal = document.getElementById("signal");
 
   const panelBasic = document.getElementById("panelBasic");
   const panelFull  = document.getElementById("panelFull");
@@ -571,25 +695,20 @@
   const ovBreak = document.getElementById("ovBreak");
   const ovDismiss = document.getElementById("ovDismiss");
 
-  // -------------------------
   // Helpers
-  // -------------------------
   const pad2 = (n) => String(n).padStart(2,"0");
+  const clamp0 = (ms) => Math.max(0, ms);
 
   function fmtHHMM(ms){
     const d = new Date(ms);
     return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
   }
-
   function fmtDur(ms){
     const totalMin = Math.max(0, Math.floor(ms / MIN));
     const hh = Math.floor(totalMin / 60);
     const mm = totalMin % 60;
     return `${pad2(hh)}:${pad2(mm)}`;
   }
-
-  function clamp0(ms){ return Math.max(0, ms); }
-
   function isShiftRunning(){ return !!state.shiftStartMs; }
 
   function applyView(view){
@@ -598,29 +717,31 @@
     btnViewBasic.classList.toggle("isOn", view === "basic");
     btnViewFull.classList.toggle("isOn", view === "full");
   }
-
   function applyShiftHours(h){
     btnShift13.classList.toggle("isOn", h === 13);
     btnShift15.classList.toggle("isOn", h === 15);
   }
-
   function setView(view){
     state.view = view;
     saveState();
     applyView(view);
   }
-
   function setShiftHours(h){
     state.shiftHours = h;
     saveState();
     applyShiftHours(h);
-    render(); // update finish-by immediately
+    render();
   }
 
+  // Compliance also drives the traffic light state
   function setCompliance(level, text){
     topHeader.classList.remove("compliance-ok","compliance-warn","compliance-due");
     topHeader.classList.add(level === "due" ? "compliance-due" : level === "warn" ? "compliance-warn" : "compliance-ok");
     headerStatus.textContent = text;
+
+    // Traffic light:
+    // ok -> green lit, warn -> amber lit, due -> red lit
+    signal.dataset.state = (level === "due") ? "due" : (level === "warn") ? "warn" : "ok";
 
     const theme = document.querySelector('meta[name="theme-color"]');
     if(theme){
@@ -630,9 +751,7 @@
 
   function closeOpenSegment(nowMs){
     const last = state.segments[state.segments.length - 1];
-    if(last && last.endMs == null){
-      last.endMs = nowMs;
-    }
+    if(last && last.endMs == null) last.endMs = nowMs;
     state.currentType = null;
   }
 
@@ -642,10 +761,9 @@
 
     const last = state.segments[state.segments.length - 1];
     if(last && last.endMs == null){
-      if(last.type === type) return; // already in that mode
+      if(last.type === type) return;
       last.endMs = now;
     }
-
     state.currentType = type;
     state.segments.push({ type, startMs: now, endMs: null });
     saveState();
@@ -654,24 +772,20 @@
 
   function startShift(){
     if(isShiftRunning()) return;
-
     const now = Date.now();
     state.shiftStartMs = now;
     state.currentType = null;
     state.segments = [];
     state.overlayDismissedAtMs = null;
-
     saveState();
     render();
   }
-
   function endShift(){
     if(!isShiftRunning()) return;
     closeOpenSegment(Date.now());
     saveState();
     render();
   }
-
   function resetDay(){
     state = defaultState();
     saveState();
@@ -687,7 +801,6 @@
     d.setHours(hh, mm, 0, 0);
     return d.getTime();
   }
-
   function addManualSegment(){
     const type = manType.value;
     const s = parseTimeToMs(manStart.value);
@@ -697,40 +810,27 @@
       return;
     }
     let e = e0;
-    if(e <= s) e = e + 24 * HOUR; // next day
+    if(e <= s) e = e + 24 * HOUR;
     state.segments.push({ type, startMs: s, endMs: e });
     saveState();
     render();
   }
-
   function deleteLast(){
     if(state.segments.length === 0) return;
     const last = state.segments[state.segments.length - 1];
     state.segments.pop();
-    if(last && last.endMs == null){
-      state.currentType = null;
-    }
+    if(last && last.endMs == null) state.currentType = null;
     saveState();
     render();
   }
 
-  // -------------------------
   // Metrics (WTD working time only)
-  // -------------------------
   function getSegmentsResolved(now){
-    return state.segments.map(seg => ({
-      ...seg,
-      endMs: seg.endMs == null ? now : seg.endMs
-    }));
+    return state.segments.map(seg => ({...seg, endMs: seg.endMs == null ? now : seg.endMs}));
   }
-
   function sumDurationMs(segments, type){
-    return segments
-      .filter(s => s.type === type)
-      .reduce((acc, s) => acc + clamp0(s.endMs - s.startMs), 0);
+    return segments.filter(s => s.type === type).reduce((acc, s) => acc + clamp0(s.endMs - s.startMs), 0);
   }
-
-  // Qualifying breaks for daily totals: only BREAK >= 15 minutes count
   function qualifyingBreakMs(segments){
     return segments
       .filter(s => s.type === "BREAK")
@@ -739,26 +839,18 @@
         return acc + (dur >= 15 * MIN ? dur : 0);
       }, 0);
   }
-
   function requiredBreakMs(workMs){
-    // Daily WTD working time breaks:
-    // >6h => 30m, >9h => 45m
     if(workMs > 9 * HOUR) return 45 * MIN;
     if(workMs > 6 * HOUR) return 30 * MIN;
     return 0;
   }
-
-  // Continuous work should be interrupted by ANY break (even <15m)
+  // Continuous work interrupted by ANY break (even <15m)
   function continuousWorkSinceLastAnyBreakMs(segments){
     let lastBreakEnd = null;
     for(const s of segments){
-      if(s.type === "BREAK"){
-        lastBreakEnd = s.endMs;
-      }
+      if(s.type === "BREAK") lastBreakEnd = s.endMs;
     }
-    if(lastBreakEnd == null){
-      return sumDurationMs(segments, "WORK");
-    }
+    if(lastBreakEnd == null) return sumDurationMs(segments, "WORK");
     return segments
       .filter(s => s.type === "WORK" && s.endMs > lastBreakEnd)
       .reduce((acc, s) => {
@@ -766,15 +858,11 @@
         return acc + clamp0(s.endMs - start);
       }, 0);
   }
-
   function nextBreakDueInMs(continuousWorkMs){
-    // Practical compliance cue: warn/due at 6h continuous working time
     return 6 * HOUR - continuousWorkMs;
   }
 
-  // -------------------------
   // Overlay
-  // -------------------------
   function showOverlay(title, text){
     ovTitle.textContent = title;
     ovText.textContent = text;
@@ -785,29 +873,19 @@
     overlay.classList.remove("show");
     overlay.setAttribute("aria-hidden", "true");
   }
-
-  ovBreak.addEventListener("click", () => {
-    hideOverlay();
-    startSegment("BREAK");
-  });
-
+  ovBreak.addEventListener("click", () => { hideOverlay(); startSegment("BREAK"); });
   ovDismiss.addEventListener("click", () => {
     state.overlayDismissedAtMs = Date.now();
     saveState();
     hideOverlay();
   });
 
-  // -------------------------
-  // Render
-  // -------------------------
   function render(){
     const now = Date.now();
 
-    // Apply UI for toggles (NO recursion)
     applyView(state.view);
     applyShiftHours(state.shiftHours);
 
-    // Shift running visuals
     const running = isShiftRunning();
     btnStartShift.classList.toggle("isRunning", running);
     btnStartShift.textContent = running ? "Shift running" : "Start shift";
@@ -816,7 +894,6 @@
     btnWork.disabled = !running;
     btnBreak.disabled = !running;
 
-    // Header times
     if(!running){
       hdrStart.textContent = "—";
       hdrDuration.textContent = "00:00";
@@ -827,11 +904,9 @@
       hdrFinishBy.textContent = fmtHHMM(state.shiftStartMs + state.shiftHours * HOUR);
     }
 
-    // Button active states
     btnWork.classList.toggle("isActive", state.currentType === "WORK");
     btnBreak.classList.toggle("isActive", state.currentType === "BREAK");
 
-    // Metrics
     const segs = getSegmentsResolved(now);
     const workMs = sumDurationMs(segs, "WORK");
     const qualMs = qualifyingBreakMs(segs);
@@ -841,20 +916,14 @@
     const continuousMs = continuousWorkSinceLastAnyBreakMs(segs);
     const dueInMs = nextBreakDueInMs(continuousMs);
 
-    // Basic UI
     uiShiftTime.textContent = running ? fmtDur(now - state.shiftStartMs) : "00:00";
     uiContinuous.textContent = fmtDur(continuousMs);
     uiBreakNeeded.textContent = fmtDur(needMs);
 
-    if(!running){
-      uiNextBreakIn.textContent = "—";
-    } else if(dueInMs <= 0){
-      uiNextBreakIn.textContent = "DUE";
-    } else {
-      uiNextBreakIn.textContent = fmtDur(dueInMs);
-    }
+    if(!running) uiNextBreakIn.textContent = "—";
+    else if(dueInMs <= 0) uiNextBreakIn.textContent = "DUE";
+    else uiNextBreakIn.textContent = fmtDur(dueInMs);
 
-    // Full UI
     uiWorkTotal_full.textContent = fmtDur(workMs);
     uiQualBreak_full.textContent = fmtDur(qualMs);
     uiBreakReq_full.textContent  = fmtDur(reqMs);
@@ -862,7 +931,6 @@
 
     renderLog(segs);
 
-    // Compliance + overlay
     if(!running){
       setCompliance("ok", "Ready");
       hideOverlay();
@@ -891,9 +959,7 @@
       logList.innerHTML = `<div class="subtle">No segments yet.</div>`;
       return;
     }
-
     const items = [...segs].sort((a,b) => b.startMs - a.startMs);
-
     logList.innerHTML = items.map(s => {
       const dur = clamp0(s.endMs - s.startMs);
       const isQual = s.type === "BREAK" && dur >= 15 * MIN;
@@ -916,18 +982,14 @@
     }).join("");
   }
 
-  // -------------------------
   // Events
-  // -------------------------
   btnViewBasic.addEventListener("click", () => setView("basic"));
   btnViewFull.addEventListener("click", () => setView("full"));
-
   btnShift13.addEventListener("click", () => setShiftHours(13));
   btnShift15.addEventListener("click", () => setShiftHours(15));
 
   btnStartShift.addEventListener("click", startShift);
   btnEndShift.addEventListener("click", endShift);
-
   btnResetDay.addEventListener("click", () => {
     const ok = confirm("Reset day? This clears the shift and all segments.");
     if(ok) resetDay();
@@ -939,20 +1001,14 @@
   btnAddManual.addEventListener("click", addManualSegment);
   btnDeleteLast.addEventListener("click", deleteLast);
 
-  // -------------------------
-  // Ticker
-  // -------------------------
   setInterval(render, 1000);
 
-  // -------------------------
-  // PWA service worker (optional)
-  // -------------------------
-  // Ensure your repo has sw.js at the root if you want offline/install support.
+  // PWA (optional)
   if("serviceWorker" in navigator){
     navigator.serviceWorker.register("./sw.js").catch(() => {});
   }
 
-  // Initial UI
+  // Init
   applyView(state.view);
   applyShiftHours(state.shiftHours);
   render();
