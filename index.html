@@ -18,7 +18,6 @@
       --glass1: rgba(255,255,255,.74);
       --glass2: rgba(255,255,255,.56);
       --glassBorder: rgba(255,255,255,.62);
-
       --shadowSoft: 0 12px 28px rgba(2,6,23,.10);
 
       --segBg: rgba(255,255,255,.55);
@@ -36,7 +35,6 @@
 
       --radiusSheet: 28px;
       --radius: 18px;
-
       --rowH: 42px;
     }
 
@@ -59,9 +57,6 @@
       position:relative;
     }
 
-    /* =========================
-       Header
-       ========================= */
     header{
       padding: calc(12px + env(safe-area-inset-top)) 14px 12px;
       color:#fff;
@@ -74,11 +69,7 @@
       z-index:3;
     }
 
-    .headerRow{
-      display:flex;
-      gap:12px;
-      align-items:flex-start;
-    }
+    .headerRow{ display:flex; gap:12px; align-items:flex-start; }
 
     .brand{
       display:flex;
@@ -114,15 +105,8 @@
     }
     .betaNote strong{ font-weight:950; }
 
-    /* =========================
-       Traffic light
-       ========================= */
-    .signalWrap{
-      display:flex;
-      align-items:flex-start;
-      gap:10px;
-      flex: 0 0 auto;
-    }
+    /* Traffic light */
+    .signalWrap{ display:flex; align-items:flex-start; gap:10px; flex:0 0 auto; }
 
     .signalBox{
       width:64px;
@@ -132,19 +116,14 @@
         radial-gradient(80px 110px at 30% 18%, rgba(255,255,255,.08), rgba(255,255,255,0) 60%),
         linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.22)),
         #0a0a0a;
-      border: 1px solid rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.07);
       box-shadow:
         inset 0 1px 0 rgba(255,255,255,.08),
         inset 0 -10px 22px rgba(0,0,0,.35),
         0 12px 28px rgba(0,0,0,.30);
     }
 
-    .signal{
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      align-items:center;
-    }
+    .signal{ display:flex; flex-direction:column; gap:8px; align-items:center; }
 
     .lamp{
       width:42px;
@@ -152,7 +131,7 @@
       border-radius:999px;
       background: var(--lampOff);
       box-shadow: inset 0 12px 18px rgba(0,0,0,.62);
-      border: 2px solid rgba(0,0,0,.55);
+      border:2px solid rgba(0,0,0,.55);
       position:relative;
       overflow:hidden;
     }
@@ -170,11 +149,11 @@
       display:grid;
       grid-template-rows: var(--rowH) var(--rowH) var(--rowH);
       gap:8px;
-      min-width: 120px;
-      max-width: 150px;
+      min-width:120px;
+      max-width:150px;
     }
     .sigLabel{
-      height: var(--rowH);
+      height:var(--rowH);
       display:flex;
       align-items:center;
       font-size:11px;
@@ -211,12 +190,10 @@
       box-shadow: inset 0 12px 18px rgba(0,0,0,.45), 0 0 18px rgba(239,68,68,.45);
     }
 
-    /* =========================
-       Timing pill
-       ========================= */
+    /* Timing pill */
     .islandWrap{
       padding: 10px 12px 0;
-      margin-top: -8px;
+      margin-top:-8px;
       display:flex;
       justify-content:center;
       position:relative;
@@ -224,13 +201,13 @@
     }
     .dynamicIsland{
       width: min(520px, calc(100vw - 24px));
-      border-radius: 999px;
-      padding: 10px 14px;
+      border-radius:999px;
+      padding:10px 14px;
       background:
         radial-gradient(220px 70px at 25% 15%, rgba(255,255,255,.16), rgba(255,255,255,0) 60%),
         radial-gradient(260px 90px at 75% 30%, rgba(255,255,255,.10), rgba(255,255,255,0) 70%),
         linear-gradient(180deg, rgba(30,41,59,.88), rgba(15,23,42,.92));
-      border: 1px solid rgba(255,255,255,.14);
+      border:1px solid rgba(255,255,255,.14);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
       box-shadow:
@@ -238,7 +215,7 @@
         inset 0 1px 0 rgba(255,255,255,.14),
         inset 0 -14px 30px rgba(0,0,0,.30);
       display:grid;
-      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-columns:1fr 1fr 1fr;
       gap:12px;
       align-items:center;
     }
@@ -261,9 +238,6 @@
       text-overflow:ellipsis;
     }
 
-    /* =========================
-       Sheet
-       ========================= */
     main{
       flex:1;
       min-height:0;
@@ -276,11 +250,11 @@
       height:100%;
       border-radius: var(--radiusSheet) var(--radiusSheet) 0 0;
       background: linear-gradient(180deg, var(--glass1), var(--glass2));
-      border: 1px solid var(--glassBorder);
+      border:1px solid var(--glassBorder);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       box-shadow: 0 -10px 40px rgba(2,6,23,.18);
-      padding: 12px;
+      padding:12px;
       display:flex;
       flex-direction:column;
       gap:10px;
@@ -291,14 +265,13 @@
 
     .glass{
       background: linear-gradient(180deg, var(--glass1), var(--glass2));
-      border: 1px solid var(--glassBorder);
+      border:1px solid var(--glassBorder);
       border-radius: var(--radius);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
       box-shadow: var(--shadowSoft);
     }
 
-    /* Buttons */
     .controlsRow{
       display:grid;
       grid-template-columns: repeat(3, 1fr);
@@ -307,9 +280,9 @@
 
     .btn{
       border:1px solid rgba(15,23,42,.10);
-      border-radius: 18px;
-      padding: 11px 10px;
-      font-weight: 900;
+      border-radius:18px;
+      padding:11px 10px;
+      font-weight:900;
       cursor:pointer;
       background: rgba(255,255,255,.80);
       backdrop-filter: blur(14px);
@@ -336,9 +309,8 @@
       background: rgba(255,255,255,.78);
     }
 
-    /* Segmented control */
     .strip{
-      padding: 10px;
+      padding:10px;
       display:flex;
       align-items:center;
       justify-content:space-between;
@@ -349,10 +321,10 @@
     .seg{
       position:relative;
       display:inline-flex;
-      padding: 3px;
-      border-radius: 999px;
+      padding:3px;
+      border-radius:999px;
       background: var(--segBg);
-      border: 1px solid var(--segBorder);
+      border:1px solid var(--segBorder);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       box-shadow: 0 10px 20px rgba(2,6,23,.08);
@@ -363,8 +335,8 @@
       position:absolute;
       top:3px; bottom:3px;
       left:3px;
-      width: 40px;
-      border-radius: 999px;
+      width:40px;
+      border-radius:999px;
       background: var(--segThumb);
       box-shadow: 0 10px 18px rgba(2,6,23,.10);
       transition: transform 220ms ease, width 220ms ease;
@@ -376,12 +348,12 @@
       z-index:1;
       border:0;
       background: transparent;
-      padding: 9px 12px;
-      font-size: 12px;
-      font-weight: 900;
+      padding:9px 12px;
+      font-size:12px;
+      font-weight:900;
       color: var(--segText);
       cursor:pointer;
-      border-radius: 999px;
+      border-radius:999px;
       white-space:nowrap;
     }
     .segBtn.isOn{ color: var(--segTextOn); }
@@ -395,16 +367,11 @@
       white-space:nowrap;
     }
 
-    /* Single driver action button */
-    .driverActionRow{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:10px;
-    }
+    .driverActionRow{ display:grid; grid-template-columns:1fr; gap:10px; }
     .btn.driverBig{
-      padding: 18px 12px;
-      font-size: 17px;
-      border-radius: 18px;
+      padding:18px 12px;
+      font-size:17px;
+      border-radius:18px;
       box-shadow: 0 18px 40px rgba(2,6,23,.10);
     }
     .btn.driverBig.isOnBreak{
@@ -418,8 +385,8 @@
     .dash{ display:flex; flex-direction:column; gap:10px; }
 
     .dashCard{
-      border-radius: 22px;
-      border: 1px solid rgba(255,255,255,.10);
+      border-radius:22px;
+      border:1px solid rgba(255,255,255,.10);
       background:
         radial-gradient(520px 180px at 25% 18%, rgba(255,255,255,.10), rgba(255,255,255,0) 60%),
         radial-gradient(520px 200px at 78% 30%, rgba(255,255,255,.08), rgba(255,255,255,0) 70%),
@@ -433,29 +400,23 @@
     }
 
     .dashMain{
-      padding: 14px 14px 12px;
+      padding:14px 14px 12px;
       display:grid;
-      grid-template-columns: 74px 1fr;
+      grid-template-columns:74px 1fr;
       gap:12px;
       align-items:center;
     }
 
-    /* ✅ extracted from inline styles (left mini panel) */
     .dashIconPanel{
       width:64px;
       height:108px;
       border-radius:22px;
       background: rgba(0,0,0,.28);
-      border: 1px solid rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.10);
       display:grid;
       place-items:center;
     }
-    .dashIconStack{
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      align-items:center;
-    }
+    .dashIconStack{ display:flex; flex-direction:column; gap:8px; align-items:center; }
     .miniDot{
       width:16px;
       height:16px;
@@ -464,34 +425,34 @@
     }
 
     .dashMain .bigTitle{
-      font-size: 22px;
-      font-weight: 1000;
+      font-size:22px;
+      font-weight:1000;
       letter-spacing:.6px;
       color: rgba(255,255,255,.92);
       text-transform: uppercase;
     }
     .dashMain .bigTime{
-      margin-top: 6px;
-      font-size: 72px;
-      line-height: .95;
-      font-weight: 1100;
-      letter-spacing: 1px;
+      margin-top:6px;
+      font-size:72px;
+      line-height:.95;
+      font-weight:1100;
+      letter-spacing:1px;
       font-variant-numeric: tabular-nums;
     }
 
     .dashSub{
-      margin-top: 10px;
+      margin-top:10px;
       display:flex;
       flex-direction:column;
       gap:6px;
       color: rgba(255,255,255,.74);
-      font-weight: 850;
+      font-weight:850;
     }
     .dashLine{
       display:flex;
       align-items:center;
       gap:10px;
-      font-size: 16px;
+      font-size:16px;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
@@ -499,83 +460,71 @@
     .dashLine .mono{ font-variant-numeric: tabular-nums; color: rgba(255,255,255,.92); }
 
     .warnIcon{
-      width: 18px;
-      height: 18px;
+      width:18px;
+      height:18px;
       display:inline-grid;
       place-items:center;
       border-radius:6px;
       background: rgba(245,158,11,.20);
-      border: 1px solid rgba(245,158,11,.32);
+      border:1px solid rgba(245,158,11,.32);
       color: rgba(245,158,11,.95);
-      font-size: 13px;
+      font-size:13px;
       flex:0 0 auto;
     }
 
     .cardHint{
-      padding: 10px 14px 12px;
-      border-top: 1px solid rgba(255,255,255,.10);
+      padding:10px 14px 12px;
+      border-top:1px solid rgba(255,255,255,.10);
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:10px;
       color: rgba(255,255,255,.70);
-      font-size: 12px;
-      font-weight: 900;
+      font-size:12px;
+      font-weight:900;
     }
 
-    .twoCol{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:10px;
-    }
+    .twoCol{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 
-    .dashSmall{ padding: 12px 14px; }
+    .dashSmall{ padding:12px 14px; }
     .dashSmall .k{
-      font-size: 13px;
-      font-weight: 950;
+      font-size:13px;
+      font-weight:950;
       letter-spacing:.4px;
       text-transform: uppercase;
       color: rgba(255,255,255,.78);
     }
     .dashSmall .vRow{
-      margin-top: 10px;
+      margin-top:10px;
       display:flex;
       align-items:baseline;
       justify-content:space-between;
       gap:12px;
       font-variant-numeric: tabular-nums;
     }
-    .dashSmall .vRow.tight{ margin-top:8px; } /* ✅ extracted */
+    .dashSmall .vRow.tight{ margin-top:8px; }
     .dashSmall .v{
-      font-size: 34px;
-      font-weight: 1100;
+      font-size:34px;
+      font-weight:1100;
       color: rgba(255,255,255,.96);
     }
     .dashSmall .vSub{
-      font-size: 18px;
-      font-weight: 1000;
+      font-size:18px;
+      font-weight:1000;
       color: rgba(255,255,255,.84);
       white-space:nowrap;
     }
 
-    .metaLabel{
-      font-size:13px;
-      font-weight:950;
-      color:rgba(255,255,255,.72);
-    }
-    .metaValue{
-      font-size:18px;
-      font-weight:1100;
-      color:rgba(255,255,255,.92);
-    }
+    .metaLabel{ font-size:13px; font-weight:950; color: rgba(255,255,255,.72); }
+    .metaValue{ font-size:18px; font-weight:1100; color: rgba(255,255,255,.92); }
 
     .progress{
-      margin-top: 12px;
-      height: 10px;
-      border-radius: 999px;
+      margin-top:12px;
+      height:10px;
+      border-radius:999px;
       background: rgba(255,255,255,.14);
       overflow:hidden;
-      border: 1px solid rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
     }
     .bar{
       height:100%;
@@ -584,60 +533,46 @@
     }
 
     .dashMeta{
-      padding: 12px 14px;
+      padding:12px 14px;
       display:grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns:1fr 1fr;
       gap:10px;
     }
     .metaItem{
-      padding: 10px 12px;
-      border-radius: 16px;
+      padding:10px 12px;
+      border-radius:16px;
       background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.10);
     }
-    .metaItem .mk{
-      font-size: 12px;
-      font-weight: 950;
-      color: rgba(255,255,255,.70);
-    }
+    .metaItem .mk{ font-size:12px; font-weight:950; color: rgba(255,255,255,.70); }
     .metaItem .mv{
       margin-top:6px;
-      font-size: 18px;
-      font-weight: 1050;
+      font-size:18px;
+      font-weight:1050;
       color: rgba(255,255,255,.94);
       font-variant-numeric: tabular-nums;
     }
 
-    /* Manual add + log */
-    h3{
-      margin: 12px 2px 10px;
-      font-size: 14px;
-      color: rgba(15,23,42,.92);
-    }
+    /* Manual + log */
+    h3{ margin:12px 2px 10px; font-size:14px; color: rgba(15,23,42,.92); }
 
-    .rowGrid2{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:10px;
-    }
-
-    .field{ padding: 12px; border-radius: var(--radius); }
+    .rowGrid2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .field{ padding:12px; border-radius: var(--radius); }
 
     label{
       display:block;
       font-size:12px;
       color: rgba(15,23,42,.62);
       margin-bottom:6px;
-      font-weight: 950;
+      font-weight:950;
     }
 
-    /* ✅ iOS Safari zoom fix: keep font-size >= 16px */
     input,select{
       width:100%;
       padding:10px 12px;
-      border-radius: 14px;
+      border-radius:14px;
       border:1px solid rgba(15,23,42,.10);
-      font-size:16px;
+      font-size:16px; /* iOS zoom fix */
       background: rgba(255,255,255,.80);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
@@ -646,28 +581,27 @@
 
     .rowBtns{ display:flex; gap:10px; flex-wrap:wrap; }
 
-    .logList{display:flex; flex-direction:column; gap:10px; margin-top:10px;}
-    .logItem{ padding: 12px; border-radius: var(--radius); }
-    .logItem .top{display:flex; justify-content:space-between; gap:10px; align-items:center;}
+    .logList{ display:flex; flex-direction:column; gap:10px; margin-top:10px; }
+    .logItem{ padding:12px; border-radius: var(--radius); }
+    .logItem .top{ display:flex; justify-content:space-between; gap:10px; align-items:center; }
 
     .pill{
       display:inline-block;
       padding:4px 10px;
-      border-radius: 999px;
+      border-radius:999px;
       font-size:12px;
-      font-weight: 950;
+      font-weight:950;
       border:1px solid rgba(15,23,42,.10);
       background: rgba(255,255,255,.70);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
     }
-    .pill.work{background: rgba(59,130,246,.12); border-color: rgba(59,130,246,.22);}
-    .pill.rest{background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.22);}
-    .pill.qual{background: rgba(16,185,129,.12); border-color: rgba(16,185,129,.22);}
+    .pill.work{ background: rgba(59,130,246,.12); border-color: rgba(59,130,246,.22); }
+    .pill.rest{ background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.22); }
+    .pill.qual{ background: rgba(16,185,129,.12); border-color: rgba(16,185,129,.22); }
 
-    .subtle{font-size:12px; color: rgba(15,23,42,.55);}
+    .subtle{ font-size:12px; color: rgba(15,23,42,.55); }
 
-    /* iPhone fit */
     @media (max-height: 720px){
       main{padding: 8px 10px 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom));}
       .sheet{padding:10px;}
@@ -690,7 +624,6 @@
 
 <body>
 <div class="app">
-
   <header>
     <div class="headerRow">
       <div id="signalWrap" class="signalWrap" data-state="off" aria-label="Compliance indicator">
@@ -721,7 +654,6 @@
     </div>
   </header>
 
-  <!-- Timing pill -->
   <div class="islandWrap" aria-label="Shift timing">
     <div class="dynamicIsland">
       <div class="dStat">
@@ -762,17 +694,13 @@
       </div>
 
       <div class="dash" aria-label="Driver dashboard">
-
-        <!-- WORK SAFE FOR -->
         <div class="dashCard">
           <div class="dashMain">
-            <div aria-hidden="true">
-              <div class="dashIconPanel">
-                <div class="dashIconStack">
-                  <div id="miniLampTop" class="miniDot"></div>
-                  <div id="miniLampMid" class="miniDot"></div>
-                  <div id="miniLampBot" class="miniDot"></div>
-                </div>
+            <div class="dashIconPanel" aria-hidden="true">
+              <div class="dashIconStack">
+                <div id="miniLampTop" class="miniDot"></div>
+                <div id="miniLampMid" class="miniDot"></div>
+                <div id="miniLampBot" class="miniDot"></div>
               </div>
             </div>
 
@@ -799,7 +727,6 @@
           </div>
         </div>
 
-        <!-- WTD TODAY + BREAK BUILDING -->
         <div class="twoCol">
           <div class="dashCard dashSmall">
             <div class="k">WTD TODAY</div>
@@ -811,9 +738,7 @@
               <div class="metaLabel">Remaining</div>
               <div class="metaValue" id="uiWtdRemaining">—</div>
             </div>
-            <div class="progress" aria-hidden="true">
-              <div id="barWtd" class="bar"></div>
-            </div>
+            <div class="progress" aria-hidden="true"><div id="barWtd" class="bar"></div></div>
           </div>
 
           <div class="dashCard dashSmall">
@@ -826,13 +751,10 @@
               <div class="metaLabel">Last break</div>
               <div class="metaValue" id="uiLastRest">—</div>
             </div>
-            <div class="progress" aria-hidden="true">
-              <div id="barBreak" class="bar"></div>
-            </div>
+            <div class="progress" aria-hidden="true"><div id="barBreak" class="bar"></div></div>
           </div>
         </div>
 
-        <!-- Secondary details -->
         <div class="dashCard">
           <div class="dashMeta">
             <div class="metaItem">
@@ -845,7 +767,6 @@
             </div>
           </div>
         </div>
-
       </div>
 
       <h3>Manual add segment</h3>
@@ -896,11 +817,12 @@
   const defaults = () => ({
     shiftHours: 13,
     shiftStartMs: null,
-    currentType: null, // "WORK" | "REST" | null (REST == BREAK in UI)
+    currentType: null, // "WORK" | "REST" | null
     segments: []       // {type,startMs,endMs}
   });
 
   let state = load();
+
   function load(){
     try{
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -925,11 +847,11 @@
   const btnStartShift = document.getElementById("btnStartShift");
   const btnEndShift   = document.getElementById("btnEndShift");
   const btnResetDay   = document.getElementById("btnResetDay");
-  const btnToggle = document.getElementById("btnToggle");
+  const btnToggle     = document.getElementById("btnToggle");
 
   const segShift = document.getElementById("segShift");
 
-  // Driver dashboard fields
+  // Driver dashboard
   const uiWorkSafeFor     = document.getElementById("uiWorkSafeFor");
   const uiBreakAt         = document.getElementById("uiBreakAt");
   const uiContVsLimit     = document.getElementById("uiContVsLimit");
@@ -977,7 +899,6 @@
   }
   function isRunning(){ return !!state.shiftStartMs; }
 
-  // iPhone-friendly time input: 0800 -> 08:00
   function autoColon(el){
     if(!el) return;
     el.addEventListener("input", () => {
@@ -1026,9 +947,7 @@
     return { setValue };
   }
 
-  // WTD-only logic:
-  // - "Break due" when continuous WORK reaches 6h
-  // - "Break required" totals: >6h => 30m, >9h => 45m (qualifying BREAK >= 15m)
+  // WTD-only logic
   function resolvedSegments(now){
     return state.segments.map(s => ({...s, endMs: (s.endMs == null ? now : s.endMs)}));
   }
@@ -1082,11 +1001,8 @@
   function toggleWorkBreak(){
     if(!isRunning()) return;
     haptic(10);
-    if(state.currentType === "REST"){
-      startSegment("WORK");
-    } else {
-      startSegment("REST");
-    }
+    if(state.currentType === "REST") startSegment("WORK");
+    else startSegment("REST");
   }
 
   function setTraffic(stateKey, text){
