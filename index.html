@@ -1,1123 +1,263 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0f172a" />
-  <title>WTD Working Time Tracker (Beta)</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#0f172a"/>
+<title>WTD Working Time Tracker</title>
 
-  <style>
-    :root{
-      --bg:#f3f5f7;
-      --card:#ffffff;
-      --text:#0f172a;
-      --muted:#6b7280;
-      --border:#e5e7eb;
+<style>
+:root{
+--bg1:#eef2f6;
+--bg2:#f7f8fb;
 
-      /* Professional header */
-      --header1:#0b1220;
-      --header2:#0f172a;
-      --header3:#111827;
+--glass:rgba(255,255,255,.62);
+--glassSoft:rgba(255,255,255,.5);
+--glassBorder:rgba(255,255,255,.45);
 
-      /* Glass */
-      --glass: rgba(255,255,255,.12);
-      --glass2: rgba(255,255,255,.18);
+--text:#0f172a;
+--muted:#64748b;
 
-      /* Compliance lamps */
-      --ok:#16a34a;
-      --warn:#f59e0b;
-      --due:#ef4444;
-      --lampOff:#4b5563;
+--ok:#16a34a;
+--warn:#f59e0b;
+--due:#ef4444;
+--lampOff:#6b7280;
+}
 
-      /* Buttons */
-      --btnPrimaryBg:#0f172a;
-      --btnPrimaryText:#ffffff;
-      --btnRunningBg:#0b3b1f;
-      --btnRunningText:#ffffff;
+*{box-sizing:border-box;}
+html,body{
+margin:0;
+height:100%;
+font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial;
+background:
+radial-gradient(1200px 600px at 20% 0%,rgba(59,130,246,.10),transparent),
+radial-gradient(900px 560px at 90% 15%,rgba(16,185,129,.10),transparent),
+linear-gradient(180deg,var(--bg1),var(--bg2));
+color:var(--text);
+overflow:hidden;
+}
 
-      --radius: 16px;
-      --shadow: 0 10px 28px rgba(2,6,23,.10);
-      --shadowStrong: 0 18px 44px rgba(2,6,23,.18);
-    }
+/* ===== APP FRAME ===== */
+.app{
+height:100vh;
+height:100svh;
+display:flex;
+flex-direction:column;
+}
 
-    *{box-sizing:border-box;}
-    html,body{
-      height:100%;
-      margin:0;
-      font-family: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;
-      background:var(--bg);
-      color:var(--text);
-    }
+/* ===== HEADER ===== */
+header{
+padding:calc(12px + env(safe-area-inset-top)) 14px 12px;
+background:linear-gradient(180deg,#0b1220,#111827);
+color:#fff;
+}
 
-    .app{
-      height:100vh;
-      height:100svh;
-      display:flex;
-      flex-direction:column;
-      overflow:hidden;
-    }
+.headerRow{display:flex;gap:12px;align-items:flex-start;}
 
-    /* =======================
-       iOS-style header
-       ======================= */
-    header.topHeader{
-      position:relative;
-      color:#fff;
-      padding: calc(12px + env(safe-area-inset-top)) 12px 58px; /* bottom padding for floating bar */
-      background:
-        radial-gradient(900px 260px at 20% 0%, rgba(255,255,255,.10), rgba(255,255,255,0) 60%),
-        radial-gradient(700px 240px at 80% 10%, rgba(255,255,255,.08), rgba(255,255,255,0) 55%),
-        linear-gradient(180deg, var(--header1), var(--header2) 48%, var(--header3));
-      overflow:hidden;
-    }
-    header.topHeader::after{
-      content:"";
-      position:absolute;
-      inset:auto -20% -42% -20%;
-      height:220px;
-      background: radial-gradient(closest-side, rgba(255,255,255,.08), rgba(255,255,255,0));
-      transform: rotate(-5deg);
-      pointer-events:none;
-    }
+.brand .title{font-weight:900;font-size:15px;}
+.brand .status{font-size:12px;font-weight:700;opacity:.85;}
 
-    .headerRow{
-      display:flex;
-      justify-content:space-between;
-      gap:12px;
-      align-items:flex-start;
-      position:relative;
-      z-index:2;
-    }
+.beta{font-size:11px;margin-top:6px;opacity:.85}
 
-    .leftCluster{
-      display:flex;
-      gap:12px;
-      align-items:flex-start;
-      min-width: 230px;
-    }
+/* ===== TRAFFIC LIGHT ===== */
+.signalWrap{display:flex;gap:10px;}
+.signalBox{
+width:62px;padding:8px;border-radius:22px;
+background:#0a0a0a;
+box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 10px 20px rgba(0,0,0,.35);
+}
+.signal{display:flex;flex-direction:column;gap:8px;align-items:center;}
+.lamp{
+width:40px;height:40px;border-radius:50%;
+background:var(--lampOff);
+box-shadow:inset 0 10px 18px rgba(0,0,0,.6);
+}
+.signalWrap[data-state="ok"] .lamp.green{background:var(--ok);}
+.signalWrap[data-state="warn"] .lamp.amber{background:var(--warn);animation:flash 1s infinite;}
+.signalWrap[data-state="due"] .lamp.red{background:var(--due);}
+@keyframes flash{0%,100%{filter:brightness(1)}50%{filter:brightness(1.3)}}
 
-    .brand{
-      display:flex;
-      flex-direction:column;
-      gap:4px;
-      padding-top:2px;
-    }
-    .brand .title{
-      font-weight:1000;
-      font-size:15px;
-      line-height:1.15;
-      letter-spacing:.2px;
-    }
-    .brand .status{
-      font-size:12px;
-      font-weight:900;
-      opacity:.86;
-    }
+.sigLabel{font-size:11px;font-weight:800;opacity:0;color:#fff}
+.signalWrap[data-state="ok"] .sigLabel.green,
+.signalWrap[data-state="warn"] .sigLabel.amber,
+.signalWrap[data-state="due"] .sigLabel.red{opacity:1}
 
-    .betaNote{
-      margin-top:8px;
-      font-size:11px;
-      line-height:1.2;
-      opacity:.82;
-      position:relative;
-      z-index:2;
-    }
-    .betaNote strong{font-weight:1000;}
+/* ===== iOS SHEET BACKGROUND ===== */
+main{
+flex:1;
+padding:12px;
+padding-bottom:calc(12px + env(safe-area-inset-bottom));
+}
 
-    /* Traffic light: matte black housing + subtle iOS highlight */
-    .signalWrap{
-      display:flex;
-      gap:10px;
-      align-items:flex-start;
-      flex: 0 0 auto;
-    }
-    .signalBox{
-      width:64px;
-      padding:8px;
-      border-radius:22px;
-      background:
-        radial-gradient(80px 110px at 30% 18%, rgba(255,255,255,.08), rgba(255,255,255,0) 60%),
-        linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.22)),
-        #0a0a0a;
-      border: 1px solid rgba(255,255,255,.07);
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.08),
-        inset 0 -10px 22px rgba(0,0,0,.35),
-        0 12px 28px rgba(0,0,0,.30);
-    }
-    .signal{
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      align-items:center;
-    }
-    .lamp{
-      width:42px;
-      height:42px;
-      border-radius:999px;
-      background: var(--lampOff);
-      box-shadow:
-        inset 0 12px 18px rgba(0,0,0,.62),
-        0 2px 0 rgba(255,255,255,.04);
-      border: 2px solid rgba(0,0,0,.55);
-      position:relative;
-      overflow:hidden;
-    }
-    .lamp::after{
-      content:"";
-      position:absolute;
-      left:10px; top:9px;
-      width:22px; height:10px;
-      border-radius:999px;
-      background: rgba(255,255,255,.18);
-      transform: rotate(-12deg);
-    }
+.sheet{
+height:100%;
+border-radius:28px 28px 0 0;
+background:linear-gradient(180deg,var(--glass),var(--glassSoft));
+border:1px solid var(--glassBorder);
+backdrop-filter:blur(20px);
+-webkit-backdrop-filter:blur(20px);
+box-shadow:0 -10px 40px rgba(2,6,23,.18);
+padding:12px;
+display:flex;
+flex-direction:column;
+}
 
-    .signalLabels{
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      min-width: 160px;
-      padding-top:0;
-    }
-    .sigLabel{
-      height:42px;
-      display:flex;
-      align-items:center;
-      font-size:11px;
-      font-weight:950;
-      color: rgba(255,255,255,.96);
-      text-shadow: 0 2px 12px rgba(0,0,0,.45);
-      opacity: 0;
-      transform: translateX(-4px);
-      transition: opacity .18s ease, transform .18s ease;
-      user-select:none;
-      white-space:nowrap;
-    }
-    .signalWrap[data-state="due"]  .sigLabel.red,
-    .signalWrap[data-state="warn"] .sigLabel.amber,
-    .signalWrap[data-state="ok"]   .sigLabel.green{
-      opacity: 1;
-      transform: translateX(0);
-    }
-    .signalWrap[data-state="off"] .sigLabel{opacity:0 !important;}
+/* ===== GLASS BLOCKS ===== */
+.glass{
+background:linear-gradient(180deg,var(--glass),var(--glassSoft));
+border:1px solid var(--glassBorder);
+border-radius:20px;
+backdrop-filter:blur(18px);
+-webkit-backdrop-filter:blur(18px);
+box-shadow:0 12px 28px rgba(2,6,23,.08);
+}
 
-    .signalWrap[data-state="ok"] .lamp.green{
-      background: var(--ok);
-      box-shadow:
-        inset 0 12px 18px rgba(0,0,0,.45),
-        0 0 18px rgba(22,163,74,.45);
-    }
-    @keyframes amberFlash { 0%,100%{filter:brightness(1)} 50%{filter:brightness(1.30)} }
-    .signalWrap[data-state="warn"] .lamp.amber{
-      background: var(--warn);
-      box-shadow:
-        inset 0 12px 18px rgba(0,0,0,.45),
-        0 0 18px rgba(245,158,11,.45);
-      animation: amberFlash 1s infinite;
-    }
-    .signalWrap[data-state="due"] .lamp.red{
-      background: var(--due);
-      box-shadow:
-        inset 0 12px 18px rgba(0,0,0,.45),
-        0 0 18px rgba(239,68,68,.45);
-    }
+/* ===== CONTROLS ===== */
+.controlsRow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.btn{
+padding:12px;border-radius:18px;border:1px solid rgba(15,23,42,.12);
+font-weight:800;background:rgba(255,255,255,.8);
+}
+.btn.primary{background:#0f172a;color:#fff;}
+.btn.startShift.isRunning{background:#0b3b1f;color:#fff;}
+.btn.big{padding:16px;font-size:16px;}
 
-    /* Floating glass control bar */
-    .controlBar{
-      position:absolute;
-      left: 12px;
-      right: 12px;
-      bottom: 10px;
-      z-index:3;
+.controlStrip{padding:10px;display:flex;justify-content:space-between;align-items:center;}
+.rocker{display:flex;gap:4px;background:rgba(255,255,255,.6);padding:4px;border-radius:999px;}
+.rockerBtn{border:0;padding:8px 10px;border-radius:999px;background:transparent;font-weight:800;}
+.rockerBtn.isOn{background:#fff;}
 
-      padding: 8px;
-      border-radius: 20px;
+.miniGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.card{padding:12px;}
+.metric{font-size:18px;font-weight:900;margin-top:6px;}
 
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.10));
-      border: 1px solid rgba(255,255,255,.20);
-      box-shadow: var(--shadowStrong);
+.bigActions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
 
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-    }
+/* ===== FULL MODE ===== */
+.fullScroll{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding-bottom:40px;}
 
-    .controlBarInner{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      justify-content:space-between;
-      flex-wrap:wrap;
-    }
-
-    .rockerGroup{
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
-
-    .rockerWrap{
-      padding: 3px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.82);
-      border: 1px solid rgba(255,255,255,.55);
-      box-shadow: 0 8px 18px rgba(0,0,0,.10);
-    }
-    .rocker{
-      display:inline-flex;
-      border-radius:999px;
-      overflow:hidden;
-      background: rgba(15,23,42,.06);
-    }
-    .rockerBtn{
-      border:0;
-      background:transparent;
-      padding: 8px 10px;
-      font-size: 12px;
-      font-weight: 950;
-      cursor:pointer;
-      opacity:.88;
-      color:#0b1220;
-      user-select:none;
-    }
-    .rockerBtn.isOn{
-      background: rgba(255,255,255,.90);
-      opacity:1;
-      border-radius:999px;
-      box-shadow: 0 2px 8px rgba(2,6,23,.12);
-    }
-
-    .shiftLabel{
-      font-size:10px;
-      font-weight:950;
-      opacity:.80;
-      color:#0b1220;
-      line-height:1.1;
-      text-align:right;
-      white-space:nowrap;
-      margin-right:2px;
-    }
-
-    /* Header stats row (optional; we hide on iPhone 14 by height) */
-    .headerStats{
-      margin-top: 10px;
-      display:grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      position:relative;
-      z-index:2;
-    }
-    .stat{
-      background: rgba(255,255,255,.10);
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 12px;
-      padding: 8px;
-    }
-    .stat .label{font-size: 11px; opacity:.85; font-weight: 900;}
-    .stat .value{margin-top: 2px; font-size: 14px; font-weight: 1000;}
-
-    /* =======================
-       Main panels + animation
-       ======================= */
-    main{
-      flex:1;
-      min-height:0;
-      padding-bottom: env(safe-area-inset-bottom);
-      overflow:hidden;
-    }
-
-    .panes{
-      height:100%;
-      position:relative;
-      overflow:hidden;
-    }
-
-    .pane{
-      position:absolute;
-      inset:0;
-      padding:10px 10px 12px;
-      will-change: transform, opacity;
-      transition: transform 260ms ease, opacity 260ms ease;
-    }
-    .pane.isHidden{
-      pointer-events:none;
-      opacity:0;
-    }
-
-    /* Slide transitions */
-    .pane.basic{
-      transform: translateX(0);
-      opacity:1;
-    }
-    .pane.full{
-      transform: translateX(8%);
-      opacity:0;
-    }
-    .panes.showFull .pane.basic{
-      transform: translateX(-8%);
-      opacity:0;
-      pointer-events:none;
-    }
-    .panes.showFull .pane.full{
-      transform: translateX(0);
-      opacity:1;
-      pointer-events:auto;
-    }
-
-    /* BASIC layout: no scrolling */
-    .panelBasic{
-      height:100%;
-      overflow:hidden;
-      display:grid;
-      grid-template-rows: auto auto 1fr auto;
-      gap:10px;
-    }
-
-    /* FULL layout: scroll */
-    .panelFull{
-      height:100%;
-      overflow:auto;
-      -webkit-overflow-scrolling: touch;
-      padding-bottom: 40px;
-    }
-
-    /* Controls/buttons */
-    .controlsRow{
-      display:grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap:8px;
-    }
-    .btn{
-      padding: 10px 8px;
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      background:#fff;
-      color: var(--text);
-      font-weight: 950;
-      cursor:pointer;
-      box-shadow: 0 1px 0 rgba(2,6,23,.04);
-    }
-    .btn:active{transform: translateY(1px);}
-    .btn:disabled{opacity:.55; cursor:not-allowed;}
-    .btn.primary{
-      background: var(--btnPrimaryBg);
-      color: var(--btnPrimaryText);
-      border-color: rgba(255,255,255,.12);
-      box-shadow: var(--shadow);
-    }
-    .btn.startShift.isRunning{
-      background: var(--btnRunningBg);
-      color: var(--btnRunningText);
-      border-color: rgba(255,255,255,.12);
-      box-shadow: var(--shadow);
-    }
-    .btn.danger{
-      border-color:#b00020;
-      color:#b00020;
-      background:#fff;
-    }
-
-    .bigActions{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:10px;
-    }
-    .btn.big{
-      padding: 14px 10px;
-      font-size: 16px;
-      border-radius: 18px;
-      box-shadow: var(--shadow);
-    }
-    .btn.big.isActive{outline: 3px solid rgba(2,6,23,.10);}
-
-    .miniGrid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:10px;
-      align-content:start;
-    }
-    .card{
-      background: var(--card);
-      border:1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 10px;
-      box-shadow: 0 1px 0 rgba(2,6,23,.04);
-    }
-    .card .label{
-      font-size: 12px;
-      color: var(--muted);
-      font-weight: 900;
-      letter-spacing: .2px;
-    }
-    .card .metric{
-      font-size: 18px;
-      font-weight: 1000;
-      margin-top: 6px;
-      letter-spacing:.2px;
-    }
-    .hint{
-      font-size: 11px;
-      color: rgba(15,23,42,.72);
-    }
-
-    /* Full mode UI */
-    h3{margin: 12px 0 10px; font-size: 14px; color: rgba(15,23,42,.95);}
-    .row{display:flex; gap:10px; flex-wrap:wrap;}
-    .field{
-      flex:1;
-      min-width: 140px;
-      background:#fff;
-      border:1px solid var(--border);
-      border-radius: 16px;
-      padding: 12px;
-      box-shadow: 0 1px 0 rgba(2,6,23,.04);
-    }
-    label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px; font-weight: 950;}
-    input,select{
-      width:100%;
-      padding:10px 12px;
-      border-radius: 14px;
-      border:1px solid var(--border);
-      font-size:14px;
-      background:#fff;
-    }
-    .logList{display:flex; flex-direction:column; gap:10px; margin-top:10px;}
-    .logItem{background:#fff; border:1px solid var(--border); border-radius: 16px; padding: 12px; box-shadow: 0 1px 0 rgba(2,6,23,.04);}
-    .logItem .top{display:flex; justify-content:space-between; gap:10px; align-items:center;}
-    .pill{display:inline-block; padding:4px 10px; border-radius: 999px; font-size:12px; font-weight: 950; border:1px solid var(--border); background:#fafafa;}
-    .pill.work{background:#eef6ff; border-color:#cfe6ff;}
-    .pill.break{background:#fff5e8; border-color:#ffe1b7;}
-    .pill.qual{background:#e9fff0; border-color:#bff0cd;}
-    .subtle{font-size:12px; color: var(--muted);}
-
-    /* Overlay */
-    .overlay{position:fixed; inset:0; display:none; align-items:flex-end; justify-content:center; background: rgba(0,0,0,.38); padding: 16px;}
-    .overlay.show{display:flex;}
-    .sheet{width:min(520px, 100%); background:#fff; border-radius: 22px; padding: 14px; box-shadow: var(--shadowStrong);}
-    .sheet h2{margin:0; font-size:16px;}
-    .sheet p{margin:8px 0 12px; color:#111827; font-size:14px; line-height:1.35;}
-    .sheet .actions{display:flex; gap:10px;}
-    .sheet .actions .btn{flex:1;}
-
-    /* =======================
-       iPhone 14 fit rules
-       ======================= */
-    @media (max-height: 720px){
-      .headerStats{display:none;} /* iPhone 14: reclaim vertical space */
-      header.topHeader{padding: calc(10px + env(safe-area-inset-top)) 10px 54px;}
-      .controlBar{left:10px; right:10px; bottom: 9px; padding:7px; border-radius:18px;}
-      .panelBasic{gap:8px;}
-      .btn{padding:9px 8px;}
-      .btn.big{padding:12px 10px; font-size:15px;}
-      .card .metric{font-size:16px;}
-      .lamp{width:38px; height:38px;}
-      .sigLabel{height:38px; font-size:10px;}
-      .signalBox{width:60px; padding:7px;}
-    }
-    @media (max-height: 690px){
-      .betaNote{display:none;}
-      .hint{display:none;}
-    }
-  </style>
+/* ===== MOBILE FIT ===== */
+@media(max-height:720px){
+.lamp{width:36px;height:36px;}
+.metric{font-size:16px;}
+.btn.big{padding:14px;font-size:15px;}
+}
+</style>
 </head>
 
 <body>
 <div class="app">
 
-  <header class="topHeader">
-    <div class="headerRow">
-      <div class="leftCluster">
-        <!-- Traffic light + labels right -->
-        <div id="signalWrap" class="signalWrap" data-state="off" aria-label="Compliance indicator">
-          <div class="signalBox" aria-hidden="true">
-            <div class="signal">
-              <div class="lamp red"></div>
-              <div class="lamp amber"></div>
-              <div class="lamp green"></div>
-            </div>
-          </div>
+<header>
+<div class="headerRow">
 
-          <div class="signalLabels" aria-hidden="true">
-            <div class="sigLabel red">STOP — break required</div>
-            <div class="sigLabel amber">Break upcoming</div>
-            <div class="sigLabel green">Compliant</div>
-          </div>
-        </div>
-
-        <div class="brand">
-          <div class="title">WTD Working Time Tracker</div>
-          <div id="headerStatus" class="status">Ready</div>
-        </div>
-      </div>
-
-      <!-- headerRow right side intentionally empty (controls are in floating bar) -->
-      <div></div>
-    </div>
-
-    <div class="betaNote">
-      <strong>Not a driving hours tracker.</strong> Working time only.
-      <strong>Beta:</strong> all times must be double-checked.
-    </div>
-
-    <div class="headerStats">
-      <div class="stat">
-        <div class="label">Start</div>
-        <div id="hdrStart" class="value">—</div>
-      </div>
-      <div class="stat">
-        <div class="label">Duration</div>
-        <div id="hdrDuration" class="value">00:00</div>
-      </div>
-      <div class="stat">
-        <div class="label">Finish by</div>
-        <div id="hdrFinishBy" class="value">—</div>
-      </div>
-    </div>
-
-    <!-- Floating glass control bar (always visible in Basic + Full) -->
-    <div class="controlBar" role="region" aria-label="Controls">
-      <div class="controlBarInner">
-        <div class="rockerGroup">
-          <div class="rockerWrap" title="View mode">
-            <div class="rocker" role="group" aria-label="View mode">
-              <button id="btnViewBasic" class="rockerBtn isOn" type="button">Basic</button>
-              <button id="btnViewFull" class="rockerBtn" type="button">Full</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="rockerGroup">
-          <div class="shiftLabel">Length of shift<br/>for the day</div>
-          <div class="rockerWrap" title="Shift length">
-            <div class="rocker" role="group" aria-label="Shift length">
-              <button id="btnShift13" class="rockerBtn isOn" type="button">13h</button>
-              <button id="btnShift15" class="rockerBtn" type="button">15h</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <main>
-    <div id="panes" class="panes">
-      <!-- BASIC (no scrolling) -->
-      <section id="panelBasic" class="pane basic">
-        <div class="panelBasic">
-          <div class="controlsRow">
-            <button id="btnStartShift" class="btn primary startShift" type="button">Start shift</button>
-            <button id="btnEndShift" class="btn" type="button">End shift</button>
-            <button id="btnResetDay" class="btn danger" type="button">Reset day</button>
-          </div>
-
-          <div class="bigActions">
-            <button id="btnWork" class="btn big" type="button">Work</button>
-            <button id="btnBreak" class="btn big" type="button">Break</button>
-          </div>
-
-          <div class="miniGrid">
-            <div class="card">
-              <div class="label">Shift time</div>
-              <div id="uiShiftTime" class="metric">00:00</div>
-            </div>
-            <div class="card">
-              <div class="label">Continuous work</div>
-              <div id="uiContinuous" class="metric">00:00</div>
-            </div>
-            <div class="card">
-              <div class="label">Next break in</div>
-              <div id="uiNextBreakIn" class="metric">—</div>
-            </div>
-            <div class="card">
-              <div class="label">Break still needed</div>
-              <div id="uiBreakNeeded" class="metric">00:00</div>
-            </div>
-          </div>
-
-          <div class="hint">Qualifying break (counts toward 30/45) = BREAK for ≥ 15 minutes.</div>
-        </div>
-      </section>
-
-      <!-- FULL (scrollable) -->
-      <section id="panelFull" class="pane full isHidden">
-        <div class="panelFull">
-          <h3>Quick summary</h3>
-          <div class="miniGrid">
-            <div class="card">
-              <div class="label">Total work</div>
-              <div id="uiWorkTotal_full" class="metric">00:00</div>
-            </div>
-            <div class="card">
-              <div class="label">Qualifying breaks</div>
-              <div id="uiQualBreak_full" class="metric">00:00</div>
-            </div>
-            <div class="card">
-              <div class="label">Break required</div>
-              <div id="uiBreakReq_full" class="metric">00:00</div>
-            </div>
-            <div class="card">
-              <div class="label">Break still needed</div>
-              <div id="uiBreakNeed_full" class="metric">00:00</div>
-            </div>
-          </div>
-
-          <h3>Manual add segment</h3>
-          <div class="row">
-            <div class="field">
-              <label for="manType">Type</label>
-              <select id="manType">
-                <option value="WORK">WORK</option>
-                <option value="BREAK">BREAK</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="manStart">Start (HHMM)</label>
-              <input id="manStart" inputmode="tel" placeholder="0800" />
-              <div class="subtle" style="margin-top:6px;">Auto formats to HH:MM on iPhone</div>
-            </div>
-            <div class="field">
-              <label for="manEnd">End (HHMM)</label>
-              <input id="manEnd" inputmode="tel" placeholder="0915" />
-            </div>
-          </div>
-          <div class="row" style="margin-top:10px;">
-            <button id="btnAddManual" class="btn primary" type="button">Add segment</button>
-            <button id="btnDeleteLast" class="btn" type="button">Delete last</button>
-          </div>
-          <div class="subtle" style="margin-top:8px;">
-            Times use today’s date. If end is earlier than start, it is treated as next day.
-          </div>
-
-          <h3>Segment log</h3>
-          <div id="logList" class="logList"></div>
-
-          <div style="height:12px;"></div>
-        </div>
-      </section>
-    </div>
-  </main>
+<div id="signalWrap" class="signalWrap" data-state="off">
+<div class="signalBox">
+<div class="signal">
+<div class="lamp red"></div>
+<div class="lamp amber"></div>
+<div class="lamp green"></div>
+</div>
+</div>
+<div>
+<div class="sigLabel red">STOP — break required</div>
+<div class="sigLabel amber">Break upcoming</div>
+<div class="sigLabel green">Compliant</div>
+</div>
 </div>
 
-<!-- Overlay -->
-<div id="overlay" class="overlay" aria-hidden="true">
-  <div class="sheet">
-    <h2 id="ovTitle">Break due</h2>
-    <p id="ovText">You have reached 6 hours continuous working time. Take a break now.</p>
-    <div class="actions">
-      <button id="ovBreak" class="btn primary" type="button">Start break</button>
-      <button id="ovDismiss" class="btn" type="button">Dismiss</button>
-    </div>
-  </div>
+<div class="brand">
+<div class="title">WTD Working Time Tracker</div>
+<div id="headerStatus" class="status">Ready</div>
+</div>
+
+</div>
+
+<div class="beta"><strong>Not a driving hours tracker.</strong> Working time only — beta.</div>
+</header>
+
+<main>
+<div class="sheet">
+
+<div class="controlsRow">
+<button id="btnStartShift" class="btn primary startShift">Start shift</button>
+<button id="btnEndShift" class="btn">End shift</button>
+<button id="btnResetDay" class="btn">Reset day</button>
+</div>
+
+<div class="glass controlStrip">
+<div class="rocker">
+<button id="btnViewBasic" class="rockerBtn isOn">Basic</button>
+<button id="btnViewFull" class="rockerBtn">Full</button>
+</div>
+
+<div style="display:flex;align-items:center;gap:6px;">
+<div style="font-size:11px;font-weight:700;color:#334155;">Length of shift</div>
+<div class="rocker">
+<button id="btnShift13" class="rockerBtn isOn">13h</button>
+<button id="btnShift15" class="rockerBtn">15h</button>
+</div>
+</div>
+</div>
+
+<div class="bigActions">
+<button id="btnWork" class="btn big">Work</button>
+<button id="btnBreak" class="btn big">Break</button>
+</div>
+
+<div class="miniGrid" style="margin-top:10px;">
+<div class="glass card"><div>Shift time</div><div id="uiShiftTime" class="metric">00:00</div></div>
+<div class="glass card"><div>Continuous work</div><div id="uiContinuous" class="metric">00:00</div></div>
+<div class="glass card"><div>Next break</div><div id="uiNextBreakIn" class="metric">—</div></div>
+<div class="glass card"><div>Break needed</div><div id="uiBreakNeeded" class="metric">00:00</div></div>
+</div>
+
+</div>
+</main>
 </div>
 
 <script>
-(() => {
-  const STORAGE_KEY = "wtd_app_ios_v1_state";
-  const MIN  = 60000;
-  const HOUR = 60 * MIN;
+const signalWrap=document.getElementById("signalWrap");
+const headerStatus=document.getElementById("headerStatus");
+const btnStart=document.getElementById("btnStartShift");
+const btnEnd=document.getElementById("btnEndShift");
 
-  const defaultState = () => ({
-    view: "basic",
-    shiftHours: 13,
-    shiftStartMs: null,
-    currentType: null,
-    segments: [],
-    overlayDismissedAtMs: null
-  });
+let shiftStart=null;
 
-  let state = loadState();
+function haptic(){
+if(navigator.vibrate) navigator.vibrate(10);
+}
 
-  function loadState(){
-    try{
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if(!raw) return defaultState();
-      const s = JSON.parse(raw);
-      return { ...defaultState(), ...s };
-    } catch {
-      return defaultState();
-    }
-  }
-  function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+function setState(level,text){
+signalWrap.dataset.state=level;
+headerStatus.textContent=text;
+}
 
-  // DOM
-  const panes = document.getElementById("panes");
-  const headerStatus = document.getElementById("headerStatus");
-  const hdrStart = document.getElementById("hdrStart");
-  const hdrDuration = document.getElementById("hdrDuration");
-  const hdrFinishBy = document.getElementById("hdrFinishBy");
-  const signalWrap = document.getElementById("signalWrap");
+btnStart.onclick=()=>{
+if(shiftStart)return;
+haptic();
+shiftStart=Date.now();
+btnStart.classList.add("isRunning");
+btnStart.textContent="Shift running";
+};
 
-  const btnViewBasic = document.getElementById("btnViewBasic");
-  const btnViewFull  = document.getElementById("btnViewFull");
+btnEnd.onclick=()=>{
+haptic();
+shiftStart=null;
+btnStart.classList.remove("isRunning");
+btnStart.textContent="Start shift";
+signalWrap.dataset.state="off";
+headerStatus.textContent="Ready";
+};
 
-  const btnShift13 = document.getElementById("btnShift13");
-  const btnShift15 = document.getElementById("btnShift15");
-
-  const btnStartShift = document.getElementById("btnStartShift");
-  const btnEndShift = document.getElementById("btnEndShift");
-  const btnResetDay = document.getElementById("btnResetDay");
-  const btnWork = document.getElementById("btnWork");
-  const btnBreak = document.getElementById("btnBreak");
-
-  const uiShiftTime = document.getElementById("uiShiftTime");
-  const uiContinuous = document.getElementById("uiContinuous");
-  const uiNextBreakIn = document.getElementById("uiNextBreakIn");
-  const uiBreakNeeded = document.getElementById("uiBreakNeeded");
-
-  const uiWorkTotal_full = document.getElementById("uiWorkTotal_full");
-  const uiQualBreak_full = document.getElementById("uiQualBreak_full");
-  const uiBreakReq_full  = document.getElementById("uiBreakReq_full");
-  const uiBreakNeed_full = document.getElementById("uiBreakNeed_full");
-
-  const manType = document.getElementById("manType");
-  const manStart = document.getElementById("manStart");
-  const manEnd = document.getElementById("manEnd");
-  const btnAddManual = document.getElementById("btnAddManual");
-  const btnDeleteLast = document.getElementById("btnDeleteLast");
-  const logList = document.getElementById("logList");
-
-  const overlay = document.getElementById("overlay");
-  const ovTitle = document.getElementById("ovTitle");
-  const ovText = document.getElementById("ovText");
-  const ovBreak = document.getElementById("ovBreak");
-  const ovDismiss = document.getElementById("ovDismiss");
-
-  // Helpers
-  const pad2 = (n) => String(n).padStart(2,"0");
-  const clamp0 = (ms) => Math.max(0, ms);
-
-  function fmtHHMM(ms){
-    const d = new Date(ms);
-    return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
-  }
-  function fmtDur(ms){
-    const totalMin = Math.max(0, Math.floor(ms / MIN));
-    const hh = Math.floor(totalMin / 60);
-    const mm = totalMin % 60;
-    return `${pad2(hh)}:${pad2(mm)}`;
-  }
-  function isShiftRunning(){ return !!state.shiftStartMs; }
-
-  /* iPhone-friendly time entry: type 0800 -> becomes 08:00 */
-  function autoColon(el){
-    el.addEventListener("input", () => {
-      let v = (el.value || "").replace(/[^\d]/g,"").slice(0,4);
-      if(v.length >= 3) v = v.slice(0,2) + ":" + v.slice(2);
-      el.value = v;
-    });
-  }
-  autoColon(manStart);
-  autoColon(manEnd);
-
-  function applyView(view){
-    panes.classList.toggle("showFull", view === "full");
-    btnViewBasic.classList.toggle("isOn", view === "basic");
-    btnViewFull.classList.toggle("isOn", view === "full");
-  }
-  function setView(view){
-    state.view = view;
-    saveState();
-    applyView(view);
-  }
-
-  function applyShiftHours(h){
-    btnShift13.classList.toggle("isOn", h === 13);
-    btnShift15.classList.toggle("isOn", h === 15);
-  }
-  function setShiftHours(h){
-    state.shiftHours = h;
-    saveState();
-    applyShiftHours(h);
-    render();
-  }
-
-  function setOffState(){
-    signalWrap.dataset.state = "off";
-    headerStatus.textContent = "Ready";
-  }
-  function setSignal(level, text){
-    headerStatus.textContent = text;
-    signalWrap.dataset.state = level; // ok | warn | due
-  }
-
-  function closeOpenSegment(nowMs){
-    const last = state.segments[state.segments.length - 1];
-    if(last && last.endMs == null) last.endMs = nowMs;
-    state.currentType = null;
-  }
-
-  function startSegment(type){
-    if(!isShiftRunning()) return;
-    const now = Date.now();
-    const last = state.segments[state.segments.length - 1];
-    if(last && last.endMs == null){
-      if(last.type === type) return;
-      last.endMs = now;
-    }
-    state.currentType = type;
-    state.segments.push({ type, startMs: now, endMs: null });
-    saveState();
-    render();
-  }
-
-  function startShift(){
-    if(isShiftRunning()) return;
-    const now = Date.now();
-    state.shiftStartMs = now;
-    state.currentType = null;
-    state.segments = [];
-    state.overlayDismissedAtMs = null;
-    saveState();
-    render();
-  }
-
-  function endShift(){
-    if(!isShiftRunning()) return;
-    closeOpenSegment(Date.now());
-    state.shiftStartMs = null;     // truly end
-    state.currentType = null;
-    saveState();
-    render();
-  }
-
-  function resetDay(){
-    state = defaultState();
-    saveState();
-    render();
-  }
-
-  function parseTimeToMs(hhmm){
-    const m = /^(\d{1,2}):(\d{2})$/.exec((hhmm||"").trim());
-    if(!m) return null;
-    const hh = Number(m[1]), mm = Number(m[2]);
-    if(hh < 0 || hh > 23 || mm < 0 || mm > 59) return null;
-    const d = new Date();
-    d.setHours(hh, mm, 0, 0);
-    return d.getTime();
-  }
-
-  function addManualSegment(){
-    const type = manType.value;
-    const s = parseTimeToMs(manStart.value);
-    const e0 = parseTimeToMs(manEnd.value);
-    if(s == null || e0 == null){
-      alert("Enter times like 08:00 (or type 0800 and it will format).");
-      return;
-    }
-    let e = e0;
-    if(e <= s) e = e + 24 * HOUR;
-    state.segments.push({ type, startMs: s, endMs: e });
-    saveState();
-    render();
-  }
-
-  function deleteLast(){
-    if(state.segments.length === 0) return;
-    const last = state.segments[state.segments.length - 1];
-    state.segments.pop();
-    if(last && last.endMs == null) state.currentType = null;
-    saveState();
-    render();
-  }
-
-  // Metrics (WTD working time only)
-  function getSegmentsResolved(now){
-    return state.segments.map(seg => ({...seg, endMs: seg.endMs == null ? now : seg.endMs}));
-  }
-  function sumDurationMs(segments, type){
-    return segments.filter(s => s.type === type).reduce((acc, s) => acc + clamp0(s.endMs - s.startMs), 0);
-  }
-  function qualifyingBreakMs(segments){
-    return segments
-      .filter(s => s.type === "BREAK")
-      .reduce((acc, s) => {
-        const dur = clamp0(s.endMs - s.startMs);
-        return acc + (dur >= 15 * MIN ? dur : 0);
-      }, 0);
-  }
-
-  /* WTD daily break rule used here:
-     - >6h work => 30m break
-     - >9h work => 45m break
-     (qualifying break segments count only if >=15m)
-  */
-  function requiredBreakMs(workMs){
-    if(workMs > 9 * HOUR) return 45 * MIN;
-    if(workMs > 6 * HOUR) return 30 * MIN;
-    return 0;
-  }
-
-  // Continuous work interrupted by ANY break (even <15m)
-  function continuousWorkSinceLastAnyBreakMs(segments){
-    let lastBreakEnd = null;
-    for(const s of segments){
-      if(s.type === "BREAK") lastBreakEnd = s.endMs;
-    }
-    if(lastBreakEnd == null) return sumDurationMs(segments, "WORK");
-    return segments
-      .filter(s => s.type === "WORK" && s.endMs > lastBreakEnd)
-      .reduce((acc, s) => {
-        const start = Math.max(s.startMs, lastBreakEnd);
-        return acc + clamp0(s.endMs - start);
-      }, 0);
-  }
-
-  function nextBreakDueInMs(continuousWorkMs){
-    return 6 * HOUR - continuousWorkMs;
-  }
-
-  // Overlay
-  function showOverlay(title, text){
-    ovTitle.textContent = title;
-    ovText.textContent = text;
-    overlay.classList.add("show");
-    overlay.setAttribute("aria-hidden", "false");
-  }
-  function hideOverlay(){
-    overlay.classList.remove("show");
-    overlay.setAttribute("aria-hidden", "true");
-  }
-  ovBreak.addEventListener("click", () => { hideOverlay(); startSegment("BREAK"); });
-  ovDismiss.addEventListener("click", () => {
-    state.overlayDismissedAtMs = Date.now();
-    saveState();
-    hideOverlay();
-  });
-
-  function renderLog(segs){
-    if(segs.length === 0){
-      logList.innerHTML = `<div class="subtle">No segments yet.</div>`;
-      return;
-    }
-    const items = [...segs].sort((a,b) => b.startMs - a.startMs);
-    logList.innerHTML = items.map(s => {
-      const dur = clamp0(s.endMs - s.startMs);
-      const isQual = s.type === "BREAK" && dur >= 15 * MIN;
-      const pillClass = s.type === "WORK" ? "work" : "break";
-      const qualPill = isQual ? `<span class="pill qual">QUAL</span>` : "";
-      return `
-        <div class="logItem">
-          <div class="top">
-            <div>
-              <span class="pill ${pillClass}">${s.type}</span>
-              ${qualPill}
-            </div>
-            <div class="subtle">${fmtDur(dur)}</div>
-          </div>
-          <div class="subtle" style="margin-top:8px;">
-            ${fmtHHMM(s.startMs)} → ${fmtHHMM(s.endMs)}
-          </div>
-        </div>
-      `;
-    }).join("");
-  }
-
-  function render(){
-    const now = Date.now();
-
-    applyView(state.view);
-    applyShiftHours(state.shiftHours);
-
-    const running = isShiftRunning();
-
-    // Start button visuals
-    btnStartShift.classList.toggle("isRunning", running);
-    btnStartShift.textContent = running ? "Shift running" : "Start shift";
-    btnStartShift.disabled = running;
-
-    btnEndShift.disabled = !running;
-    btnWork.disabled = !running;
-    btnBreak.disabled = !running;
-
-    if(!running){
-      hdrStart.textContent = "—";
-      hdrDuration.textContent = "00:00";
-      hdrFinishBy.textContent = "—";
-    } else {
-      hdrStart.textContent = fmtHHMM(state.shiftStartMs);
-      hdrDuration.textContent = fmtDur(now - state.shiftStartMs);
-      hdrFinishBy.textContent = fmtHHMM(state.shiftStartMs + state.shiftHours * HOUR);
-    }
-
-    btnWork.classList.toggle("isActive", state.currentType === "WORK");
-    btnBreak.classList.toggle("isActive", state.currentType === "BREAK");
-
-    const segs = getSegmentsResolved(now);
-    const workMs = sumDurationMs(segs, "WORK");
-    const qualMs = qualifyingBreakMs(segs);
-    const reqMs  = requiredBreakMs(workMs);
-    const needMs = clamp0(reqMs - qualMs);
-
-    const continuousMs = continuousWorkSinceLastAnyBreakMs(segs);
-    const dueInMs = nextBreakDueInMs(continuousMs);
-
-    uiShiftTime.textContent = running ? fmtDur(now - state.shiftStartMs) : "00:00";
-    uiContinuous.textContent = fmtDur(continuousMs);
-    uiBreakNeeded.textContent = fmtDur(needMs);
-
-    if(!running) uiNextBreakIn.textContent = "—";
-    else if(dueInMs <= 0) uiNextBreakIn.textContent = "DUE";
-    else uiNextBreakIn.textContent = fmtDur(dueInMs);
-
-    uiWorkTotal_full.textContent = fmtDur(workMs);
-    uiQualBreak_full.textContent = fmtDur(qualMs);
-    uiBreakReq_full.textContent  = fmtDur(reqMs);
-    uiBreakNeed_full.textContent = fmtDur(needMs);
-
-    renderLog(segs);
-
-    if(!running){
-      setOffState();
-      hideOverlay();
-      return;
-    }
-
-    const warnThreshold = 15 * MIN;
-
-    if(dueInMs <= 0){
-      setSignal("due", "Break due now (continuous work)");
-      const dismissedRecently = state.overlayDismissedAtMs && (now - state.overlayDismissedAtMs) < 10 * MIN;
-      if(!dismissedRecently && !overlay.classList.contains("show")){
-        showOverlay("Break due", "You have reached 6 hours continuous working time. Take a break now.");
-      }
-    } else if(dueInMs <= warnThreshold){
-      setSignal("warn", `Break due in ${fmtDur(dueInMs)} (continuous work)`);
-      hideOverlay();
-    } else {
-      setSignal("ok", `Next break in ${fmtDur(dueInMs)} (continuous work)`);
-      hideOverlay();
-    }
-  }
-
-  // Events
-  btnViewBasic.addEventListener("click", () => setView("basic"));
-  btnViewFull.addEventListener("click", () => setView("full"));
-
-  btnShift13.addEventListener("click", () => setShiftHours(13));
-  btnShift15.addEventListener("click", () => setShiftHours(15));
-
-  btnStartShift.addEventListener("click", startShift);
-  btnEndShift.addEventListener("click", endShift);
-
-  btnResetDay.addEventListener("click", () => {
-    const ok = confirm("Reset day? This clears the shift and all segments.");
-    if(ok) resetDay();
-  });
-
-  btnWork.addEventListener("click", () => startSegment("WORK"));
-  btnBreak.addEventListener("click", () => startSegment("BREAK"));
-
-  btnAddManual.addEventListener("click", addManualSegment);
-  btnDeleteLast.addEventListener("click", deleteLast);
-
-  setInterval(render, 1000);
-
-  // Init
-  applyView(state.view);
-  applyShiftHours(state.shiftHours);
-  render();
-})();
+setInterval(()=>{
+if(!shiftStart)return;
+const t=(Date.now()-shiftStart)/3600000;
+if(t<5.5)setState("ok","Compliant");
+else if(t<6)setState("warn","Break soon");
+else setState("due","Break due");
+},1000);
 </script>
+
 </body>
 </html>
