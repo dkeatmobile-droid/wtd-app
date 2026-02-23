@@ -1,15 +1,27 @@
 {
-  "name": "WTD Tracker",
+  "name": "WTD Working Time Tracker",
   "short_name": "WTD",
+  "description": "WTD Working Time Tracker — shift and break compliance timer",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#070b14",
+  "orientation": "portrait",
+  "background_color": "#0b1220",
   "theme_color": "#0b1220",
+  "categories": ["productivity", "utilities"],
+  "lang": "en-GB",
   "icons": [
     {
-      "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABcElEQVR4nO2aMU7DQBCEv3wQhJQKQqkQGQ0oQJQqQqkQGQ0oQJQKQqkQGQ0oQJQKQqkQGQ0oQJQKQqkQGQ0oQJQKQqkQGQ1oU2r3m2yQf9kZb2k9v1w0m3b0qQ5j7m0Q0qgGgFQ4b7oG1g7Qk7g3gGgL0m8Y8hGgKp8o9gqgYl3dQH6bXgW0k7g9gHcW0p0g8g0g4j8yq2m1b2o9o3mQJz8m0z4k9lq2pGQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQmQk4B6xg0s3t3wJwAAAABJRU5ErkJggg==",
-      "sizes": "64x64",
-      "type": "image/png"
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
