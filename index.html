@@ -4,7 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0b1220" />
-  <title>WTD Working Time Tracker (Beta) — Single Page</title>
+  <title>WTD Working Time Tracker</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
   <style>
     :root{
@@ -52,7 +58,7 @@
       position:relative;
     }
 
-    /* ===== Minimal iOS-style header ===== */
+    /* ===== Minimal iOS-style header (CLEANED) ===== */
     header.topbar{
       padding: calc(12px + env(safe-area-inset-top)) 14px 10px;
       background:
@@ -82,58 +88,11 @@
     .appName{
       font-weight:1000;
       letter-spacing:.2px;
-      font-size:14px;
+      font-size: clamp(12px, 3.6vw, 14px);
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
     }
-
-    .statusPill{
-      padding:6px 10px;
-      border-radius:999px;
-      font-size:12px;
-      font-weight:950;
-      color: rgba(255,255,255,.92);
-      background: rgba(255,255,255,.10);
-      border: 1px solid rgba(255,255,255,.14);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.12),
-        0 10px 22px rgba(2,6,23,.18);
-      white-space:nowrap;
-      flex: 0 0 auto;
-    }
-
-    .signalMini{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      padding:8px 10px;
-      border-radius:999px;
-      background: rgba(255,255,255,.10);
-      border: 1px solid rgba(255,255,255,.14);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.12),
-        0 10px 22px rgba(2,6,23,.18);
-      flex: 0 0 auto;
-    }
-
-    .signalMini .dot{
-      width:10px;
-      height:10px;
-      border-radius:999px;
-      background: rgba(255,255,255,.18);
-      box-shadow: inset 0 3px 6px rgba(0,0,0,.45);
-      opacity:.5;
-    }
-
-    .signalMini[data-state="due"]  .dot.red{ opacity:1; background: rgba(239,68,68,.95); box-shadow: 0 0 12px rgba(239,68,68,.45); }
-    .signalMini[data-state="warn"] .dot.amber{ opacity:1; background: rgba(245,158,11,.95); box-shadow: 0 0 12px rgba(245,158,11,.45); }
-    .signalMini[data-state="ok"]   .dot.green{ opacity:1; background: rgba(22,163,74,.95); box-shadow: 0 0 12px rgba(22,163,74,.45); }
-    .signalMini[data-state="off"]  .dot{ opacity:.45; }
 
     /* ===== Timing pill ===== */
     .islandWrap{
@@ -175,7 +134,7 @@
     }
     .dStat .v{
       margin-top:2px;
-      font-size:13px;
+      font-size: 13px;
       font-weight:1000;
       color: rgba(255,255,255,.96);
       white-space:nowrap;
@@ -358,7 +317,9 @@
       grid-template-columns: 74px 1fr;
       gap:12px;
       align-items:center;
+      min-width:0;
     }
+    .dashMain > div{ min-width:0; } /* critical for ellipsis/clamp */
 
     .dashIconPanel{
       width:64px;
@@ -382,20 +343,27 @@
       background: rgba(255,255,255,.18);
     }
 
+    /* RESPONSIVE: title + big timer auto-size */
     .dashMain .bigTitle{
-      font-size: 22px;
+      font-size: clamp(16px, 4.6vw, 22px);
       font-weight: 1000;
       letter-spacing:.6px;
       color: rgba(255,255,255,.92);
       text-transform: uppercase;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
     .dashMain .bigTime{
       margin-top: 6px;
-      font-size: 72px;
+      font-size: clamp(44px, 14vw, 72px);
       line-height: .95;
       font-weight: 1100;
       letter-spacing: 1px;
       font-variant-numeric: tabular-nums;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
     .dashSub{
@@ -405,17 +373,25 @@
       gap:6px;
       color: rgba(255,255,255,.74);
       font-weight: 850;
+      min-width:0;
     }
     .dashLine{
       display:flex;
       align-items:center;
       gap:10px;
-      font-size: 16px;
+      font-size: clamp(13px, 3.8vw, 16px);
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
+      min-width:0;
     }
-    .dashLine .mono{ font-variant-numeric: tabular-nums; color: rgba(255,255,255,.92); }
+    .dashLine .mono{
+      font-variant-numeric: tabular-nums;
+      color: rgba(255,255,255,.92);
+      min-width:0;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
 
     .warnIcon{
       width: 18px;
@@ -440,21 +416,32 @@
       color: rgba(255,255,255,.70);
       font-size: 12px;
       font-weight: 900;
+      min-width:0;
+    }
+    .cardHint > div{
+      min-width:0;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
     }
 
     .twoCol{
       display:grid;
       grid-template-columns: 1fr 1fr;
       gap:10px;
+      min-width:0;
     }
 
-    .dashSmall{ padding: 12px 14px; }
+    .dashSmall{ padding: 12px 14px; min-width:0; }
     .dashSmall .k{
       font-size: 13px;
       font-weight: 950;
       letter-spacing:.4px;
       text-transform: uppercase;
       color: rgba(255,255,255,.78);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
     .dashSmall .vRow{
       margin-top: 10px;
@@ -463,29 +450,44 @@
       justify-content:space-between;
       gap:12px;
       font-variant-numeric: tabular-nums;
+      min-width:0;
     }
-    .dashSmall .vRow.tight{ margin-top:8px; }
     .dashSmall .v{
-      font-size: 34px;
+      font-size: clamp(26px, 7.8vw, 34px);
       font-weight: 1100;
       color: rgba(255,255,255,.96);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      min-width:0;
     }
     .dashSmall .vSub{
-      font-size: 18px;
+      font-size: clamp(14px, 4.8vw, 18px);
       font-weight: 1000;
       color: rgba(255,255,255,.84);
       white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      min-width:0;
     }
 
     .metaLabel{
       font-size:13px;
       font-weight:950;
       color:rgba(255,255,255,.72);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      min-width:0;
     }
     .metaValue{
-      font-size:18px;
+      font-size: clamp(14px, 4.8vw, 18px);
       font-weight:1100;
       color:rgba(255,255,255,.92);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      min-width:0;
     }
 
     .progress{
@@ -507,24 +509,32 @@
       display:grid;
       grid-template-columns: 1fr 1fr;
       gap:10px;
+      min-width:0;
     }
     .metaItem{
       padding: 10px 12px;
       border-radius: 16px;
       background: rgba(255,255,255,.06);
       border: 1px solid rgba(255,255,255,.10);
+      min-width:0;
     }
     .metaItem .mk{
       font-size: 12px;
       font-weight: 950;
       color: rgba(255,255,255,.70);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
     .metaItem .mv{
       margin-top:6px;
-      font-size: 18px;
+      font-size: clamp(14px, 4.8vw, 18px);
       font-weight: 1050;
       color: rgba(255,255,255,.94);
       font-variant-numeric: tabular-nums;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
     /* Manual add + log */
@@ -587,33 +597,31 @@
 
     /* iPhone fit */
     @media (max-height: 720px){
+      header.topbar{
+        padding: calc(10px + env(safe-area-inset-top)) 12px 8px;
+      }
       main{padding: 8px 10px 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom));}
       .sheet{padding:10px;}
       .controlsRow{gap:8px;}
       .btn{padding:10px 9px;}
-      .dashMain .bigTime{ font-size: 62px; }
       .btn.driverBig{ padding: 16px 12px; font-size: 16px; }
       .dynamicIsland{ padding: 8px 12px; }
       .dStat .v{ font-size:12px; }
     }
   </style>
+
+  <!-- OPTIONAL PUSH (OneSignal). Leave as-is; configure APP ID in the script below to activate. -->
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 </head>
 
 <body>
 <div class="app">
 
-  <!-- Minimal iOS-style header -->
+  <!-- Clean header -->
   <header class="topbar">
     <div class="topbarRow">
       <div class="brandMini">
         <div class="appName">WTD Working Time Tracker</div>
-        <div id="headerStatus" class="statusPill">Ready</div>
-      </div>
-
-      <div id="signalWrap" class="signalMini" data-state="off" aria-label="Compliance indicator">
-        <span class="dot red" aria-hidden="true"></span>
-        <span class="dot amber" aria-hidden="true"></span>
-        <span class="dot green" aria-hidden="true"></span>
       </div>
     </div>
   </header>
@@ -643,6 +651,11 @@
         <button id="btnStartShift" class="btn primary" type="button">Start shift</button>
         <button id="btnEndShift" class="btn" type="button">End shift</button>
         <button id="btnResetDay" class="btn danger" type="button">Reset day</button>
+      </div>
+
+      <!-- Push enable button (optional) -->
+      <div class="driverActionRow">
+        <button id="btnEnablePush" class="btn" type="button">Enable notifications</button>
       </div>
 
       <div class="glass strip" aria-label="Shift controls">
@@ -788,6 +801,11 @@
   const MIN  = 60000;
   const HOUR = 60 * MIN;
 
+  // ===== OPTIONAL PUSH CONFIG (OneSignal) =====
+  // 1) Create a OneSignal Web Push app
+  // 2) Paste your OneSignal App ID below (leave "" to disable)
+  const ONESIGNAL_APP_ID = ""; // e.g. "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
   const defaults = () => ({
     shiftHours: 13,
     shiftStartMs: null,
@@ -808,10 +826,6 @@
   }
   function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 
-  // DOM
-  const signalWrap = document.getElementById("signalWrap");
-  const headerStatus = document.getElementById("headerStatus");
-
   // Timing pill
   const hdrStart = document.getElementById("hdrStart");
   const hdrDuration = document.getElementById("hdrDuration");
@@ -821,6 +835,7 @@
   const btnEndShift   = document.getElementById("btnEndShift");
   const btnResetDay   = document.getElementById("btnResetDay");
   const btnToggle     = document.getElementById("btnToggle");
+  const btnEnablePush = document.getElementById("btnEnablePush");
 
   const segShift = document.getElementById("segShift");
 
@@ -984,10 +999,8 @@
     }
   }
 
-  function setTraffic(stateKey, pillText){
-    signalWrap.dataset.state = stateKey;
-    headerStatus.textContent = pillText;
-
+  // Header pill removed; dashboard lamps stay
+  function setTraffic(stateKey){
     const off = "rgba(255,255,255,.18)";
     miniLampTop.style.background = off;
     miniLampMid.style.background = off;
@@ -1123,7 +1136,7 @@
       uiRestNeeded.textContent = "00:00";
 
       renderLog([]);
-      setTraffic("off", "Ready");
+      setTraffic("off");
       return;
     }
 
@@ -1175,14 +1188,14 @@
 
     renderLog(segs);
 
-    // ===== iOS-style status pill copy =====
+    // Lamps only (header removed)
     const warnThreshold = 15*MIN;
     if(dueInMs <= 0){
-      setTraffic("due", "Break required");
+      setTraffic("due");
     } else if(dueInMs <= warnThreshold){
-      setTraffic("warn", `Break soon • ${fmtDur(dueInMs)}`);
+      setTraffic("warn");
     } else {
-      setTraffic("ok", `Compliant • ${fmtDur(dueInMs)} to break`);
+      setTraffic("ok");
     }
 
     updateToggleButton(running);
@@ -1228,6 +1241,26 @@
   btnToggle.addEventListener("click", toggleWorkBreak);
   btnAddManual.addEventListener("click", () => { haptic(8); addManual(); });
   btnDeleteLast.addEventListener("click", () => { haptic(8); deleteLast(); });
+
+  // ===== OPTIONAL PUSH SETUP (OneSignal) =====
+  // iPhone requirement: Add to Home Screen, then open from that icon, then tap Enable notifications.
+  if (btnEnablePush) {
+    btnEnablePush.addEventListener("click", async () => {
+      haptic(10);
+
+      if (!ONESIGNAL_APP_ID) {
+        alert("Notifications aren't configured yet.\n\nSet ONESIGNAL_APP_ID in index.html, then redeploy.");
+        return;
+      }
+
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({ appId: ONESIGNAL_APP_ID });
+        await OneSignal.Notifications.requestPermission();
+        alert("If you added this to your Home Screen, notifications should now be enabled.");
+      });
+    });
+  }
 
   setInterval(render, 1000);
   render();
