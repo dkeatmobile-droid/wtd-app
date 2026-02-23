@@ -33,7 +33,6 @@
       --ok:#16a34a;
       --warn:#f59e0b;
       --due:#ef4444;
-      --lampOff:#6b7280;
 
       --radiusSheet: 28px;
       --radius: 18px;
@@ -319,7 +318,7 @@
       align-items:center;
       min-width:0;
     }
-    .dashMain > div{ min-width:0; } /* critical for ellipsis/clamp */
+    .dashMain > div{ min-width:0; }
 
     .dashIconPanel{
       width:64px;
@@ -343,7 +342,6 @@
       background: rgba(255,255,255,.18);
     }
 
-    /* RESPONSIVE: title + big timer auto-size */
     .dashMain .bigTitle{
       font-size: clamp(16px, 4.6vw, 22px);
       font-weight: 1000;
@@ -608,6 +606,33 @@
       .dynamicIsland{ padding: 8px 12px; }
       .dStat .v{ font-size:12px; }
     }
+
+    /* =======================================================================
+       FIX: small-card number truncation (WTD TODAY / BREAK BUILDING)
+       Stops iOS showing 01:… / 13… by removing ellipsis and shrinking text.
+       Put at end of CSS so it overrides earlier rules.
+       ======================================================================= */
+    .dashCard.dashSmall { padding: 12px 12px; }
+    .dashCard.dashSmall .vRow{
+      min-width:0;
+      gap:8px;
+    }
+    .dashCard.dashSmall .v{
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow: visible !important;
+      text-overflow: clip !important;
+      white-space: nowrap;
+      font-size: clamp(22px, 7.2vw, 34px);
+    }
+    .dashCard.dashSmall .vSub{
+      flex: 0 0 auto;
+      min-width: 0;
+      overflow: visible !important;
+      text-overflow: clip !important;
+      white-space: nowrap;
+      font-size: clamp(12px, 4.4vw, 18px);
+    }
   </style>
 
   <!-- OPTIONAL PUSH (OneSignal). Leave as-is; configure APP ID in the script below to activate. -->
@@ -802,9 +827,9 @@
   const HOUR = 60 * MIN;
 
   // ===== OPTIONAL PUSH CONFIG (OneSignal) =====
-  // 1) Create a OneSignal Web Push app
-  // 2) Paste your OneSignal App ID below (leave "" to disable)
-  const ONESIGNAL_APP_ID = ""; // e.g. "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+  // Paste your OneSignal App ID to enable push:
+  // const ONESIGNAL_APP_ID = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx";
+  const ONESIGNAL_APP_ID = "";
 
   const defaults = () => ({
     shiftHours: 13,
