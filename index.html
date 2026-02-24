@@ -57,7 +57,6 @@
       position:relative;
     }
 
-    /* ===== Minimal iOS-style header (CLEANED) ===== */
     header.topbar{
       padding: calc(12px + env(safe-area-inset-top)) 14px 10px;
       background:
@@ -93,7 +92,6 @@
       text-overflow:ellipsis;
     }
 
-    /* ===== Timing pill ===== */
     .islandWrap{
       padding: 10px 12px 0;
       margin-top: -8px;
@@ -141,7 +139,6 @@
       text-overflow:ellipsis;
     }
 
-    /* ===== Sheet ===== */
     main{
       flex:1;
       min-height:0;
@@ -176,10 +173,9 @@
       box-shadow: var(--shadowSoft);
     }
 
-    /* Buttons */
     .controlsRow{
       display:grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap:10px;
     }
 
@@ -214,7 +210,6 @@
       background: rgba(255,255,255,.78);
     }
 
-    /* Segmented control */
     .strip{
       padding: 10px;
       display:flex;
@@ -273,7 +268,6 @@
       white-space:nowrap;
     }
 
-    /* Single driver action button */
     .driverActionRow{
       display:grid;
       grid-template-columns: 1fr;
@@ -292,7 +286,6 @@
       box-shadow: 0 18px 44px rgba(245,158,11,.18);
     }
 
-    /* Dashboard */
     .dash{ display:flex; flex-direction:column; gap:10px; }
 
     .dashCard{
@@ -535,7 +528,6 @@
       text-overflow:ellipsis;
     }
 
-    /* Manual add + log */
     h3{
       margin: 12px 2px 10px;
       font-size: 14px;
@@ -593,7 +585,6 @@
 
     .subtle{font-size:12px; color: rgba(15,23,42,.55);}
 
-    /* iPhone fit */
     @media (max-height: 720px){
       header.topbar{
         padding: calc(10px + env(safe-area-inset-top)) 12px 8px;
@@ -607,11 +598,6 @@
       .dStat .v{ font-size:12px; }
     }
 
-    /* =======================================================================
-       FIX: small-card number truncation (WTD TODAY / BREAK BUILDING)
-       Stops iOS showing 01:… / 13… by removing ellipsis and shrinking text.
-       Put at end of CSS so it overrides earlier rules.
-       ======================================================================= */
     .dashCard.dashSmall { padding: 12px 12px; }
     .dashCard.dashSmall .vRow{
       min-width:0;
@@ -635,14 +621,13 @@
     }
   </style>
 
-  <!-- OPTIONAL PUSH (OneSignal). Leave as-is; configure APP ID in the script below to activate. -->
+  <!-- OPTIONAL PUSH (OneSignal). Leave as-is; configure APP ID below to activate. -->
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 </head>
 
 <body>
 <div class="app">
 
-  <!-- Clean header -->
   <header class="topbar">
     <div class="topbarRow">
       <div class="brandMini">
@@ -651,7 +636,6 @@
     </div>
   </header>
 
-  <!-- Timing pill -->
   <div class="islandWrap" aria-label="Shift timing">
     <div class="dynamicIsland">
       <div class="dStat">
@@ -675,10 +659,10 @@
       <div class="controlsRow">
         <button id="btnStartShift" class="btn primary" type="button">Start shift</button>
         <button id="btnEndShift" class="btn" type="button">End shift</button>
+        <button id="btnUndo" class="btn" type="button">Undo</button>
         <button id="btnResetDay" class="btn danger" type="button">Reset day</button>
       </div>
 
-      <!-- Push enable button (optional) -->
       <div class="driverActionRow">
         <button id="btnEnablePush" class="btn" type="button">Enable notifications</button>
       </div>
@@ -698,7 +682,6 @@
 
       <div class="dash" aria-label="Driver dashboard">
 
-        <!-- WORK SAFE FOR -->
         <div class="dashCard">
           <div class="dashMain">
             <div class="dashIconPanel" aria-hidden="true">
@@ -732,7 +715,6 @@
           </div>
         </div>
 
-        <!-- WTD TODAY + BREAK BUILDING -->
         <div class="twoCol">
           <div class="dashCard dashSmall">
             <div class="k">WTD TODAY</div>
@@ -765,7 +747,6 @@
           </div>
         </div>
 
-        <!-- Secondary details -->
         <div class="dashCard">
           <div class="dashMeta">
             <div class="metaItem">
@@ -822,7 +803,7 @@
 
 <script>
 (() => {
-  const STORAGE_KEY = "wtd_single_page_driver_v3";
+  const STORAGE_KEY = "wtd_single_page_driver_v4";
   const MIN  = 60000;
   const HOUR = 60 * MIN;
 
@@ -831,12 +812,26 @@
   // const ONESIGNAL_APP_ID = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx";
   const ONESIGNAL_APP_ID = "";
 
-  const defaults = () => ({
-    shiftHours: 13,
-    shiftStartMs: null,
-    currentType: null, // "WORK" | "REST" | null (REST == BREAK in UI)
-    segments: []       // {type,startMs,endMs}
-  });
+  // ===== Minimal SW registration (offline/PWA) =====
+  // Ensure you have ./sw.js in your GitHub Pages project folder.
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./sw.js", { scope: "./" }).catch(() => {});
+    });
+  }
+
+  const MODE = { IDLE:"IDLE", WORKING:"WORKING", ON_BREAK:"ON_BREAK" };
+
+  function defaults(){
+    return {
+      v: 4,
+      shiftHours: 13,
+      shiftStartMs: null,
+      mode: MODE.IDLE,     // authoritative state
+      segments: [],        // {type:"WORK"|"REST", startMs, endMs|null}
+      lastAction: null
+    };
+  }
 
   let state = load();
   function load(){
@@ -844,7 +839,21 @@
       const raw = localStorage.getItem(STORAGE_KEY);
       if(!raw) return defaults();
       const parsed = JSON.parse(raw);
-      return { ...defaults(), ...parsed };
+      const s = { ...defaults(), ...parsed };
+
+      // migrate older versions if present
+      if(!s.mode){
+        const running = !!s.shiftStartMs;
+        const isRest = parsed.currentType === "REST";
+        s.mode = running ? (isRest ? MODE.ON_BREAK : MODE.WORKING) : MODE.IDLE;
+      }
+      delete s.currentType;
+
+      // sanity
+      if(!Array.isArray(s.segments)) s.segments = [];
+      if(!Object.values(MODE).includes(s.mode)) s.mode = MODE.IDLE;
+
+      return s;
     }catch{
       return defaults();
     }
@@ -858,6 +867,7 @@
 
   const btnStartShift = document.getElementById("btnStartShift");
   const btnEndShift   = document.getElementById("btnEndShift");
+  const btnUndo       = document.getElementById("btnUndo");
   const btnResetDay   = document.getElementById("btnResetDay");
   const btnToggle     = document.getElementById("btnToggle");
   const btnEnablePush = document.getElementById("btnEnablePush");
@@ -910,7 +920,8 @@
   function haptic(ms=10){
     try{ if(navigator.vibrate) navigator.vibrate(ms); } catch {}
   }
-  function isRunning(){ return !!state.shiftStartMs; }
+  function nowMs(){ return Date.now(); }
+  function isRunning(){ return state.mode === MODE.WORKING || state.mode === MODE.ON_BREAK; }
 
   // iPhone-friendly time input: 0800 -> 08:00
   function autoColon(el){
@@ -961,9 +972,142 @@
     return { setValue };
   }
 
-  // WTD-only logic:
-  // - "Break due" when continuous WORK reaches 6h
-  // - "Break required" totals: >6h => 30m, >9h => 45m (qualifying BREAK >= 15m)
+  // ===== State machine helpers =====
+  function getOpenSegment(){
+    const last = state.segments[state.segments.length - 1];
+    if(last && last.endMs == null) return last;
+    return null;
+  }
+  function closeOpenSegment(ts){
+    const open = getOpenSegment();
+    if(open) open.endMs = ts;
+  }
+  function ensureOpenSegmentMatchesMode(ts){
+    if(!isRunning()){
+      closeOpenSegment(ts);
+      return;
+    }
+    const open = getOpenSegment();
+    const wantType = state.mode === MODE.ON_BREAK ? "REST" : "WORK";
+    if(!open){
+      state.segments.push({ type: wantType, startMs: ts, endMs: null });
+      return;
+    }
+    if(open.type !== wantType){
+      open.endMs = ts;
+      state.segments.push({ type: wantType, startMs: ts, endMs: null });
+    }
+  }
+
+  function startShift(){
+    if(state.mode !== MODE.IDLE) return;
+    haptic(12);
+    const ts = nowMs();
+    state.shiftStartMs = ts;
+    state.segments = [{ type:"WORK", startMs: ts, endMs: null }];
+    state.mode = MODE.WORKING;
+    state.lastAction = { at: ts, kind: "START_SHIFT" };
+    save();
+    render();
+  }
+
+  function endShift(){
+    if(!isRunning()) return;
+    haptic(12);
+    const ts = nowMs();
+    closeOpenSegment(ts);
+    state.shiftStartMs = null;
+    state.mode = MODE.IDLE;
+    state.lastAction = { at: ts, kind: "END_SHIFT" };
+    save();
+    render();
+  }
+
+  function transition(toMode){
+    const ts = nowMs();
+
+    // guard rails
+    if(state.mode === MODE.IDLE && toMode !== MODE.WORKING) return;
+    if(state.mode === MODE.WORKING && !(toMode === MODE.ON_BREAK || toMode === MODE.IDLE)) return;
+    if(state.mode === MODE.ON_BREAK && !(toMode === MODE.WORKING || toMode === MODE.IDLE)) return;
+
+    closeOpenSegment(ts);
+    state.mode = toMode;
+
+    if(toMode === MODE.WORKING){
+      state.segments.push({ type:"WORK", startMs: ts, endMs: null });
+    } else if(toMode === MODE.ON_BREAK){
+      state.segments.push({ type:"REST", startMs: ts, endMs: null });
+    }
+
+    state.lastAction = { at: ts, kind: "TRANSITION", toMode };
+    save();
+    render();
+  }
+
+  function toggleWorkBreak(){
+    if(!isRunning()) return;
+    haptic(10);
+    if(state.mode === MODE.ON_BREAK) transition(MODE.WORKING);
+    else transition(MODE.ON_BREAK);
+  }
+
+  function undoLast(){
+    // Safe undo: while running, removes current open segment and resumes previous type
+    if(!isRunning()) return;
+    if(state.segments.length === 0) return;
+    haptic(8);
+
+    const ts = nowMs();
+    closeOpenSegment(ts);
+
+    // Remove last segment entirely
+    state.segments.pop();
+
+    // If nothing left, end shift
+    if(state.segments.length === 0){
+      state.shiftStartMs = null;
+      state.mode = MODE.IDLE;
+      save();
+      render();
+      return;
+    }
+
+    // Resume based on last segment type
+    const last = state.segments[state.segments.length - 1];
+    state.mode = (last.type === "REST") ? MODE.ON_BREAK : MODE.WORKING;
+    ensureOpenSegmentMatchesMode(ts);
+
+    state.lastAction = { at: ts, kind: "UNDO" };
+    save();
+    render();
+  }
+
+  function deleteLast(){
+    if(state.segments.length === 0) return;
+    haptic(8);
+
+    const ts = nowMs();
+    closeOpenSegment(ts);
+    state.segments.pop();
+
+    if(!state.shiftStartMs || state.segments.length === 0){
+      state.shiftStartMs = null;
+      state.mode = MODE.IDLE;
+      save();
+      render();
+      return;
+    }
+
+    const last = state.segments[state.segments.length - 1];
+    state.mode = (last.type === "REST") ? MODE.ON_BREAK : MODE.WORKING;
+    ensureOpenSegmentMatchesMode(ts);
+
+    save();
+    render();
+  }
+
+  // ===== Your existing WTD logic (unchanged) =====
   function resolvedSegments(now){
     return state.segments.map(s => ({...s, endMs: (s.endMs == null ? now : s.endMs)}));
   }
@@ -998,33 +1142,6 @@
   }
   function nextBreakDueInMs(contWorkMs){ return 6*HOUR - contWorkMs; }
 
-  function closeOpenSegment(now){
-    const last = state.segments[state.segments.length - 1];
-    if(last && last.endMs == null) last.endMs = now;
-  }
-
-  function startSegment(type){
-    if(!isRunning()) return;
-    if(state.currentType === type) return;
-    const now = Date.now();
-    closeOpenSegment(now);
-    state.currentType = type;
-    state.segments.push({ type, startMs: now, endMs: null });
-    save();
-    render();
-  }
-
-  function toggleWorkBreak(){
-    if(!isRunning()) return;
-    haptic(10);
-    if(state.currentType === "REST"){
-      startSegment("WORK");
-    } else {
-      startSegment("REST");
-    }
-  }
-
-  // Header pill removed; dashboard lamps stay
   function setTraffic(stateKey){
     const off = "rgba(255,255,255,.18)";
     miniLampTop.style.background = off;
@@ -1060,17 +1177,18 @@
     }
     let e = e0;
     if(e <= s) e += 24*HOUR;
-    state.segments.push({ type, startMs: s, endMs: e });
-    state.currentType = null;
-    save();
-    render();
-  }
 
-  function deleteLast(){
-    if(state.segments.length === 0) return;
-    state.segments.pop();
-    const last = state.segments[state.segments.length - 1];
-    state.currentType = (last && last.endMs == null) ? last.type : null;
+    // Add as a closed segment
+    state.segments.push({ type, startMs: s, endMs: e });
+
+    // If shift has never started, set shiftStart to the earliest segment start
+    if(!state.shiftStartMs){
+      state.shiftStartMs = Math.min(...state.segments.map(x => x.startMs));
+    }
+
+    // Keep live mode as-is; just self-heal the open segment after adding
+    ensureOpenSegmentMatchesMode(nowMs());
+
     save();
     render();
   }
@@ -1114,17 +1232,20 @@
 
   function updateToggleButton(running){
     btnToggle.disabled = !running;
-    const onBreak = state.currentType === "REST";
+    const onBreak = state.mode === MODE.ON_BREAK;
     btnToggle.classList.toggle("isOnBreak", onBreak);
     btnToggle.textContent = onBreak ? "Resume work" : "Start break";
   }
 
   function render(){
-    const now = Date.now();
+    const now = nowMs();
     const running = isRunning();
 
+    // Self-heal open segment ↔ mode
+    ensureOpenSegmentMatchesMode(now);
+
     // Timing pill
-    if(!running){
+    if(!running || !state.shiftStartMs){
       hdrStart.textContent = "—";
       hdrDuration.textContent = "00:00";
       hdrEnd.textContent = "—";
@@ -1140,9 +1261,10 @@
     btnStartShift.disabled = running;
 
     btnEndShift.disabled = !running;
+    btnUndo.disabled = !running;
     updateToggleButton(running);
 
-    if(!running){
+    if(!running || !state.shiftStartMs){
       uiWorkSafeFor.textContent = "—:—";
       uiBreakAt.textContent = "Break required at —";
       uiContVsLimit.textContent = "— / 06:00";
@@ -1198,7 +1320,7 @@
 
     const lastBreak = lastBreakSegment(segs);
     let currentBreakMs = 0;
-    if(state.currentType === "REST" && lastBreak){
+    if(state.mode === MODE.ON_BREAK && lastBreak){
       currentBreakMs = clamp0(lastBreak.endMs - lastBreak.startMs);
     }
 
@@ -1213,7 +1335,6 @@
 
     renderLog(segs);
 
-    // Lamps only (header removed)
     const warnThreshold = 15*MIN;
     if(dueInMs <= 0){
       setTraffic("due");
@@ -1233,25 +1354,17 @@
     requestAnimationFrame(() => segShiftAPI.setValue(String(state.shiftHours)));
   });
 
-  btnStartShift.addEventListener("click", () => {
-    if(isRunning()) return;
-    haptic(12);
-    state.shiftStartMs = Date.now();
-    state.currentType = "WORK";
-    state.segments = [{ type:"WORK", startMs: state.shiftStartMs, endMs: null }];
-    save();
-    render();
-  });
+  // ===== Buttons =====
+  btnStartShift.addEventListener("click", startShift);
 
   btnEndShift.addEventListener("click", () => {
     if(!isRunning()) return;
-    haptic(12);
-    closeOpenSegment(Date.now());
-    state.shiftStartMs = null;
-    state.currentType = null;
-    save();
-    render();
+    const ok = confirm("End shift?");
+    if(!ok) return;
+    endShift();
   });
+
+  btnUndo.addEventListener("click", undoLast);
 
   btnResetDay.addEventListener("click", () => {
     haptic(14);
@@ -1264,8 +1377,9 @@
   });
 
   btnToggle.addEventListener("click", toggleWorkBreak);
+
   btnAddManual.addEventListener("click", () => { haptic(8); addManual(); });
-  btnDeleteLast.addEventListener("click", () => { haptic(8); deleteLast(); });
+  btnDeleteLast.addEventListener("click", deleteLast);
 
   // ===== OPTIONAL PUSH SETUP (OneSignal) =====
   // iPhone requirement: Add to Home Screen, then open from that icon, then tap Enable notifications.
