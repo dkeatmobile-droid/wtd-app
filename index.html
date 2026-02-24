@@ -1292,5 +1292,9 @@
   render();
 })();
 </script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/wtd-app/service-worker.js");
+}
+</script>
 </body>
 </html>
