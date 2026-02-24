@@ -1337,5 +1337,22 @@
   render();
 })();
 </script>
+<body>
+
+  <!-- all your existing stuff here -->
+
+
+  <!-- STEP 5 button goes here -->
+  <button id="enableNotifications">Enable Notifications</button>
+
+
+  <!-- STEP 4 service worker registration -->
+  <script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/wtd-app/service-worker.js");
+  }
+  </script>
+
 </body>
 </html>
+
