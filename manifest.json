@@ -4,7 +4,7 @@
   "start_url": "/wtd-app/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "theme_color": "#005bbb",
   "icons": [
     {
       "src": "/wtd-app/icons/icon-192.png",
